@@ -1,0 +1,41 @@
+# === IDE ===
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# === Backend (Laravel) ===
+/backend/vendor/
+/backend/.env
+/backend/storage/*.key
+/backend/database/database.sqlite
+/backend/bootstrap/cache/
+
+# === Frontend (Angular) ===
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.angular/
+
+# === Build / Dist ===
+/dist/
+/documentation/site/
+
+# === Database ===
+*.sqlite
+
+# === Environment ===
+.env
+
+# === Backend Storage ===
+/backend/storage/logs/*
+!/backend/storage/logs/.gitkeep
+/backend/storage/framework/cache/data/*
+/backend/storage/framework/sessions/*
+!/backend/storage/framework/sessions/.gitkeep
+/backend/storage/framework/views/*
+!/backend/storage/framework/views/.gitkeep
+
+# === Logs ===
+*.log

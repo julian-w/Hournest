@@ -1,0 +1,117 @@
+site_name: Hournest Dokumentation
+site_description: Team-Urlaubsverwaltung - Dokumentation
+site_url: ""
+
+theme:
+  name: material
+  language: de
+  palette:
+    - scheme: slate
+      primary: amber
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Hellmodus
+    - scheme: default
+      primary: amber
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Dunkelmodus
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+    - search.suggest
+    - search.highlight
+  icon:
+    logo: material/beehive-outline
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - attr_list
+  - md_in_html
+  - def_list
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: de
+          default: true
+          name: Deutsch
+          build: true
+        - locale: en
+          name: English
+          build: true
+          nav_translations:
+            Startseite: Home
+            Überblick: Overview
+            Voraussetzungen: Prerequisites
+            Installation: Installation
+            Konfiguration: Configuration
+            Änderungsprotokoll: Changelog
+            Endanwender: End User
+            Erste Schritte: Getting Started
+            Dashboard: Dashboard
+            Kalender: Calendar
+            Urlaubsanträge: Vacation Requests
+            Urlaubskonto: Vacation Account
+            Administration: Administration
+            Benutzerverwaltung: User Management
+            Feiertage verwalten: Manage Holidays
+            Urlaubsplanung: Vacation Planning
+            Einstellungen: Settings
+            Entwickler: Developer
+            Architektur: Architecture
+            Backend: Backend
+            Frontend: Frontend
+            API-Referenz: API Reference
+            Mock-Modus: Mock Mode
+            Tests: Tests
+            Deployment: Deployment
+
+nav:
+  - Startseite:
+      - Überblick: index.md
+      - Voraussetzungen: home/prerequisites.md
+      - Installation: home/installation.md
+      - Konfiguration: home/configuration.md
+      - Änderungsprotokoll: home/changelog.md
+  - Endanwender:
+      - Erste Schritte: user/index.md
+      - Dashboard: user/dashboard.md
+      - Kalender: user/calendar.md
+      - Urlaubsanträge: user/vacations.md
+      - Urlaubskonto: user/ledger.md
+      - Administration:
+          - Benutzerverwaltung: user/admin/users.md
+          - Feiertage verwalten: user/admin/holidays.md
+          - Urlaubsplanung: user/admin/blackouts.md
+          - Einstellungen: user/admin/settings.md
+  - Entwickler:
+      - Architektur: dev/index.md
+      - Backend: dev/backend.md
+      - Frontend: dev/frontend.md
+      - API-Referenz: dev/api.md
+      - Mock-Modus: dev/mock-mode.md
+      - Tests: dev/tests.md
+      - Deployment: dev/deployment.md

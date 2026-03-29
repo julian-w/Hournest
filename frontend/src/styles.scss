@@ -1,0 +1,50 @@
+@use '@angular/material' as mat;
+
+$hournest-primary: mat.m2-define-palette(mat.$m2-amber-palette);
+$hournest-accent: mat.m2-define-palette(mat.$m2-deep-orange-palette);
+$hournest-warn: mat.m2-define-palette(mat.$m2-red-palette);
+
+$hournest-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $hournest-primary,
+    accent: $hournest-accent,
+    warn: $hournest-warn,
+  ),
+  typography: mat.m2-define-typography-config(),
+));
+
+@include mat.all-component-themes($hournest-theme);
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: #fafafa;
+}
+
+// Fix sidenav ripple: amber ripple makes text unreadable
+mat-sidenav .mat-mdc-list-item .mat-ripple-element {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+// Fix mat-form-field inside table cells: compact & vertically centered
+td.mat-mdc-cell {
+  vertical-align: middle;
+}
+td.mat-mdc-cell .mat-mdc-form-field {
+  margin-top: 0;
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+td.mat-mdc-cell .mat-mdc-form-field .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+td.mat-mdc-cell .mat-mdc-text-field-wrapper {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+td.mat-mdc-cell .mat-mdc-form-field-infix {
+  min-height: 36px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
