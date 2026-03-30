@@ -53,17 +53,17 @@ For lists:
 
 ### GET /api/auth/redirect
 
-Redirects the user to the Synology SSO Server (OIDC login).
+Redirects the user to the OIDC provider (OIDC login).
 
 **Auth:** None
 
-**Response:** HTTP 302 Redirect to SSO Server
+**Response:** HTTP 302 Redirect to OIDC provider
 
 ---
 
 ### GET /api/auth/callback
 
-Processes the OIDC callback from the SSO Server. Creates or updates the user and sets up the session.
+Processes the OIDC callback from the OIDC provider. Creates or updates the user and sets up the session.
 
 **Auth:** None
 
@@ -127,6 +127,40 @@ Terminates the current session.
   "message": "Logged out successfully."
 }
 ```
+
+---
+
+### GET /api/auth/config
+
+Returns the authentication configuration. Public, no authentication required.
+
+**Auth:** None
+
+**Response (200):**
+
+```json
+{
+  "data": {
+    "oauth_enabled": true
+  }
+}
+```
+
+---
+
+### POST /api/auth/change-password
+
+Changes the authenticated user's password.
+
+**Auth:** Sanctum
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `current_password` | string | Yes | Current password |
+| `new_password` | string | Yes | New password (min. 8 characters) |
+| `new_password_confirmation` | string | Yes | Confirm new password |
 
 ---
 
@@ -536,6 +570,55 @@ Updates a user.
     "weekend_worker": false
   },
   "message": "User updated."
+}
+```
+
+---
+
+### POST /api/admin/users
+
+Creates a new user (only relevant in local auth mode).
+
+**Auth:** Sanctum + Admin
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `display_name` | string | Yes | Display name |
+| `email` | string | Yes | Email (must be unique) |
+| `role` | string | Yes | `employee` or `admin` |
+| `password` | string | Yes | Default password (min. 8 characters) |
+
+**Response:** `201 Created`
+
+---
+
+### PATCH /api/admin/users/{id}/reset-password
+
+Resets a user's password. The user must change their password on next login.
+
+**Auth:** Sanctum + Admin
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `password` | string | Yes | New default password (min. 8 characters) |
+
+---
+
+### DELETE /api/admin/users/{id}
+
+Deletes a user (soft delete). Superadmin and own account cannot be deleted.
+
+**Auth:** Sanctum + Admin
+
+**Response (200):**
+
+```json
+{
+  "message": "User deleted."
 }
 ```
 

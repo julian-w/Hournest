@@ -13,8 +13,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AdminService } from '../../../core/services/admin.service';
+import { ConfigService } from '../../../core/services/config.service';
 import { User } from '../../../core/models/user.model';
 import { LedgerAdjustmentDialogComponent } from './ledger-adjustment-dialog.component';
+import { CreateUserDialogComponent } from './create-user-dialog.component';
+import { ResetPasswordDialogComponent } from './reset-password-dialog.component';
 
 @Component({
   selector: 'app-admin-users',
@@ -26,6 +29,11 @@ import { LedgerAdjustmentDialogComponent } from './ledger-adjustment-dialog.comp
   ],
   template: `
     <h2>{{ 'admin_users.title' | translate }}</h2>
+
+    <button mat-raised-button color="primary" class="create-btn" (click)="openCreateUserDialog()">
+      <mat-icon>person_add</mat-icon>
+      {{ 'admin_users.create_user' | translate }}
+    </button>
 
     <mat-card>
       <table mat-table [dataSource]="users()">
@@ -88,6 +96,18 @@ import { LedgerAdjustmentDialogComponent } from './ledger-adjustment-dialog.comp
                     (click)="openLedgerDialog(u)">
               <mat-icon>account_balance_wallet</mat-icon>
             </button>
+            @if (!configService.isOAuthEnabled()) {
+              <button mat-icon-button color="warn"
+                      [matTooltip]="'admin_users.reset_password' | translate"
+                      (click)="resetPassword(u)">
+                <mat-icon>lock_reset</mat-icon>
+              </button>
+            }
+            <button mat-icon-button
+                    [matTooltip]="'admin_users.delete_user' | translate"
+                    (click)="deleteUser(u)">
+              <mat-icon>delete</mat-icon>
+            </button>
           </td>
         </ng-container>
 
@@ -100,6 +120,7 @@ import { LedgerAdjustmentDialogComponent } from './ledger-adjustment-dialog.comp
     table { width: 100%; }
     .days-field { width: 80px; font-size: 13px; }
     mat-select { width: 120px; }
+    .create-btn { margin-bottom: 16px; }
   `],
 })
 export class AdminUsersComponent implements OnInit {
@@ -107,6 +128,7 @@ export class AdminUsersComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
   private translate = inject(TranslateService);
+  configService = inject(ConfigService);
 
   users = signal<User[]>([]);
   displayedColumns = [
@@ -159,6 +181,43 @@ export class AdminUsersComponent implements OnInit {
     });
     ref.afterClosed().subscribe((changed: boolean) => {
       if (changed) this.loadUsers();
+    });
+  }
+
+  openCreateUserDialog(): void {
+    const ref = this.dialog.open(CreateUserDialogComponent, {
+      width: '450px',
+    });
+    ref.afterClosed().subscribe((created: boolean) => {
+      if (created) {
+        this.snackBar.open(this.translate.instant('admin_users.user_created'), this.translate.instant('common.ok'), { duration: 3000 });
+        this.loadUsers();
+      }
+    });
+  }
+
+  deleteUser(user: User): void {
+    if (!confirm(this.translate.instant('admin_users.delete_confirm', { name: user.display_name }))) return;
+
+    this.adminService.deleteUser(user.id).subscribe({
+      next: () => {
+        this.snackBar.open(this.translate.instant('admin_users.user_deleted'), this.translate.instant('common.ok'), { duration: 3000 });
+        this.loadUsers();
+      },
+    });
+  }
+
+  resetPassword(user: User): void {
+    const ref = this.dialog.open(ResetPasswordDialogComponent, {
+      width: '400px',
+    });
+    ref.afterClosed().subscribe((password: string | undefined) => {
+      if (!password) return;
+      this.adminService.resetUserPassword(user.id, password).subscribe({
+        next: () => {
+          this.snackBar.open(this.translate.instant('admin_users.password_reset'), this.translate.instant('common.ok'), { duration: 3000 });
+        },
+      });
     });
   }
 

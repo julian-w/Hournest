@@ -24,7 +24,19 @@
     "password": "Password",
     "login_button": "Sign In",
     "error_invalid": "Invalid credentials.",
-    "error_generic": "An error occurred."
+    "error_generic": "An error occurred.",
+    "email": "Email",
+    "local_description": "Sign in with your email and password."
+  },
+  "password": {
+    "change_title": "Change Password",
+    "must_change": "You must change your password before continuing.",
+    "current": "Current Password",
+    "new": "New Password",
+    "confirm": "Confirm New Password",
+    "mismatch": "Passwords do not match.",
+    "min_length": "Password must be at least 8 characters.",
+    "change_button": "Change Password"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -126,7 +138,19 @@
     "holidays_exempt": "Holidays exempt",
     "weekend_worker": "Weekend worker",
     "adjust_ledger": "Adjust vacation account",
-    "ledger_updated": "Vacation account updated."
+    "ledger_updated": "Vacation account updated.",
+    "create_user": "Create User",
+    "default_password": "Default Password",
+    "password_hint": "User will be required to change this on first login.",
+    "password_hint_oauth": "Optional. If set, user can also log in with this password.",
+    "generate_password": "Generate password",
+    "user_created": "User created.",
+    "reset_password": "Reset Password",
+    "password_reset": "Password has been reset.",
+    "new_password_prompt": "Enter new default password (min. 8 characters):",
+    "delete_user": "Delete user",
+    "delete_confirm": "Are you sure you want to delete {{name}}?",
+    "user_deleted": "User deleted."
   },
   "ledger_dialog": {
     "title": "Vacation Account",

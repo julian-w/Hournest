@@ -1,196 +1,224 @@
-# Hournest -- Gesamtkonzept
+# Hournest -- Full Concept
 
-## 1. Rollen & Authentifizierung
+## 1. Roles & Authentication
 
-### Rollen
+### Auth Modes
 
-| Rolle | Zugang | Bestimmung |
-|-------|--------|-----------|
-| **Employee** | OpenID SSO (Synology) | Automatisch bei erstem Login |
-| **Admin** | OpenID SSO (Synology) | Email in Konfigurationsliste (`ADMIN_EMAILS` in `.env`) |
-| **Superadmin** | Benutzername + Passwort | Credentials in `.env` (`SUPERADMIN_USERNAME`, `SUPERADMIN_PASSWORD`), Notfall-Zugang ohne SSO |
+Controlled via `AUTH_OAUTH_ENABLED` in `.env`:
 
-### Login-Flow
+| Mode | Description |
+|------|-------------|
+| **OAuth (default)** | Login via an external OIDC provider (e.g. Keycloak, Azure AD, SSO Server). Users are automatically created on first login. |
+| **Local** | Email + password. Admins create users manually with a default password. Users must change their password on first login. |
 
-- **Standard:** Login-Seite zeigt prominent "Sign in with SSO"-Button -> OpenID-Redirect -> Account wird automatisch angelegt/aktualisiert
-- **Admin-Erkennung:** Bei jedem SSO-Login wird geprüft ob die Email in `ADMIN_EMAILS` steht -> Rolle = Admin, sonst Employee
-- **Superadmin:** Unter dem SSO-Button ein Link "Admin Login" -> klappt Benutzername/Passwort-Felder auf. Funktioniert ohne OpenID.
-- **Passwort vergessen:** Nicht vorgesehen (SSO-Zugang wird extern verwaltet, Superadmin-Credentials in `.env`)
+### Roles
 
----
+| Role | Access | Assignment |
+|------|--------|------------|
+| **Employee** | OAuth or email+password | Default role on first login (OAuth) or when created by admin (local) |
+| **Admin** | OAuth or email+password | OAuth: email in `ADMIN_EMAILS`; Local: assigned during user creation |
+| **Superadmin** | Username + password | Credentials in `.env` (`SUPERADMIN_USERNAME`, `SUPERADMIN_PASSWORD`), emergency access, always available |
 
-## 2. Dashboard (Startseite nach Login)
+### Login Flow
 
-### Alle Mitarbeiter
-- Resturlaub (verbleibende Tage im aktuellen Jahr)
-- Offene eigene Anfragen (Pending)
-- Nächster geplanter Urlaub
-
-### Admin zusätzlich
-- Zu bearbeitende Urlaubsanfragen (Pending von allen Mitarbeitern)
-- Team-Status (wer ist heute/diese Woche abwesend)
+- **OAuth mode:** Login page shows a prominent "Sign in with SSO" button -> OpenID redirect -> account is automatically created/updated. Admin detection: on each SSO login, the email is checked against `ADMIN_EMAILS`.
+- **Local mode:** Login page shows an email + password form. Users are created by admins in the admin panel. New users must change their password on first login.
+- **Superadmin:** Always available regardless of auth mode. In OAuth mode behind an expandable "Admin Login" panel, in local mode via the same form.
+- **Password change:** In local mode, users can change their password anytime via a button in the toolbar. Admins can reset passwords.
 
 ---
 
-## 3. Kalender
+## 2. Dashboard (Home Page After Login)
 
-### Monatsansicht
-- Navigation: Monat vor/zurück, "Heute"-Button
-- Farbliche Hervorhebung:
-  - **Wochenenden:** Grau hinterlegt
-  - **Feiertage:** Markiert/hervorgehoben
-  - **Urlaube:** Farblich nach Status unterschieden (Pending, Approved, Rejected)
+### All Employees
+- Remaining vacation days (current year)
+- Open own requests (pending)
+- Next planned vacation
 
-### Sichtbarkeit
-- **Phase 1:** Mitarbeiter sieht nur eigenen Urlaub, Admin sieht alle
-- **Phase 2:** Gruppen -- innerhalb einer Gruppe sieht jeder die Urlaube der anderen Gruppenmitglieder
+### Admin (Additional)
+- Pending vacation requests (from all employees)
+- Team status (who is absent today/this week)
 
 ---
 
-## 4. Urlaubsanträge
+## 3. Calendar
 
-### Antrag stellen
-- Felder: Von-Datum, Bis-Datum, Kommentar (optional)
-- Validierung:
-  - Kein Urlaub in der Vergangenheit
-  - End-Datum >= Start-Datum
-  - Keine Überlappung mit eigenen genehmigten Urlauben
+### Monthly View
+- Navigation: month forward/back, "Today" button
+- Color highlights:
+  - **Weekends:** Gray background
+  - **Holidays:** Highlighted
+  - **Vacations:** Color-coded by status (Pending, Approved, Rejected)
 
-### Bearbeitung durch Admin
-- Genehmigen oder Ablehnen
-- Kommentarfeld bei Genehmigung/Ablehnung
-- E-Mail-Benachrichtigung an den Mitarbeiter
-
-### Stornierung
-- Mitarbeiter kann Pending-Anträge selbst zurückziehen
+### Visibility
+- **Phase 1:** Employee sees only own vacations, admin sees all
+- **Phase 2:** Groups -- within a group, everyone sees vacations of other group members
 
 ---
 
-## 5. Urlaubskonto (Jahreslog)
+## 4. Vacation Requests
 
-Pro Mitarbeiter und Jahr eine vollständige Liste aller Buchungen:
+### Submitting a Request
+- Fields: from date, to date, comment (optional)
+- Validation:
+  - No vacation in the past
+  - End date >= start date
+  - No overlap with own approved vacations
 
-| Typ | Beispiel | Tage |
-|-----|---------|------|
-| Jahresanspruch | Grundanspruch 2026 | +30 |
-| Übertrag | Resturlaub aus 2025 | +3 |
-| Sonderurlaub | Extra-Tag für Firmenevent | +1 |
-| Urlaub genommen | Genehmigt: 06.04.-10.04.2026 | -5 |
-| | | **= 29 Resttage** |
+### Review by Admin
+- Approve or reject
+- Comment field on approval/rejection
+- Email notification to the employee
 
-- Jede Buchung hat einen **Kommentar**, sodass alles nachvollziehbar ist
-- **Sonderurlaub / Extra-Tage:** Nur Admin kann diese Buchungen anlegen
-- Mitarbeiter sieht das Log als Jahresübersicht (**read-only**, kein Kommentieren/Anfechten)
-
-### Resturlaub-Übertrag
-- **Automatisch** am 01.01. des Folgejahres: Resttage werden als "Übertrag"-Buchung ins neue Jahr geschrieben
-- **Verfall konfigurierbar (Admin):**
-  - Verfallsdatum festlegbar (z.B. "Resturlaub verfällt am 31.03.") -- nach diesem Datum werden übertragene Tage als verfallen gebucht
-  - Oder: unbegrenzt haltbar (kein Verfall)
-  - Globale Einstellung, gilt für alle Mitarbeiter
+### Cancellation
+- Employee can cancel own pending requests
 
 ---
 
-## 6. Feiertage
+## 5. Vacation Account (Annual Ledger)
 
-### Verwaltung (Admin)
-- Zwei Typen:
-  - **Fix:** Immer am gleichen Datum (z.B. 1. Januar, 3. Oktober)
-  - **Variabel:** Jedes Jahr an einem anderen Datum (z.B. Ostermontag, Christi Himmelfahrt)
-- Admin pflegt Feiertage über eine Liste im Admin-Bereich
-- Variable Feiertage müssen jährlich eingetragen oder per Formel berechnet werden
+Per employee and year, a complete list of all bookings:
 
-### Auswirkung
-- Feiertage werden bei der Urlaubstage-Berechnung **nicht** als Urlaubstag gezählt
-- **Ausnahme:** Mitarbeiter mit Flag "Feiertage gelten nicht" -- bei diesen zählen Feiertage als normale Arbeitstage
+| Type | Example | Days |
+|------|---------|------|
+| Annual entitlement | Base entitlement 2026 | +30 |
+| Carryover | Remaining from 2025 | +3 |
+| Bonus | Extra day for company event | +1 |
+| Vacation taken | Approved: 06.04.-10.04.2026 | -5 |
+| | | **= 29 remaining** |
 
----
+- Every booking has a **comment** for traceability
+- **Bonus / extra days:** Only admin can create these bookings
+- Employee sees the ledger as a yearly overview (**read-only**, no disputing)
 
-## 7. Arbeitstage-Konfiguration
+### Vacation Carryover
+- **Automatic** on January 1st of the following year: remaining days are booked as a "carryover" entry into the new year
+- **Expiry configurable (admin):**
+  - Expiry date configurable (e.g. "carryover expires on March 31") -- after this date, carried-over days are booked as expired
+  - Or: unlimited (no expiry)
+  - Global setting, applies to all employees
 
-### Globale Einstellung (Admin)
-- Festlegung ob Sa/So standardmäßig frei oder Arbeitstage sind
-
-### Pro Mitarbeiter
-- **Standard:** Es gelten die globalen Einstellungen (z.B. Mo-Fr)
-- **Individuell:** Arbeitstage-Perioden mit Zeitraum
-  - Beispiel Brückenteilzeit: "01.07.-31.12.2026: nur Mi+Do"
-  - Wenn keine Periode definiert ist, gelten die globalen Einstellungen
-  - Perioden können zeitlich befristet sein
-- **Wochenend-Ausnahme:** Einzelne Mitarbeiter können Sa/So als Arbeitstage haben, auch wenn global frei
-
-### Auswirkung auf Urlaubsberechnung
-- Urlaubstage werden nur für individuelle Arbeitstage des Mitarbeiters gezählt
-- Beispiel: Mitarbeiter arbeitet nur Mi+Do -> 1 Woche Urlaub = 2 Urlaubstage
+### Maintenance Routine (`php artisan hournest:yearly-maintenance`)
+- **Automates** annual entitlement, carryover and expiry for all employees
+- **Idempotent:** Can be run multiple times for the same year without duplicate bookings
+- **Options:** `--year=2026` (target year), `--dry-run` (show only, no bookings)
+- **Scheduler:** Runs automatically on Jan 1st at 00:30 (entitlement + carryover) and monthly on the 1st at 01:00 (expiry check)
+- Prerequisite: `crontab -e` with `* * * * * cd /path/to/backend && php artisan schedule:run >> /dev/null 2>&1`
 
 ---
 
-## 8. Mitarbeiter-Verwaltung (Admin)
+## 6. Holidays
 
-### Übersicht
-- Liste aller Mitarbeiter mit: Name, Email, Rolle, Urlaubstage/Jahr, Resturlaub
+### Management (Admin)
+- Two types:
+  - **Fixed:** Always on the same date (e.g. January 1st, October 3rd)
+  - **Variable:** Different date each year (e.g. Easter Monday, Ascension Day)
+- Admin manages holidays via a list in the admin panel
+- Variable holidays must be entered annually or calculated via formula
 
-### Bearbeitbar
-- Rolle (Employee/Admin)
-- Urlaubstage pro Jahr, **jahresweise anpassbar** (z.B. 2026: 30, 2027: 28)
-- Individuelle Arbeitstage (Perioden)
-- Feiertage-Ausnahme (Checkbox)
-- Wochenend-Ausnahme
-- Sonderurlaub-Buchungen mit Kommentar
-
----
-
-## 9. Benachrichtigungen
-
-### Phase 1: E-Mail
-- Mitarbeiter wird benachrichtigt bei: Genehmigung, Ablehnung
-- Admin wird benachrichtigt bei: Neuer Urlaubsantrag
-
-### Phase 2: Weitere Kanäle
-- WhatsApp oder ähnliche Messenger
-- System ist abstrakt gehalten (Laravel Notification System), sodass neue Kanäle einfach hinzugefügt werden können
+### Effect
+- Holidays are **not** counted as vacation days in calculations
+- **Exception:** Employees with the "holidays exempt" flag -- for these, holidays count as regular working days
 
 ---
 
-## 10. Internationalisierung (i18n)
+## 7. Work Schedule Configuration
 
-- **Deutsch + Englisch** umschaltbar zur Laufzeit
-- Sprach-Umschalter im Toolbar
-- Frontend-seitig via `ngx-translate` (Runtime-Switching, kein separater Build)
-- Backend liefert nur Daten-Keys, keine übersetzten Texte
+### Global Setting (Admin)
+- Define whether Sat/Sun are default days off or working days
+
+### Per Employee
+- **Default:** Global settings apply (e.g. Mon-Fri)
+- **Individual:** Work schedule periods with date ranges
+  - Example: bridge part-time: "01.07.-31.12.2026: Wed+Thu only"
+  - If no period is defined, global settings apply
+  - Periods can be time-limited
+- **Weekend exception:** Individual employees can have Sat/Sun as working days, even when globally off
+
+### Effect on Vacation Calculation
+- Vacation days are only counted for the employee's individual working days
+- Example: employee works only Wed+Thu -> 1 week vacation = 2 vacation days
 
 ---
 
-## 11. Technische Architektur
+## 8. User Management (Admin)
+
+### Overview
+- List of all employees with: name, email, role, vacation days/year, remaining vacation
+
+### Editable
+- Role (Employee/Admin)
+- Vacation days per year, **adjustable per year** (e.g. 2026: 30, 2027: 28)
+- Individual work schedules (periods)
+- Holidays exempt (checkbox)
+- Weekend exception
+- Bonus vacation bookings with comment
+
+### Creating Users (Both Auth Modes)
+- **OAuth mode (pre-provisioning):** Admin can create users in advance to set vacation days, role and work schedules before the first SSO login. On first SSO login, the user is matched by email and linked to the OIDC account.
+- **Local mode:** Admin creates users with name, email, role, vacation days and a default password. User must change password on first login.
+- **Password generation:** Admin can set a custom password or use the generate button to create a random one.
+
+### Deleting Users
+- Admin can delete users (soft delete). Superadmin and own account cannot be deleted.
+
+### Password Management (Local Auth Mode Only)
+- **Reset password:** Admin can reset a user's password (user must change it on next login)
+
+---
+
+## 9. Notifications
+
+### Phase 1: Email
+- Employee is notified on: approval, rejection
+- Admin is notified on: new vacation request
+
+### Phase 2: Additional Channels
+- WhatsApp or similar messengers
+- System is abstract (Laravel Notification System), so new channels can be easily added
+
+---
+
+## 10. Internationalization (i18n)
+
+- **German + English** switchable at runtime
+- Language switcher in toolbar
+- Frontend-side via `ngx-translate` (runtime switching, no separate build)
+- Backend delivers only data keys, no translated texts
+
+---
+
+## 11. Technical Architecture
 
 ### Tech Stack
 - **Frontend:** Angular 18+, Angular Material, SCSS, ngx-translate
-- **Backend:** Laravel 11+, PHP 8.2+, Laravel Sanctum (SPA Auth)
-- **Datenbank:** SQLite (Dev/Test), MySQL/PostgreSQL (Produktion) -- frei wählbar über `.env`
-- **Auth:** OpenID Connect (Synology SSO) + lokaler Superadmin-Login
-- **API-Doku:** Scramble (auto-generierte OpenAPI-Spec unter `/docs/api`)
+- **Backend:** Laravel 11+, PHP 8.2+, Laravel Sanctum (SPA auth)
+- **Database:** SQLite (dev/test), MySQL/PostgreSQL (production) -- configurable via `.env`
+- **Auth:** Two modes: OpenID Connect (any OIDC provider) or local email+password authentication, controlled via `AUTH_OAUTH_ENABLED`
+- **API docs:** Scramble (auto-generated OpenAPI spec at `/docs/api`)
 
 ### Responsive
-- Desktop + Tablet + Mobile (responsive, keine PWA)
+- Desktop + tablet + mobile (responsive, no PWA)
 
 ---
 
-## 12. Phasen-Planung
+## 12. Phase Planning
 
-### Phase 1 (aktuell)
-- Login (SSO + Superadmin)
+### Phase 1 (Current)
+- Login (SSO + Superadmin + local auth)
 - Dashboard
-- Kalender (Monatsansicht)
-- Urlaubsanträge (stellen, stornieren, genehmigen, ablehnen)
-- Urlaubskonto mit Jahreslog
-- Feiertage-Verwaltung
-- Mitarbeiter-Verwaltung (Arbeitstage, Urlaubstage, Rollen)
-- E-Mail-Benachrichtigungen
+- Calendar (monthly view)
+- Vacation requests (submit, cancel, approve, reject)
+- Vacation account with annual ledger
+- Holiday management
+- User management (work schedules, vacation days, roles, create, delete)
+- Yearly maintenance routine (entitlement, carryover, expiry)
+- Email notifications
 - i18n (DE/EN)
 
-### Phase 2 (geplant)
-- Gruppen-Sichtbarkeit im Kalender
-- Weitere Benachrichtigungskanäle (WhatsApp etc.)
-- Zeiterfassung / Stundenbuchung
-- Einsatz- & Schichtplanung
-- Auswertungen & Reports
+### Phase 2 (Planned)
+- Group visibility in calendar
+- Additional notification channels (WhatsApp, etc.)
+- Time tracking / hour booking
+- Shift planning
+- Reports & analytics

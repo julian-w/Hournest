@@ -8,10 +8,11 @@ import { routes } from './app.routes';
 import { credentialsInterceptor } from './core/interceptors/credentials.interceptor';
 import { mockInterceptor } from './core/mock/mock.interceptor';
 import { AuthService } from './core/services/auth.service';
+import { ConfigService } from './core/services/config.service';
 import { MockService } from './core/mock/mock.service';
 import { environment } from '../environments/environment';
 
-function initializeApp(authService: AuthService, mockService: MockService): () => Promise<void> {
+function initializeApp(authService: AuthService, configService: ConfigService, mockService: MockService): () => Promise<void> {
   return async () => {
     if (typeof window !== 'undefined' && !environment.production) {
       const params = new URLSearchParams(window.location.search);
@@ -19,6 +20,7 @@ function initializeApp(authService: AuthService, mockService: MockService): () =
         mockService.activate();
       }
     }
+    await configService.loadConfig();
     await authService.loadUser();
   };
 }
@@ -43,7 +45,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: APP_INITIALIZER,
       useFactory: initializeApp,
-      deps: [AuthService, MockService],
+      deps: [AuthService, ConfigService, MockService],
       multi: true,
     },
   ],

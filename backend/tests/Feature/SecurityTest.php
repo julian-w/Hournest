@@ -76,8 +76,8 @@ class SecurityTest extends TestCase
             'password' => 'secret123',
         ]);
 
-        $response->assertStatus(403)
-            ->assertJsonPath('message', 'Superadmin login not configured.');
+        $response->assertStatus(401)
+            ->assertJsonPath('message', 'Invalid credentials.');
     }
 
     public function test_superadmin_login_validates_required_fields(): void

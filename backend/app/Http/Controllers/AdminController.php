@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\LedgerEntryType;
+use App\Enums\UserRole;
 use App\Enums\VacationStatus;
+use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\ReviewVacationRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
@@ -14,7 +16,9 @@ use App\Models\User;
 use App\Models\Vacation;
 use App\Models\VacationLedgerEntry;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
@@ -82,11 +86,73 @@ class AdminController extends Controller
 
     public function updateUser(UpdateUserRequest $request, User $user): JsonResponse
     {
+        if ($user->role === UserRole::Superadmin && $request->user()->role !== UserRole::Superadmin) {
+            return response()->json(['message' => 'Cannot modify superadmin.'], 403);
+        }
+
         $user->update($request->validated());
 
         return response()->json([
             'data' => new UserResource($user),
             'message' => 'User updated.',
+        ]);
+    }
+
+    public function createUser(CreateUserRequest $request): JsonResponse
+    {
+        $data = [
+            'display_name' => $request->display_name,
+            'email' => $request->email,
+            'role' => $request->role,
+            'vacation_days_per_year' => $request->vacation_days_per_year ?? 30,
+        ];
+
+        if ($request->password) {
+            $data['password'] = $request->password;
+            $data['must_change_password'] = true;
+        }
+
+        $user = User::create($data);
+
+        return response()->json([
+            'data' => new UserResource($user),
+            'message' => 'User created.',
+        ], 201);
+    }
+
+    public function deleteUser(Request $request, User $user): JsonResponse
+    {
+        if ($user->role === UserRole::Superadmin) {
+            return response()->json(['message' => 'Cannot delete superadmin.'], 403);
+        }
+
+        if ($user->id === $request->user()->id) {
+            return response()->json(['message' => 'Cannot delete yourself.'], 403);
+        }
+
+        $user->delete();
+
+        return response()->json(['message' => 'User deleted.']);
+    }
+
+    public function resetUserPassword(Request $request, User $user): JsonResponse
+    {
+        if ($user->role === UserRole::Superadmin) {
+            return response()->json(['message' => 'Cannot reset superadmin password.'], 403);
+        }
+
+        $request->validate([
+            'password' => ['required', 'string', 'min:8', 'max:255'],
+        ]);
+
+        $user->update([
+            'password' => $request->password,
+            'must_change_password' => true,
+        ]);
+
+        return response()->json([
+            'data' => new UserResource($user),
+            'message' => 'Password reset.',
         ]);
     }
 }

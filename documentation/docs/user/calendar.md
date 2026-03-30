@@ -11,8 +11,8 @@ Der Kalender zeigt jeweils einen Monat in einer Rasteransicht (Wochentage als Sp
 ### Navigation
 
 - **Pfeil links** -- zum vorherigen Monat wechseln
-- **Pfeil rechts** -- zum naechsten Monat wechseln
-- **Heute-Button** -- springt zurueck zum aktuellen Monat und markiert den heutigen Tag
+- **Pfeil rechts** -- zum nächsten Monat wechseln
+- **Heute-Button** -- springt zurück zum aktuellen Monat und markiert den heutigen Tag
 
 ---
 
@@ -25,11 +25,11 @@ Die Tage im Kalender sind farblich gekennzeichnet:
 | Grauer Hintergrund  | Wochenende (Samstag, Sonntag)    |
 | Feiertags-Markierung| Gesetzlicher Feiertag            |
 | Gelb / Amber        | Urlaub mit Status **Pending** (in Bearbeitung) |
-| Gruen               | Urlaub mit Status **Approved** (genehmigt) |
+| Grün               | Urlaub mit Status **Approved** (genehmigt) |
 | Rot                 | Urlaub mit Status **Rejected** (abgelehnt) |
 
 !!! info "Feiertage und Urlaubsberechnung"
-    Feiertage werden nicht als Urlaubstage gezaehlt. Wenn ein Urlaub ueber einen Feiertag hinweg geht, wird dieser Tag automatisch abgezogen.
+    Feiertage werden nicht als Urlaubstage gezählt. Wenn ein Urlaub über einen Feiertag hinweg geht, wird dieser Tag automatisch abgezogen.
 
 ---
 
@@ -37,20 +37,20 @@ Die Tage im Kalender sind farblich gekennzeichnet:
 
 ### Employee (Mitarbeiter)
 
-Mitarbeiter sehen im Kalender **nur ihre eigenen Urlaube**. Die Feiertage und Wochenenden sind fuer alle sichtbar.
+Mitarbeiter sehen im Kalender **nur ihre eigenen Urlaube**. Die Feiertage und Wochenenden sind für alle sichtbar.
 
 ### Admin (Administrator)
 
 Admins sehen die **Urlaube aller Mitarbeiter** im Kalender. Jeder Urlaubseintrag zeigt den Namen des Mitarbeiters, sodass leicht erkennbar ist, wer wann abwesend ist.
 
 !!! note "Geplant: Gruppen-Sichtbarkeit"
-    In Phase 2 ist eine gruppenbasierte Sichtbarkeit geplant. Dann koennen Mitarbeiter innerhalb ihrer Gruppe auch die Urlaube der Kollegen sehen.
+    In Phase 2 ist eine gruppenbasierte Sichtbarkeit geplant. Dann können Mitarbeiter innerhalb ihrer Gruppe auch die Urlaube der Kollegen sehen.
 
 ---
 
 ## Legende
 
-Am unteren Rand des Kalenders befindet sich eine Legende, die die Farbcodierung erklaert:
+Am unteren Rand des Kalenders befindet sich eine Legende, die die Farbcodierung erklärt:
 
 - **Pending** -- Urlaubsantrag in Bearbeitung (wartet auf Genehmigung)
 - **Approved** -- Urlaubsantrag genehmigt
@@ -62,6 +62,6 @@ Am unteren Rand des Kalenders befindet sich eine Legende, die die Farbcodierung 
 
 ## Tipps zur Nutzung
 
-- Nutze den Kalender, um vor der Urlaubsbeantragung zu pruefen, ob Feiertage in den gewuenschten Zeitraum fallen
-- Admins koennen den Kalender nutzen, um die Teamabwesenheiten im Blick zu behalten und Ueberlappungen zu erkennen
-- Der Kalender aktualisiert sich automatisch, wenn Urlaubsantraege genehmigt oder abgelehnt werden
+- Nutze den Kalender, um vor der Urlaubsbeantragung zu prüfen, ob Feiertage in den gewünschten Zeitraum fallen
+- Admins können den Kalender nutzen, um die Teamabwesenheiten im Blick zu behalten und Überlappungen zu erkennen
+- Der Kalender aktualisiert sich automatisch, wenn Urlaubsanträge genehmigt oder abgelehnt werden

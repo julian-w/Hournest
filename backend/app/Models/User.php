@@ -20,14 +20,17 @@ class User extends Authenticatable
     protected $fillable = [
         'email',
         'display_name',
+        'password',
+        'must_change_password',
         'role',
         'vacation_days_per_year',
-        'synology_id',
+        'oidc_id',
         'holidays_exempt',
         'weekend_worker',
     ];
 
     protected $hidden = [
+        'password',
         'remember_token',
     ];
 
@@ -35,6 +38,8 @@ class User extends Authenticatable
     {
         return [
             'role' => UserRole::class,
+            'password' => 'hashed',
+            'must_change_password' => 'boolean',
             'vacation_days_per_year' => 'integer',
             'holidays_exempt' => 'boolean',
             'weekend_worker' => 'boolean',

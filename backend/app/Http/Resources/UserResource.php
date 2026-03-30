@@ -20,6 +20,7 @@ class UserResource extends JsonResource
             'remaining_vacation_days' => $this->remainingVacationDays(),
             'holidays_exempt' => $this->holidays_exempt,
             'weekend_worker' => $this->weekend_worker,
+            'must_change_password' => $this->must_change_password,
         ];
     }
 }

@@ -1,6 +1,6 @@
 # Voraussetzungen
 
-Diese Seite listet alle Software-Anforderungen auf, die fuer die Entwicklung und den Betrieb von Hournest benoetigt werden.
+Diese Seite listet alle Software-Anforderungen auf, die für die Entwicklung und den Betrieb von Hournest benötigt werden.
 
 ---
 
@@ -8,28 +8,28 @@ Diese Seite listet alle Software-Anforderungen auf, die fuer die Entwicklung und
 
 ### PHP 8.2+
 
-PHP 8.2 oder hoeher ist erforderlich. Folgende PHP-Extensions muessen aktiviert sein:
+PHP 8.2 oder höher ist erforderlich. Folgende PHP-Extensions müssen aktiviert sein:
 
 | Extension    | Zweck                              |
 |--------------|------------------------------------|
 | `sqlite3`    | SQLite-Datenbankzugriff            |
 | `mbstring`   | Multibyte-Zeichenketten            |
-| `openssl`    | HTTPS und Verschluesselung         |
+| `openssl`    | HTTPS und Verschlüsselung         |
 | `tokenizer`  | PHP-Code-Analyse (Laravel)         |
 | `xml`        | XML-Verarbeitung                   |
 | `curl`       | HTTP-Anfragen (OIDC, Socialite)    |
 | `fileinfo`   | Dateityp-Erkennung                 |
-| `zip`        | Composer-Abhaengigkeiten           |
+| `zip`        | Composer-Abhängigkeiten           |
 
-!!! tip "PHP-Extensions pruefen"
-    Mit folgendem Befehl koennen die installierten Extensions geprueft werden:
+!!! tip "PHP-Extensions prüfen"
+    Mit folgendem Befehl können die installierten Extensions geprüft werden:
     ```bash
     php -m
     ```
 
 ### Composer
 
-[Composer](https://getcomposer.org/) ist der Paketmanager fuer PHP und wird zur Installation der Laravel-Abhaengigkeiten benoetigt.
+[Composer](https://getcomposer.org/) ist der Paketmanager für PHP und wird zur Installation der Laravel-Abhängigkeiten benötigt.
 
 ```bash
 composer --version
@@ -41,7 +41,7 @@ composer --version
 
 ### Node.js 18+ und npm
 
-Node.js 18 oder hoeher wird fuer das Angular-Frontend benoetigt. npm wird mit Node.js mitgeliefert.
+Node.js 18 oder höher wird für das Angular-Frontend benötigt. npm wird mit Node.js mitgeliefert.
 
 ```bash
 node --version
@@ -63,17 +63,17 @@ ng version
 
 ### Entwicklung: SQLite
 
-Fuer die lokale Entwicklung wird SQLite verwendet. Keine separate Installation erforderlich -- die SQLite-Datei wird automatisch erstellt.
+Für die lokale Entwicklung wird SQLite verwendet. Keine separate Installation erforderlich -- die SQLite-Datei wird automatisch erstellt.
 
 ### Produktion: MySQL oder PostgreSQL
 
-Fuer den Produktionsbetrieb kann alternativ MySQL oder PostgreSQL verwendet werden. Die Konfiguration erfolgt ueber die `.env`-Datei (siehe [Konfiguration](configuration.md)).
+Für den Produktionsbetrieb kann alternativ MySQL oder PostgreSQL verwendet werden. Die Konfiguration erfolgt über die `.env`-Datei (siehe [Konfiguration](configuration.md)).
 
 ---
 
 ## Dokumentation (optional)
 
-Fuer das Bauen dieser Dokumentation werden folgende Werkzeuge benoetigt:
+Für das Bauen dieser Dokumentation werden folgende Werkzeuge benötigt:
 
 ### Python 3 und pip
 
@@ -89,10 +89,10 @@ cd documentation
 pip install -r requirements.txt
 ```
 
-Die `requirements.txt` enthaelt:
+Die `requirements.txt` enthält:
 
 - `mkdocs-material` -- MkDocs-Theme mit Material Design
-- `mkdocs-static-i18n` -- Internationalisierungs-Plugin fuer mehrsprachige Dokumentation
+- `mkdocs-static-i18n` -- Internationalisierungs-Plugin für mehrsprachige Dokumentation
 
 ---
 

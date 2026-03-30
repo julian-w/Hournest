@@ -1,9 +1,9 @@
 # Konfiguration
 
-Alle Einstellungen von Hournest werden ueber die `.env`-Datei im `backend/`-Verzeichnis gesteuert. Diese Seite dokumentiert jede Variable im Detail.
+Alle Einstellungen von Hournest werden über die `.env`-Datei im `backend/`-Verzeichnis gesteuert. Diese Seite dokumentiert jede Variable im Detail.
 
 !!! warning "Sicherheit"
-    Die `.env`-Datei enthaelt sensible Daten und darf **niemals** ins Git-Repository committed werden. Eine Vorlage mit Platzhaltern liegt als `.env.example` im Wurzelverzeichnis.
+    Die `.env`-Datei enthält sensible Daten und darf **niemals** ins Git-Repository committed werden. Eine Vorlage mit Platzhaltern liegt als `.env.example` im Wurzelverzeichnis.
 
 ---
 
@@ -13,8 +13,8 @@ Alle Einstellungen von Hournest werden ueber die `.env`-Datei im `backend/`-Verz
 |---------------|------------------------|-------------------------------------------------|
 | `APP_NAME`    | `Hournest`             | Name der Anwendung                              |
 | `APP_ENV`     | `local`                | Umgebung: `local`, `staging`, `production`      |
-| `APP_KEY`     | *(leer)*               | Verschluesselungskey, wird mit `php artisan key:generate` erzeugt |
-| `APP_DEBUG`   | `true`                 | Debug-Modus: `true` fuer Entwicklung, `false` fuer Produktion |
+| `APP_KEY`     | *(leer)*               | Verschlüsselungskey, wird mit `php artisan key:generate` erzeugt |
+| `APP_DEBUG`   | `true`                 | Debug-Modus: `true` für Entwicklung, `false` für Produktion |
 | `APP_URL`     | `http://localhost:8000`| URL des Backends                                |
 
 !!! danger "APP_DEBUG in Produktion"
@@ -26,7 +26,7 @@ Alle Einstellungen von Hournest werden ueber die `.env`-Datei im `backend/`-Verz
 
 | Variable       | Standardwert            | Beschreibung                                   |
 |----------------|-------------------------|-------------------------------------------------|
-| `FRONTEND_URL` | `http://localhost:4200` | URL des Frontends, wird fuer CORS-Konfiguration und Redirects nach OIDC-Login verwendet |
+| `FRONTEND_URL` | `http://localhost:4200` | URL des Frontends, wird für CORS-Konfiguration und Redirects nach OIDC-Login verwendet |
 
 ---
 
@@ -68,41 +68,53 @@ DB_PASSWORD=geheimes_passwort
 
 ---
 
-## OpenID Connect (Synology SSO Server)
+## Authentifizierungsmodus
 
-Die OIDC-Integration ermoeglicht Single Sign-On ueber den Synology SSO Server. Die Konfiguration erfolgt ueber die OIDC-Variablen in der `.env`-Datei.
+Über `AUTH_OAUTH_ENABLED` wird gesteuert, ob die Anmeldung über einen externen OIDC-Provider oder lokal per Email+Passwort erfolgt.
+
+| Variable | Standard | Beschreibung |
+|----------|----------|-------------|
+| `AUTH_OAUTH_ENABLED` | `true` | `true` = OIDC-Login, `false` = lokales Email+Passwort-Login |
+
+Im lokalen Modus erstellen Admins Nutzer manuell im Admin-Bereich. Neue Nutzer müssen ihr Passwort beim ersten Login ändern.
+
+---
+
+## OpenID Connect (OIDC)
+
+Die OIDC-Integration ermöglicht Single Sign-On über einen beliebigen OpenID-Connect-Provider (z.B. Keycloak, Azure AD, Synology SSO Server). Die Konfiguration erfolgt über die OIDC-Variablen in der `.env`-Datei. Voraussetzung: `AUTH_OAUTH_ENABLED=true`.
 
 | Variable            | Beispiel                                                    | Beschreibung                              |
 |---------------------|-------------------------------------------------------------|-------------------------------------------|
-| `OIDC_CLIENT_ID`    | `your-client-id-from-synology`                              | Client-ID aus der SSO-Server-App-Registrierung |
-| `OIDC_CLIENT_SECRET`| `your-client-secret-from-synology`                          | Client-Secret aus der SSO-Server-App-Registrierung |
-| `OIDC_WELLKNOWN_URL`| `https://nas:5001/webman/sso/.well-known/openid-configuration` | Well-Known-URL des SSO Servers            |
+| `OIDC_CLIENT_ID`    | `your-client-id`                                            | Client-ID aus der OIDC-Provider-Registrierung |
+| `OIDC_CLIENT_SECRET`| `your-client-secret`                                        | Client-Secret aus der OIDC-Provider-Registrierung |
+| `OIDC_WELLKNOWN_URL`| `https://provider/.well-known/openid-configuration`         | Well-Known-URL des OIDC-Providers         |
 | `OIDC_REDIRECT_URI` | `${APP_URL}/api/auth/callback`                              | Callback-URL nach erfolgreicher Anmeldung |
 
-### OIDC auf dem Synology SSO Server einrichten
+### OIDC-Provider einrichten (Beispiel: Synology SSO Server)
 
-1. **SSO Server** im Synology Package Center installieren und oeffnen
-2. Unter "Anwendungen" eine neue Anwendung registrieren
+1. OIDC-Provider konfigurieren (z.B. **SSO Server** im Synology Package Center)
+2. Eine neue Anwendung/Client registrieren
 3. **Redirect URI** eintragen: `https://your-domain.com/api/auth/callback`
 4. **Client-ID** und **Client-Secret** kopieren und in die `.env` eintragen
-5. Die **Well-Known URL** hat typischerweise das Format: `https://<NAS-Adresse>:5001/webman/sso/.well-known/openid-configuration`
+5. Die **Well-Known URL** vom Provider übernehmen (z.B. Synology: `https://<NAS>:5001/webman/sso/.well-known/openid-configuration`)
 
 !!! note "HTTPS erforderlich"
-    Der Synology SSO Server erfordert HTTPS. Fuer die lokale Entwicklung kann ein selbstsigniertes Zertifikat oder ein Tunnel-Dienst verwendet werden.
+    Die meisten OIDC-Provider erfordern HTTPS. Für die lokale Entwicklung kann ein selbstsigniertes Zertifikat oder ein Tunnel-Dienst verwendet werden.
 
 ---
 
 ## Superadmin (Notfallzugang)
 
-Der Superadmin-Zugang funktioniert ohne SSO und wird direkt ueber Benutzername und Passwort authentifiziert. Er dient als Notfallzugang, falls der SSO Server nicht verfuegbar ist.
+Der Superadmin-Zugang funktioniert ohne SSO und wird direkt über Benutzername und Passwort authentifiziert. Er dient als Notfallzugang, immer verfügbar unabhängig vom Authentifizierungsmodus.
 
 | Variable              | Standardwert  | Beschreibung                          |
 |-----------------------|---------------|---------------------------------------|
-| `SUPERADMIN_USERNAME` | `superadmin`  | Benutzername fuer den Superadmin-Login |
-| `SUPERADMIN_PASSWORD` | `changeme`    | Passwort fuer den Superadmin-Login    |
+| `SUPERADMIN_USERNAME` | `superadmin`  | Benutzername für den Superadmin-Login |
+| `SUPERADMIN_PASSWORD` | `changeme`    | Passwort für den Superadmin-Login    |
 
-!!! danger "Passwort aendern"
-    Das Standard-Passwort `changeme` muss vor dem Produktiveinsatz **unbedingt** geaendert werden.
+!!! danger "Passwort ändern"
+    Das Standard-Passwort `changeme` muss vor dem Produktiveinsatz **unbedingt** geändert werden.
 
 ---
 
@@ -118,7 +130,7 @@ Beispiel mit mehreren Admins:
 ADMIN_EMAILS=anna@firma.de,peter@firma.de,maria@firma.de
 ```
 
-Bei jedem SSO-Login wird geprueft, ob die Email-Adresse des Benutzers in dieser Liste enthalten ist. Falls ja, wird die Rolle auf **Admin** gesetzt, andernfalls auf **Employee**.
+Bei jedem SSO-Login wird geprüft, ob die Email-Adresse des Benutzers in dieser Liste enthalten ist. Falls ja, wird die Rolle auf **Admin** gesetzt, andernfalls auf **Employee**.
 
 ---
 
@@ -128,9 +140,9 @@ Bei jedem SSO-Login wird geprueft, ob die Email-Adresse des Benutzers in dieser 
 |-----------------------------|-----------------|---------------------------------------------------|
 | `SESSION_DRIVER`            | `file`          | Session-Treiber: `file`, `database`, `cookie`     |
 | `SESSION_LIFETIME`          | `120`           | Session-Lebensdauer in Minuten                    |
-| `SANCTUM_STATEFUL_DOMAINS`  | `localhost:4200` | Domains, die Sanctum-Cookies erhalten (fuer SPA-Auth) |
+| `SANCTUM_STATEFUL_DOMAINS`  | `localhost:4200` | Domains, die Sanctum-Cookies erhalten (für SPA-Auth) |
 
-Fuer die Produktion muss `SANCTUM_STATEFUL_DOMAINS` auf die tatsaechliche Frontend-Domain gesetzt werden:
+Für die Produktion muss `SANCTUM_STATEFUL_DOMAINS` auf die tatsächliche Frontend-Domain gesetzt werden:
 
 ```ini
 SANCTUM_STATEFUL_DOMAINS=app.firma.de
@@ -142,9 +154,9 @@ SANCTUM_STATEFUL_DOMAINS=app.firma.de
 
 | Variable                        | Standardwert | Beschreibung                                    |
 |---------------------------------|--------------|-------------------------------------------------|
-| `DEFAULT_VACATION_DAYS_PER_YEAR`| `30`         | Standard-Urlaubstage pro Jahr fuer neue Benutzer |
+| `DEFAULT_VACATION_DAYS_PER_YEAR`| `30`         | Standard-Urlaubstage pro Jahr für neue Benutzer |
 
-Dieser Wert wird beim Anlegen neuer Benutzer als Standardwert verwendet. Admins koennen den Wert anschliessend pro Benutzer individuell anpassen.
+Dieser Wert wird beim Anlegen neuer Benutzer als Standardwert verwendet. Admins können den Wert anschließend pro Benutzer individuell anpassen.
 
 ---
 
@@ -156,11 +168,11 @@ Dieser Wert wird beim Anlegen neuer Benutzer als Standardwert verwendet. Admins 
 | `LOG_LEVEL`   | `debug`      | Log-Level: `debug`, `info`, `warning`, `error` |
 
 !!! tip "Produktion"
-    In der Produktion sollte `LOG_LEVEL` auf `warning` oder `error` gesetzt werden, um die Log-Dateien uebersichtlich zu halten.
+    In der Produktion sollte `LOG_LEVEL` auf `warning` oder `error` gesetzt werden, um die Log-Dateien übersichtlich zu halten.
 
 ---
 
-## Vollstaendige .env-Vorlage
+## Vollständige .env-Vorlage
 
 ```ini
 # --- App ---
@@ -170,16 +182,19 @@ APP_KEY=
 APP_DEBUG=true
 APP_URL=http://localhost:8000
 
-# --- Frontend URL (fuer CORS & Redirects) ---
+# --- Frontend URL (für CORS & Redirects) ---
 FRONTEND_URL=http://localhost:4200
 
 # --- Database ---
 DB_CONNECTION=sqlite
 DB_DATABASE=/absolute/path/to/backend/database/database.sqlite
 
-# --- Synology SSO Server (OIDC) ---
-OIDC_CLIENT_ID=your-client-id-from-synology
-OIDC_CLIENT_SECRET=your-client-secret-from-synology
+# --- Authentifizierungsmodus ---
+AUTH_OAUTH_ENABLED=true
+
+# --- OpenID Connect (OIDC) ---
+OIDC_CLIENT_ID=your-client-id
+OIDC_CLIENT_SECRET=your-client-secret
 OIDC_WELLKNOWN_URL=https://your-nas-address:5001/webman/sso/.well-known/openid-configuration
 OIDC_REDIRECT_URI=${APP_URL}/api/auth/callback
 

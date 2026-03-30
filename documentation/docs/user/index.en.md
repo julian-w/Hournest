@@ -10,8 +10,8 @@ This guide is intended for end users of Hournest -- both employees and administr
 
 1. Open Hournest in your browser
 2. The login page prominently displays the **"Sign in with SSO"** button
-3. Click the button -- you will be redirected to the Synology SSO Server
-4. Sign in with your Synology credentials
+3. Click the button -- you will be redirected to the SSO server
+4. Sign in with your SSO credentials
 5. After successful authentication, you are automatically redirected back to Hournest
 
 !!! info "First Login"

@@ -45,7 +45,7 @@ Hournest is an internal web application for **team vacation management** designe
 - **Employee** -- Default role on first SSO login
 - **Admin** -- Automatically assigned on SSO login if email is in the ADMIN_EMAILS list
 - **Superadmin** -- Emergency access with local credentials (username/password in `.env`)
-- OpenID Connect login via Synology SSO Server
+- Authentication: OpenID Connect (OIDC) or local email+password login
 
 ### Additional Features
 - Bilingual: German and English (switchable at runtime)
@@ -61,7 +61,7 @@ Hournest is an internal web application for **team vacation management** designe
 | Frontend   | Angular 18+, Angular Material, SCSS, ngx-translate |
 | Backend    | Laravel 11+, PHP 8.2+                        |
 | Database   | SQLite (development), MySQL/PostgreSQL (production) |
-| Auth       | Synology SSO Server (OpenID Connect), Laravel Sanctum |
+| Auth       | OIDC (any provider) or local login, Laravel Sanctum |
 | API Docs   | Scramble (auto-generated OpenAPI spec)        |
 
 ---

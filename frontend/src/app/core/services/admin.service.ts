@@ -44,6 +44,22 @@ export class AdminService {
     );
   }
 
+  createUser(data: { display_name: string; email: string; role: string; password?: string; vacation_days_per_year?: number }): Observable<User> {
+    return this.http.post<ApiResponse<User>>('/api/admin/users', data).pipe(
+      map((response) => response.data)
+    );
+  }
+
+  deleteUser(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/admin/users/${id}`);
+  }
+
+  resetUserPassword(userId: number, password: string): Observable<User> {
+    return this.http.patch<ApiResponse<User>>(`/api/admin/users/${userId}/reset-password`, { password }).pipe(
+      map((response) => response.data)
+    );
+  }
+
   getWorkSchedules(userId: number): Observable<WorkSchedule[]> {
     return this.http.get<ApiResponse<WorkSchedule[]>>(`/api/admin/users/${userId}/work-schedules`).pipe(
       map((response) => response.data)

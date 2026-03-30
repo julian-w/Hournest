@@ -1,6 +1,6 @@
 # Installation
 
-Diese Anleitung beschreibt die Einrichtung von Hournest fuer die lokale Entwicklung.
+Diese Anleitung beschreibt die Einrichtung von Hournest für die lokale Entwicklung.
 
 ---
 
@@ -15,7 +15,7 @@ cd hournest
 
 ## Backend einrichten
 
-### 1. Abhaengigkeiten installieren
+### 1. Abhängigkeiten installieren
 
 ```bash
 cd backend
@@ -31,9 +31,9 @@ cp ../.env.example .env
 ```
 
 !!! warning "Wichtig"
-    Die `.env`-Datei enthaelt sensible Daten (OIDC-Credentials, Superadmin-Passwort) und darf **niemals** ins Git-Repository committed werden.
+    Die `.env`-Datei enthält sensible Daten (OIDC-Credentials, Superadmin-Passwort) und darf **niemals** ins Git-Repository committed werden.
 
-Die wichtigsten Einstellungen fuer die lokale Entwicklung:
+Die wichtigsten Einstellungen für die lokale Entwicklung:
 
 ```ini
 APP_ENV=local
@@ -54,7 +54,7 @@ php artisan key:generate
 
 ### 4. Datenbank erstellen und migrieren
 
-Fuer SQLite muss zuerst die Datenbankdatei erstellt werden:
+Für SQLite muss zuerst die Datenbankdatei erstellt werden:
 
 ```bash
 touch database/database.sqlite
@@ -63,7 +63,7 @@ php artisan migrate
 
 ### 5. Optionaler Seeder
 
-Falls Testdaten benoetigt werden:
+Falls Testdaten benötigt werden:
 
 ```bash
 php artisan db:seed
@@ -78,13 +78,13 @@ php artisan serve
 Das Backend ist nun unter `http://localhost:8000` erreichbar.
 
 !!! tip "API-Dokumentation"
-    Nach dem Start ist die auto-generierte API-Dokumentation unter `http://localhost:8000/docs/api` verfuegbar.
+    Nach dem Start ist die auto-generierte API-Dokumentation unter `http://localhost:8000/docs/api` verfügbar.
 
 ---
 
 ## Frontend einrichten
 
-### 1. Abhaengigkeiten installieren
+### 1. Abhängigkeiten installieren
 
 ```bash
 cd frontend
@@ -103,16 +103,16 @@ Das Frontend ist nun unter `http://localhost:4200` erreichbar.
 
 ## Mock-Modus (ohne Backend)
 
-Der Mock-Modus ermoeglicht die Frontend-Entwicklung vollstaendig ohne laufendes Backend. Alle API-Aufrufe werden durch realistische Testdaten ersetzt.
+Der Mock-Modus ermöglicht die Frontend-Entwicklung vollständig ohne laufendes Backend. Alle API-Aufrufe werden durch realistische Testdaten ersetzt.
 
-### Starten ueber Build-Konfiguration
+### Starten über Build-Konfiguration
 
 ```bash
 cd frontend
 ng serve --configuration=mock
 ```
 
-### Starten ueber URL-Parameter
+### Starten über URL-Parameter
 
 Alternativ kann der Mock-Modus bei einem normalen `ng serve` per URL-Parameter aktiviert werden:
 
@@ -127,17 +127,17 @@ http://localhost:4200?mock=true
 
 ## Erster Start und Login
 
-### Mit SSO (Synology)
+### Mit SSO (OIDC)
 
 1. OIDC muss korrekt in der `.env` konfiguriert sein (siehe [Konfiguration](configuration.md))
-2. Im Browser `http://localhost:4200` oeffnen
+2. Im Browser `http://localhost:4200` öffnen
 3. Auf "Sign in with SSO" klicken
 4. Nach erfolgreicher Anmeldung wird der Benutzer automatisch angelegt
 
 ### Mit Superadmin (ohne SSO)
 
 1. Superadmin-Credentials in der `.env` setzen (`SUPERADMIN_USERNAME`, `SUPERADMIN_PASSWORD`)
-2. Im Browser `http://localhost:4200` oeffnen
+2. Im Browser `http://localhost:4200` öffnen
 3. Unter dem SSO-Button auf "Admin Login" klicken
 4. Benutzername und Passwort eingeben
 
@@ -174,7 +174,7 @@ Im Ordner `scripts/` liegen vorgefertigte Skripte, die unter Windows (Git Bash) 
 | Skript | Beschreibung |
 |--------|-------------|
 | `./scripts/test.sh` | Backend-Tests + Frontend-Build-Check |
-| `./scripts/ci.sh` | Vollstaendige CI-Pipeline lokal (Tests + alle Builds + Artefakt-Check) |
+| `./scripts/ci.sh` | Vollständige CI-Pipeline lokal (Tests + alle Builds + Artefakt-Check) |
 | `./scripts/package.sh [version]` | Baut alles und erstellt ein Release-Archiv (ZIP/TAR) |
 
 !!! tip "Schnellstart mit Skripten"
@@ -187,7 +187,7 @@ Im Ordner `scripts/` liegen vorgefertigte Skripte, die unter Windows (Git Bash) 
 
 ---
 
-## Tests ausfuehren
+## Tests ausführen
 
 ```bash
 # Nur Backend-Tests
@@ -197,11 +197,11 @@ php artisan test
 # Backend-Tests + Frontend-Build-Check
 ./scripts/test.sh
 
-# Vollstaendige CI-Pipeline (wie GitHub Actions)
+# Vollständige CI-Pipeline (wie GitHub Actions)
 ./scripts/ci.sh
 ```
 
-Die Tests verwenden eine SQLite `:memory:`-Datenbank und benoetigen keine separate Konfiguration.
+Die Tests verwenden eine SQLite `:memory:`-Datenbank und benötigen keine separate Konfiguration.
 
 ---
 
@@ -215,5 +215,5 @@ Die Tests verwenden eine SQLite `:memory:`-Datenbank und benoetigen keine separa
 ./scripts/dev-docs.sh              # http://localhost:8001
 ```
 
-!!! note "Voraussetzungen fuer die Dokumentation"
-    Python 3 und pip muessen installiert sein. Die Abhaengigkeiten (`mkdocs-material`, `mkdocs-static-i18n`) werden automatisch installiert.
+!!! note "Voraussetzungen für die Dokumentation"
+    Python 3 und pip müssen installiert sein. Die Abhängigkeiten (`mkdocs-material`, `mkdocs-static-i18n`) werden automatisch installiert.

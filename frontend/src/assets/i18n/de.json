@@ -24,7 +24,19 @@
     "password": "Passwort",
     "login_button": "Anmelden",
     "error_invalid": "Ungültige Anmeldedaten.",
-    "error_generic": "Ein Fehler ist aufgetreten."
+    "error_generic": "Ein Fehler ist aufgetreten.",
+    "email": "E-Mail",
+    "local_description": "Melden Sie sich mit Ihrer E-Mail und Ihrem Passwort an."
+  },
+  "password": {
+    "change_title": "Passwort ändern",
+    "must_change": "Sie müssen Ihr Passwort ändern, bevor Sie fortfahren können.",
+    "current": "Aktuelles Passwort",
+    "new": "Neues Passwort",
+    "confirm": "Neues Passwort bestätigen",
+    "mismatch": "Passwörter stimmen nicht überein.",
+    "min_length": "Passwort muss mindestens 8 Zeichen lang sein.",
+    "change_button": "Passwort ändern"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -126,7 +138,19 @@
     "holidays_exempt": "Feiertagsbefreit",
     "weekend_worker": "Wochenendarbeit",
     "adjust_ledger": "Urlaubskonto anpassen",
-    "ledger_updated": "Urlaubskonto aktualisiert."
+    "ledger_updated": "Urlaubskonto aktualisiert.",
+    "create_user": "Benutzer erstellen",
+    "default_password": "Standard-Passwort",
+    "password_hint": "Der Benutzer muss dieses bei der ersten Anmeldung ändern.",
+    "password_hint_oauth": "Optional. Falls gesetzt, kann sich der Benutzer auch damit anmelden.",
+    "generate_password": "Passwort generieren",
+    "user_created": "Benutzer erstellt.",
+    "reset_password": "Passwort zurücksetzen",
+    "password_reset": "Passwort wurde zurückgesetzt.",
+    "new_password_prompt": "Neues Standard-Passwort eingeben (mind. 8 Zeichen):",
+    "delete_user": "Benutzer löschen",
+    "delete_confirm": "Möchten Sie {{name}} wirklich löschen?",
+    "user_deleted": "Benutzer gelöscht."
   },
   "ledger_dialog": {
     "title": "Urlaubskonto",

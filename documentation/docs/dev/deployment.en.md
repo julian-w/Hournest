@@ -4,11 +4,11 @@ This page describes deploying Hournest on a Synology NAS (primary use case) as w
 
 ---
 
-## Synology NAS Deployment
+## NAS Deployment (e.g. Synology)
 
 ### Prerequisites
 
-- Synology NAS with DSM 7.x
+- NAS with web server support (e.g. Synology DSM 7.x)
 - **Web Station** (install from the Package Center)
 - **PHP 8.2** (installable via Web Station)
 - **SSO Server** (from the Package Center, for OIDC)

@@ -1,6 +1,6 @@
 # Backend
 
-Das Backend ist eine Laravel 11 REST-API, die alle Geschaeftslogik und Datenverwaltung bereitstellt.
+Das Backend ist eine Laravel 11 REST-API, die alle Geschäftslogik und Datenverwaltung bereitstellt.
 
 ---
 
@@ -52,25 +52,25 @@ backend/
 
 ### User
 
-- `hasMany(Vacation)` -- eigene Urlaubsantraege
-- `hasMany(Vacation, 'reviewed_by')` -- genehmigte/abgelehnte Antraege
+- `hasMany(Vacation)` -- eigene Urlaubsanträge
+- `hasMany(Vacation, 'reviewed_by')` -- genehmigte/abgelehnte Anträge
 - `hasMany(WorkSchedule)` -- individuelle Arbeitszeitmodelle
 - `hasMany(VacationLedgerEntry)` -- Urlaubskonto-Buchungen
 - Verwendet **SoftDeletes** und **HasFactory**
 - Wichtige Methoden:
-    - `isAdmin()` -- prueft ob Rolle admin oder superadmin ist
-    - `getActiveWorkSchedule(Carbon $date)` -- gibt aktives Arbeitszeitmodell fuer ein Datum zurueck
-    - `isWorkDay(Carbon $date)` -- prueft ob ein Datum ein Arbeitstag ist (beruecksichtigt Arbeitszeitmodell, Feiertage, Flags)
+    - `isAdmin()` -- prüft ob Rolle admin oder superadmin ist
+    - `getActiveWorkSchedule(Carbon $date)` -- gibt aktives Arbeitszeitmodell für ein Datum zurück
+    - `isWorkDay(Carbon $date)` -- prüft ob ein Datum ein Arbeitstag ist (berücksichtigt Arbeitszeitmodell, Feiertage, Flags)
     - `remainingVacationDays(int $year)` -- berechnet Resturlaub aus Urlaubskonto
 
 ### Vacation
 
 - `belongsTo(User)` -- der beantragende Mitarbeiter
 - `belongsTo(User, 'reviewed_by')` -- der genehmigende/ablehnende Admin
-- `hasMany(VacationLedgerEntry)` -- zugehoerige Konto-Buchungen
+- `hasMany(VacationLedgerEntry)` -- zugehörige Konto-Buchungen
 - Verwendet **SoftDeletes** und **HasFactory**
 - Wichtige Methoden:
-    - `countWorkdays(int $year)` -- zaehlt Arbeitstage im Urlaubszeitraum (beruecksichtigt individuelles Arbeitszeitmodell)
+    - `countWorkdays(int $year)` -- zählt Arbeitstage im Urlaubszeitraum (berücksichtigt individuelles Arbeitszeitmodell)
 
 ### Holiday
 
@@ -156,24 +156,24 @@ enum LedgerEntryType: string
 
 ### VacationController
 
-- `index()` -- alle genehmigten Urlaube (fuer Kalender)
+- `index()` -- alle genehmigten Urlaube (für Kalender)
 - `mine()` -- eigene Urlaube des angemeldeten Benutzers
-- `store()` -- neuen Urlaubsantrag erstellen (mit Ueberlappungspruefung)
+- `store()` -- neuen Urlaubsantrag erstellen (mit Überlappungsprüfung)
 - `destroy()` -- offenen Antrag stornieren (nur Pending, nur eigene)
 
 ### AdminController
 
-- `pendingVacations()` -- alle offenen Antraege
+- `pendingVacations()` -- alle offenen Anträge
 - `reviewVacation()` -- Antrag genehmigen/ablehnen (erstellt automatisch Ledger-Eintrag bei Genehmigung)
 - `users()` -- alle Benutzer auflisten
-- `updateUser()` -- Benutzer-Einstellungen aendern
+- `updateUser()` -- Benutzer-Einstellungen ändern
 
 ### HolidayController
 
 - `index()` -- Feiertage auflisten (mit optionalem Jahresfilter)
 - `store()` -- Feiertag erstellen (Admin)
 - `update()` -- Feiertag bearbeiten (Admin)
-- `destroy()` -- Feiertag loeschen (Admin)
+- `destroy()` -- Feiertag löschen (Admin)
 
 ### SettingController
 
@@ -185,7 +185,7 @@ enum LedgerEntryType: string
 - `index()` -- Arbeitszeitmodelle eines Benutzers auflisten
 - `store()` -- neues Arbeitszeitmodell erstellen
 - `update()` -- Arbeitszeitmodell bearbeiten
-- `destroy()` -- Arbeitszeitmodell loeschen
+- `destroy()` -- Arbeitszeitmodell löschen
 
 ### VacationLedgerController
 
@@ -199,13 +199,13 @@ enum LedgerEntryType: string
 
 ### EnsureAdmin
 
-Die Middleware `EnsureAdmin` schuetzt alle Admin-Routen. Sie prueft, ob der authentifizierte Benutzer die Rolle `admin` oder `superadmin` hat. Andernfalls wird ein 403-Fehler zurueckgegeben.
+Die Middleware `EnsureAdmin` schützt alle Admin-Routen. Sie prüft, ob der authentifizierte Benutzer die Rolle `admin` oder `superadmin` hat. Andernfalls wird ein 403-Fehler zurückgegeben.
 
 ---
 
 ## Form Requests und Validierung
 
-Alle eingehenden Daten werden ueber Form Requests validiert:
+Alle eingehenden Daten werden über Form Requests validiert:
 
 - **StoreVacationRequest** -- start_date (required, date, after_or_equal:today), end_date (required, date, after_or_equal:start_date)
 - **ReviewVacationRequest** -- status (required, in:approved,rejected), comment (optional, string)
@@ -218,35 +218,35 @@ Alle eingehenden Daten werden ueber Form Requests validiert:
 
 ---
 
-## Geschaeftslogik
+## Geschäftslogik
 
 ### Arbeitstage-Berechnung
 
-Die Methode `User::isWorkDay(Carbon $date)` prueft fuer ein gegebenes Datum:
+Die Methode `User::isWorkDay(Carbon $date)` prüft für ein gegebenes Datum:
 
 1. Gibt es ein aktives Arbeitszeitmodell? Falls ja, verwende dessen Arbeitstage
 2. Falls nein, verwende die globalen Standard-Arbeitstage aus den Settings
 3. Ist der Tag im Arbeitstage-Array enthalten?
-4. Sonderfall: `weekend_worker`-Flag ueberschreibt Wochenendpruefung
+4. Sonderfall: `weekend_worker`-Flag überschreibt Wochenendprüfung
 5. Ist der Tag ein Feiertag? (Ausser `holidays_exempt` ist gesetzt)
 
 ### Resturlaub-Berechnung
 
 Die Methode `User::remainingVacationDays(int $year)`:
 
-1. Summiere alle Ledger-Eintraege fuer das gegebene Jahr
-2. Falls keine Eintraege vorhanden: Fallback auf `vacation_days_per_year - genehmigte Arbeitstage`
+1. Summiere alle Ledger-Einträge für das gegebene Jahr
+2. Falls keine Einträge vorhanden: Fallback auf `vacation_days_per_year - genehmigte Arbeitstage`
 
 ### Urlaubsgenehmigung
 
 Bei Genehmigung eines Antrags (`AdminController::reviewVacation()`):
 
 1. Status auf `approved` setzen
-2. Arbeitstage im Urlaubszeitraum zaehlen (ueber `Vacation::countWorkdays()`)
+2. Arbeitstage im Urlaubszeitraum zählen (über `Vacation::countWorkdays()`)
 3. Automatisch einen Ledger-Eintrag vom Typ `taken` erstellen
 
 ---
 
 ## Seeder
 
-Der Datenbank-Seeder erstellt Testdaten fuer die lokale Entwicklung. Er kann mit `php artisan db:seed` ausgefuehrt werden.
+Der Datenbank-Seeder erstellt Testdaten für die lokale Entwicklung. Er kann mit `php artisan db:seed` ausgeführt werden.

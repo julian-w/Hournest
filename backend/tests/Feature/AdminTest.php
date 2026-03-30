@@ -8,6 +8,7 @@ use App\Enums\VacationStatus;
 use App\Models\User;
 use App\Models\Vacation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AdminTest extends TestCase
@@ -302,5 +303,185 @@ class AdminTest extends TestCase
 
         $response->assertOk();
         $this->assertCount(1, $response->json('data'));
+    }
+
+    public function test_admin_can_create_user(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->postJson('/api/admin/users', [
+            'display_name' => 'New User',
+            'email' => 'newuser@example.com',
+            'role' => 'employee',
+            'password' => 'default123',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.email', 'newuser@example.com')
+            ->assertJsonPath('data.display_name', 'New User')
+            ->assertJsonPath('data.role', 'employee')
+            ->assertJsonPath('message', 'User created.');
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'newuser@example.com',
+            'must_change_password' => true,
+        ]);
+    }
+
+    public function test_admin_can_create_admin_user(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->postJson('/api/admin/users', [
+            'display_name' => 'New Admin',
+            'email' => 'admin2@example.com',
+            'role' => 'admin',
+            'password' => 'default123',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.role', 'admin');
+    }
+
+    public function test_create_user_duplicate_email_returns_422(): void
+    {
+        $admin = User::factory()->admin()->create();
+        User::factory()->create(['email' => 'existing@example.com']);
+
+        $response = $this->actingAs($admin)->postJson('/api/admin/users', [
+            'display_name' => 'Duplicate',
+            'email' => 'existing@example.com',
+            'role' => 'employee',
+            'password' => 'default123',
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_create_user_short_password_returns_422(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->postJson('/api/admin/users', [
+            'display_name' => 'Test',
+            'email' => 'test@example.com',
+            'role' => 'employee',
+            'password' => 'short',
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_employee_cannot_create_user(): void
+    {
+        $employee = User::factory()->create();
+
+        $response = $this->actingAs($employee)->postJson('/api/admin/users', [
+            'display_name' => 'Test',
+            'email' => 'test@example.com',
+            'role' => 'employee',
+            'password' => 'default123',
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_can_reset_user_password(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $user = User::factory()->create(['password' => 'oldpassword']);
+
+        $response = $this->actingAs($admin)->patchJson("/api/admin/users/{$user->id}/reset-password", [
+            'password' => 'newdefault123',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Password reset.');
+
+        $user->refresh();
+        $this->assertTrue($user->must_change_password);
+        $this->assertTrue(Hash::check('newdefault123', $user->password));
+    }
+
+    public function test_employee_cannot_reset_password(): void
+    {
+        $employee = User::factory()->create();
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($employee)->patchJson("/api/admin/users/{$user->id}/reset-password", [
+            'password' => 'newdefault123',
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_can_delete_user(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($admin)->deleteJson("/api/admin/users/{$user->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'User deleted.');
+
+        $this->assertSoftDeleted('users', ['id' => $user->id]);
+    }
+
+    public function test_admin_cannot_delete_superadmin(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $superadmin = User::factory()->create(['role' => 'superadmin']);
+
+        $response = $this->actingAs($admin)->deleteJson("/api/admin/users/{$superadmin->id}");
+
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_cannot_delete_self(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->deleteJson("/api/admin/users/{$admin->id}");
+
+        $response->assertStatus(403);
+    }
+
+    public function test_employee_cannot_delete_user(): void
+    {
+        $employee = User::factory()->create();
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($employee)->deleteJson("/api/admin/users/{$user->id}");
+
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_cannot_modify_superadmin(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $superadmin = User::factory()->create(['role' => 'superadmin']);
+
+        $response = $this->actingAs($admin)->patchJson("/api/admin/users/{$superadmin->id}", [
+            'role' => 'employee',
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_can_create_user_with_vacation_days(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->postJson('/api/admin/users', [
+            'display_name' => 'Custom Days',
+            'email' => 'custom@example.com',
+            'role' => 'employee',
+            'password' => 'default123',
+            'vacation_days_per_year' => 25,
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.vacation_days_per_year', 25);
     }
 }

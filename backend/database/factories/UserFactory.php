@@ -16,7 +16,7 @@ class UserFactory extends Factory
             'display_name' => fake()->name(),
             'role' => UserRole::Employee,
             'vacation_days_per_year' => 30,
-            'synology_id' => fake()->unique()->uuid(),
+            'oidc_id' => null,
         ];
     }
 

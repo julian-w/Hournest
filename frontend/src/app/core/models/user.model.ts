@@ -7,4 +7,5 @@ export interface User {
   remaining_vacation_days: number;
   holidays_exempt: boolean;
   weekend_worker: boolean;
+  must_change_password?: boolean;
 }

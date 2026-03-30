@@ -48,7 +48,7 @@ class DatabaseSeeder extends Seeder
             'display_name' => 'Anna Admin',
             'role' => UserRole::Admin,
             'vacation_days_per_year' => 30,
-            'synology_id' => 'synology-admin-001',
+            'oidc_id' => 'oidc-admin-001',
         ]);
 
         $max = User::create([
@@ -56,7 +56,7 @@ class DatabaseSeeder extends Seeder
             'display_name' => 'Max Mustermann',
             'role' => UserRole::Employee,
             'vacation_days_per_year' => 30,
-            'synology_id' => 'synology-user-001',
+            'oidc_id' => 'oidc-user-001',
         ]);
 
         $sarah = User::create([
@@ -64,7 +64,7 @@ class DatabaseSeeder extends Seeder
             'display_name' => 'Sarah Schmidt',
             'role' => UserRole::Employee,
             'vacation_days_per_year' => 28,
-            'synology_id' => 'synology-user-002',
+            'oidc_id' => 'oidc-user-002',
         ]);
 
         $tom = User::create([
@@ -72,7 +72,7 @@ class DatabaseSeeder extends Seeder
             'display_name' => 'Tom Weber',
             'role' => UserRole::Employee,
             'vacation_days_per_year' => 30,
-            'synology_id' => 'synology-user-003',
+            'oidc_id' => 'oidc-user-003',
         ]);
 
         // Seed ledger entries (entitlement for 2026)

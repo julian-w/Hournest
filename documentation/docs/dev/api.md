@@ -1,18 +1,18 @@
 # API-Referenz
 
-Alle API-Endpoints von Hournest sind unter `/api` erreichbar. Die Authentifizierung erfolgt ueber Laravel Sanctum (Session-basiert).
+Alle API-Endpoints von Hournest sind unter `/api` erreichbar. Die Authentifizierung erfolgt über Laravel Sanctum (Session-basiert).
 
 !!! tip "OpenAPI-Dokumentation"
-    Eine interaktive API-Dokumentation ist unter `http://localhost:8000/docs/api` verfuegbar, wenn das Backend laeuft. Die OpenAPI-JSON-Spec liegt unter `http://localhost:8000/docs/api.json`.
+    Eine interaktive API-Dokumentation ist unter `http://localhost:8000/docs/api` verfügbar, wenn das Backend läuft. Die OpenAPI-JSON-Spec liegt unter `http://localhost:8000/docs/api.json`.
 
 ---
 
 ## Authentifizierung (Sanctum SPA)
 
-Hournest verwendet Laravel Sanctum im SPA-Modus. Die Authentifizierung laeuft ueber Session-Cookies:
+Hournest verwendet Laravel Sanctum im SPA-Modus. Die Authentifizierung läuft über Session-Cookies:
 
 1. Das Frontend muss zuerst ein CSRF-Cookie anfordern: `GET /sanctum/csrf-cookie`
-2. Alle weiteren Anfragen muessen `withCredentials: true` setzen
+2. Alle weiteren Anfragen müssen `withCredentials: true` setzen
 3. Das CSRF-Token wird im `X-XSRF-TOKEN`-Header mitgesendet
 
 ---
@@ -53,17 +53,17 @@ Bei Listen:
 
 ### GET /api/auth/redirect
 
-Leitet den Benutzer zum Synology SSO Server weiter (OIDC-Login).
+Leitet den Benutzer zum OIDC-Provider weiter (OIDC-Login).
 
 **Auth:** Keine
 
-**Response:** HTTP 302 Redirect zum SSO Server
+**Response:** HTTP 302 Redirect zum OIDC-Provider
 
 ---
 
 ### GET /api/auth/callback
 
-Verarbeitet den OIDC-Callback vom SSO Server. Erstellt oder aktualisiert den Benutzer und richtet die Session ein.
+Verarbeitet den OIDC-Callback vom OIDC-Provider. Erstellt oder aktualisiert den Benutzer und richtet die Session ein.
 
 **Auth:** Keine
 
@@ -130,11 +130,45 @@ Beendet die aktuelle Session.
 
 ---
 
+### GET /api/auth/config
+
+Gibt die Authentifizierungskonfiguration zurück. Öffentlich, keine Authentifizierung erforderlich.
+
+**Auth:** Keine
+
+**Response (200):**
+
+```json
+{
+  "data": {
+    "oauth_enabled": true
+  }
+}
+```
+
+---
+
+### POST /api/auth/change-password
+
+Ändert das Passwort des angemeldeten Nutzers.
+
+**Auth:** Sanctum
+
+**Request Body:**
+
+| Feld | Typ | Pflicht | Beschreibung |
+|------|-----|---------|-------------|
+| `current_password` | string | Ja | Aktuelles Passwort |
+| `new_password` | string | Ja | Neues Passwort (mind. 8 Zeichen) |
+| `new_password_confirmation` | string | Ja | Bestätigung des neuen Passworts |
+
+---
+
 ## User-Endpoint
 
 ### GET /api/user
 
-Gibt die Informationen des aktuell angemeldeten Benutzers zurueck.
+Gibt die Informationen des aktuell angemeldeten Benutzers zurück.
 
 **Auth:** Sanctum
 
@@ -161,7 +195,7 @@ Gibt die Informationen des aktuell angemeldeten Benutzers zurueck.
 
 ### GET /api/vacations
 
-Gibt alle **genehmigten** Urlaube zurueck (fuer den Kalender).
+Gibt alle **genehmigten** Urlaube zurück (für den Kalender).
 
 **Auth:** Sanctum
 
@@ -192,7 +226,7 @@ Gibt alle **genehmigten** Urlaube zurueck (fuer den Kalender).
 
 ### GET /api/vacations/mine
 
-Gibt alle Urlaube des angemeldeten Benutzers zurueck (alle Status).
+Gibt alle Urlaube des angemeldeten Benutzers zurück (alle Status).
 
 **Auth:** Sanctum
 
@@ -272,7 +306,7 @@ Erstellt einen neuen Urlaubsantrag.
 }
 ```
 
-**Fehler (422) -- Ueberlappung:**
+**Fehler (422) -- Überlappung:**
 
 ```json
 {
@@ -306,7 +340,7 @@ Storniert einen eigenen Urlaubsantrag (nur Pending).
 
 ### GET /api/vacation-ledger
 
-Gibt die eigenen Urlaubskonto-Buchungen zurueck.
+Gibt die eigenen Urlaubskonto-Buchungen zurück.
 
 **Auth:** Sanctum
 
@@ -349,7 +383,7 @@ Gibt die eigenen Urlaubskonto-Buchungen zurueck.
 
 ### GET /api/holidays
 
-Gibt alle Feiertage zurueck.
+Gibt alle Feiertage zurück.
 
 **Auth:** Sanctum
 
@@ -384,7 +418,7 @@ Gibt alle Feiertage zurueck.
 
 ### GET /api/settings
 
-Gibt alle globalen Einstellungen zurueck.
+Gibt alle globalen Einstellungen zurück.
 
 **Auth:** Sanctum
 
@@ -409,7 +443,7 @@ Alle Admin-Endpoints erfordern die Rolle `admin` oder `superadmin`.
 
 ### GET /api/admin/vacations/pending
 
-Gibt alle offenen Urlaubsantraege zurueck.
+Gibt alle offenen Urlaubsanträge zurück.
 
 **Auth:** Sanctum + Admin
 
@@ -479,7 +513,7 @@ Genehmigt oder lehnt einen Urlaubsantrag ab.
 
 ### GET /api/admin/users
 
-Gibt alle Benutzer zurueck.
+Gibt alle Benutzer zurück.
 
 **Auth:** Sanctum + Admin
 
@@ -551,6 +585,55 @@ Aktualisiert einen Benutzer.
 
 ---
 
+### POST /api/admin/users
+
+Erstellt einen neuen Benutzer (nur im lokalen Auth-Modus relevant).
+
+**Auth:** Sanctum + Admin
+
+**Request Body:**
+
+| Feld | Typ | Pflicht | Beschreibung |
+|------|-----|---------|-------------|
+| `display_name` | string | Ja | Anzeigename |
+| `email` | string | Ja | E-Mail (eindeutig) |
+| `role` | string | Ja | `employee` oder `admin` |
+| `password` | string | Ja | Standard-Passwort (mind. 8 Zeichen) |
+
+**Response:** `201 Created`
+
+---
+
+### PATCH /api/admin/users/{id}/reset-password
+
+Setzt das Passwort eines Benutzers zurück. Der Nutzer muss sein Passwort beim nächsten Login ändern.
+
+**Auth:** Sanctum + Admin
+
+**Request Body:**
+
+| Feld | Typ | Pflicht | Beschreibung |
+|------|-----|---------|-------------|
+| `password` | string | Ja | Neues Standard-Passwort (mind. 8 Zeichen) |
+
+---
+
+### DELETE /api/admin/users/{id}
+
+Löscht einen Benutzer (Soft-Delete). Superadmin und eigener Account können nicht gelöscht werden.
+
+**Auth:** Sanctum + Admin
+
+**Response (200):**
+
+```json
+{
+  "message": "User deleted."
+}
+```
+
+---
+
 ### POST /api/admin/holidays
 
 Erstellt einen neuen Feiertag.
@@ -617,7 +700,7 @@ Aktualisiert einen Feiertag.
 
 ### DELETE /api/admin/holidays/{id}
 
-Loescht einen Feiertag.
+Löscht einen Feiertag.
 
 **Auth:** Sanctum + Admin
 
@@ -668,7 +751,7 @@ Aktualisiert globale Einstellungen.
 
 ### GET /api/admin/users/{id}/work-schedules
 
-Gibt die Arbeitszeitmodelle eines Benutzers zurueck.
+Gibt die Arbeitszeitmodelle eines Benutzers zurück.
 
 **Auth:** Sanctum + Admin
 
@@ -692,7 +775,7 @@ Gibt die Arbeitszeitmodelle eines Benutzers zurueck.
 
 ### POST /api/admin/users/{id}/work-schedules
 
-Erstellt ein neues Arbeitszeitmodell fuer einen Benutzer.
+Erstellt ein neues Arbeitszeitmodell für einen Benutzer.
 
 **Auth:** Sanctum + Admin
 
@@ -758,7 +841,7 @@ Aktualisiert ein Arbeitszeitmodell.
 
 ### DELETE /api/admin/work-schedules/{id}
 
-Loescht ein Arbeitszeitmodell.
+Löscht ein Arbeitszeitmodell.
 
 **Auth:** Sanctum + Admin
 
@@ -774,7 +857,7 @@ Loescht ein Arbeitszeitmodell.
 
 ### GET /api/admin/users/{id}/vacation-ledger
 
-Gibt die Urlaubskonto-Buchungen eines Benutzers zurueck.
+Gibt die Urlaubskonto-Buchungen eines Benutzers zurück.
 
 **Auth:** Sanctum + Admin
 

@@ -127,7 +127,7 @@ http://localhost:4200?mock=true
 
 ## First Start and Login
 
-### With SSO (Synology)
+### With SSO (OIDC)
 
 1. OIDC must be correctly configured in `.env` (see [Configuration](configuration.md))
 2. Open `http://localhost:4200` in the browser

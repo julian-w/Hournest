@@ -11,7 +11,7 @@ The user list shows all registered users with the following information:
 | Column                | Description                                     |
 |-----------------------|-------------------------------------------------|
 | Name                  | Display name of the user                        |
-| Email                 | Email address (taken from SSO)                  |
+| Email                 | Email address of the user                       |
 | Role                  | Employee, Admin, or Superadmin                  |
 | Vacation days/year    | Annual vacation entitlement                     |
 | Remaining vacation    | Remaining vacation days in the current year     |
@@ -103,3 +103,33 @@ Admins can create bookings in the vacation account for each user:
 - **Correction:** Type = Adjustment, Days = +2, Comment = "Correction from previous year"
 - **Book annual entitlement:** Type = Entitlement, Days = +30, Comment = "Annual entitlement 2026"
 - **Book carryover:** Type = Carryover, Days = +3, Comment = "Remaining from 2025"
+
+---
+
+## Creating a User
+
+A **"Create User"** button appears above the user list.
+
+| Field | OAuth Mode | Local Mode |
+|-------|------------|------------|
+| Name | Required | Required |
+| Email | Required (must be unique) | Required (must be unique) |
+| Role | Required | Required |
+| Vacation days/year | Optional (default: 30) | Optional (default: 30) |
+| Default Password | Not needed | Required (min. 8 characters) |
+
+**OAuth mode (pre-provisioning):** Users can be created in advance to set vacation days, role and other settings before their first SSO login. On first SSO login, the user is matched by email and automatically linked to the OIDC account.
+
+**Local mode:** The new user must change their default password on first login.
+
+---
+
+## Deleting a User
+
+In the actions column of each user, there is a **delete icon**. Deleted users are soft-deleted (can be restored in the database). The superadmin and your own account cannot be deleted.
+
+---
+
+## Resetting a Password (Local Auth Mode Only)
+
+In the actions column of each user, there is a **lock icon** to reset the password. After resetting, the user must change their password on next login.

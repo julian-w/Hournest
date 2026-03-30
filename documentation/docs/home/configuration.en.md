@@ -68,33 +68,45 @@ DB_PASSWORD=secret_password
 
 ---
 
-## OpenID Connect (Synology SSO Server)
+## Authentication Mode
 
-The OIDC integration enables Single Sign-On via the Synology SSO Server. Configuration is done through the OIDC variables in the `.env` file.
+The `AUTH_OAUTH_ENABLED` variable controls whether login uses an external OIDC provider or local email+password authentication.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AUTH_OAUTH_ENABLED` | `true` | `true` = OIDC login, `false` = local email+password login |
+
+In local mode, admins create users manually in the admin panel. New users must change their password on first login.
+
+---
+
+## OpenID Connect (OIDC)
+
+The OIDC integration enables Single Sign-On via any OpenID Connect provider (e.g. Keycloak, Azure AD, Synology SSO Server). Configuration is done through the OIDC variables in the `.env` file. Requires `AUTH_OAUTH_ENABLED=true`.
 
 | Variable            | Example                                                     | Description                               |
 |---------------------|-------------------------------------------------------------|-------------------------------------------|
-| `OIDC_CLIENT_ID`    | `your-client-id-from-synology`                              | Client ID from SSO Server app registration |
-| `OIDC_CLIENT_SECRET`| `your-client-secret-from-synology`                          | Client secret from SSO Server app registration |
-| `OIDC_WELLKNOWN_URL`| `https://nas:5001/webman/sso/.well-known/openid-configuration` | Well-Known URL of the SSO Server          |
+| `OIDC_CLIENT_ID`    | `your-client-id`                                            | Client ID from OIDC provider registration |
+| `OIDC_CLIENT_SECRET`| `your-client-secret`                                        | Client secret from OIDC provider registration |
+| `OIDC_WELLKNOWN_URL`| `https://provider/.well-known/openid-configuration`         | Well-Known URL of the OIDC provider       |
 | `OIDC_REDIRECT_URI` | `${APP_URL}/api/auth/callback`                              | Callback URL after successful authentication |
 
-### Setting up OIDC on Synology SSO Server
+### Setting up OIDC (Example: Synology SSO Server)
 
-1. Install and open the **SSO Server** from the Synology Package Center
-2. Register a new application under "Applications"
+1. Configure your OIDC provider (e.g. install **SSO Server** from Synology Package Center)
+2. Register a new application/client
 3. Enter the **Redirect URI**: `https://your-domain.com/api/auth/callback`
 4. Copy the **Client ID** and **Client Secret** and add them to `.env`
-5. The **Well-Known URL** typically has the format: `https://<NAS-address>:5001/webman/sso/.well-known/openid-configuration`
+5. Use the provider's **Well-Known URL** (e.g. Synology: `https://<NAS>:5001/webman/sso/.well-known/openid-configuration`)
 
 !!! note "HTTPS Required"
-    The Synology SSO Server requires HTTPS. For local development, a self-signed certificate or a tunnel service can be used.
+    Most OIDC providers require HTTPS. For local development, a self-signed certificate or a tunnel service can be used.
 
 ---
 
 ## Superadmin (Emergency Access)
 
-The superadmin access works without SSO and is authenticated directly via username and password. It serves as emergency access when the SSO server is unavailable.
+The superadmin access works without SSO and is authenticated directly via username and password. It serves as emergency access, always available regardless of the authentication mode.
 
 | Variable              | Default       | Description                           |
 |-----------------------|---------------|---------------------------------------|
@@ -177,9 +189,12 @@ FRONTEND_URL=http://localhost:4200
 DB_CONNECTION=sqlite
 DB_DATABASE=/absolute/path/to/backend/database/database.sqlite
 
-# --- Synology SSO Server (OIDC) ---
-OIDC_CLIENT_ID=your-client-id-from-synology
-OIDC_CLIENT_SECRET=your-client-secret-from-synology
+# --- Authentication Mode ---
+AUTH_OAUTH_ENABLED=true
+
+# --- OpenID Connect (OIDC) ---
+OIDC_CLIENT_ID=your-client-id
+OIDC_CLIENT_SECRET=your-client-secret
 OIDC_WELLKNOWN_URL=https://your-nas-address:5001/webman/sso/.well-known/openid-configuration
 OIDC_REDIRECT_URI=${APP_URL}/api/auth/callback
 

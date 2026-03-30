@@ -1,17 +1,17 @@
 # Architektur
 
-Diese Seite beschreibt die technische Architektur von Hournest fuer Entwickler, die am Projekt mitarbeiten.
+Diese Seite beschreibt die technische Architektur von Hournest für Entwickler, die am Projekt mitarbeiten.
 
 ---
 
-## Uebersicht
+## Übersicht
 
 Hournest ist als **Monorepo** mit zwei Hauptkomponenten aufgebaut:
 
 - **Backend** (`/backend`) -- Laravel 11 REST-API
 - **Frontend** (`/frontend`) -- Angular 18 Single Page Application (SPA)
 
-Das Frontend kommuniziert ausschliesslich ueber HTTP-API-Aufrufe mit dem Backend. Es gibt keine serverseitige View-Generierung.
+Das Frontend kommuniziert ausschließlich über HTTP-API-Aufrufe mit dem Backend. Es gibt keine serverseitige View-Generierung.
 
 ---
 
@@ -31,31 +31,31 @@ SQLite / MySQL / PostgreSQL
 
 - Alle API-Endpoints liegen unter `/api/*`
 - JSON ist das einzige Austauschformat
-- Authentifizierung erfolgt ueber Session-Cookies (Laravel Sanctum im SPA-Modus)
+- Authentifizierung erfolgt über Session-Cookies (Laravel Sanctum im SPA-Modus)
 - CORS ist so konfiguriert, dass das Frontend (z.B. `localhost:4200`) auf die API zugreifen kann
 
 ---
 
 ## Authentifizierungsfluss
 
-Der Standard-Login laeuft ueber OpenID Connect (OIDC) mit dem Synology SSO Server:
+Der Standard-Login läuft über OpenID Connect (OIDC) mit einem externen OIDC-Provider:
 
 ```
 1. Angular leitet weiter zu:     GET /api/auth/redirect
-2. Laravel leitet weiter zu:     Synology SSO Server (OIDC)
-3. Benutzer meldet sich an auf:  Synology SSO Server
-4. SSO Server leitet zurueck zu: GET /api/auth/callback
+2. Laravel leitet weiter zu:     OIDC-Provider
+3. Benutzer meldet sich an auf:  OIDC-Provider
+4. OIDC-Provider leitet zurück: GET /api/auth/callback
 5. Laravel erstellt/aktualisiert Benutzer und Session
 6. Laravel leitet weiter zu:     FRONTEND_URL (z.B. http://localhost:4200)
-7. Angular prueft Authentifizierung: GET /api/user
+7. Angular prüft Authentifizierung: GET /api/user
 ```
 
 Der **Superadmin-Login** umgeht den OIDC-Fluss:
 
 ```
 1. Angular sendet:               POST /api/auth/login (username + password)
-2. Laravel prueft Credentials gegen .env-Werte
-3. Laravel erstellt Session und gibt Benutzer zurueck
+2. Laravel prüft Credentials gegen .env-Werte
+3. Laravel erstellt Session und gibt Benutzer zurück
 ```
 
 ---
@@ -68,7 +68,7 @@ Der **Superadmin-Login** umgeht den OIDC-Fluss:
 | Admin        | `admin`      | SSO-Login mit Email in `ADMIN_EMAILS`       | Alles von Employee + alle Urlaube, Benutzerverwaltung, Feiertage, Einstellungen |
 | Superadmin   | `superadmin` | Login mit lokalen Credentials               | Gleiche Berechtigungen wie Admin             |
 
-Die Admin-Pruefung erfolgt im Backend ueber die Middleware `EnsureAdmin`, die sowohl `admin` als auch `superadmin` akzeptiert.
+Die Admin-Prüfung erfolgt im Backend über die Middleware `EnsureAdmin`, die sowohl `admin` als auch `superadmin` akzeptiert.
 
 ---
 
@@ -82,10 +82,10 @@ Die Admin-Pruefung erfolgt im Backend ueber die Middleware `EnsureAdmin`, die so
 | email                | string     | Eindeutige Email-Adresse              |
 | display_name         | string     | Anzeigename                           |
 | role                 | string     | employee / admin / superadmin         |
-| vacation_days_per_year| integer   | Jaehrlicher Urlaubsanspruch           |
-| synology_id          | string     | Eindeutige ID vom SSO Server          |
-| holidays_exempt      | boolean    | Feiertage zaehlen als Arbeitstage     |
-| weekend_worker       | boolean    | Wochenenden zaehlen als Arbeitstage   |
+| vacation_days_per_year| integer   | Jährlicher Urlaubsanspruch           |
+| oidc_id              | string     | Eindeutige ID vom OIDC-Provider (null bei lokalen Nutzern) |
+| holidays_exempt      | boolean    | Feiertage zählen als Arbeitstage     |
+| weekend_worker       | boolean    | Wochenenden zählen als Arbeitstage   |
 | remember_token       | string     | Laravel Remember-Token                |
 | created_at           | timestamp  |                                       |
 | updated_at           | timestamp  |                                       |
@@ -149,7 +149,7 @@ Die Admin-Pruefung erfolgt im Backend ueber die Middleware `EnsureAdmin`, die so
 | Spalte      | Typ        | Beschreibung                          |
 |-------------|------------|---------------------------------------|
 | id          | bigint (PK)| Auto-Increment                        |
-| key         | string     | Eindeutiger Schluessel                |
+| key         | string     | Eindeutiger Schlüssel                |
 | value       | text       | Wert (als String gespeichert)         |
 | created_at  | timestamp  |                                       |
 | updated_at  | timestamp  |                                       |
@@ -163,7 +163,7 @@ Die Admin-Pruefung erfolgt im Backend ueber die Middleware `EnsureAdmin`, die so
 | ip_address     | string(45) | IP-Adresse des Clients             |
 | user_agent     | text       | Browser User-Agent                 |
 | payload        | longtext   | Session-Daten                      |
-| last_activity  | integer    | Zeitstempel der letzten Aktivitaet |
+| last_activity  | integer    | Zeitstempel der letzten Aktivität |
 
 ---
 
@@ -175,7 +175,7 @@ Die Admin-Pruefung erfolgt im Backend ueber die Middleware `EnsureAdmin`, die so
 | PHP               | PHP                    | 8.2+     |
 | Frontend-Framework| Angular                | 18+      |
 | UI-Bibliothek     | Angular Material       | 18+      |
-| CSS-Praeprozessor | SCSS                   |          |
+| CSS-Präprozessor | SCSS                   |          |
 | i18n (Frontend)   | ngx-translate          |          |
 | Auth (Backend)    | Laravel Sanctum        |          |
 | Auth (OIDC)       | Laravel Socialite      |          |

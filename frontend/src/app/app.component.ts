@@ -9,10 +9,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatMenuModule } from '@angular/material/menu';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from './core/services/auth.service';
+import { ConfigService } from './core/services/config.service';
 import { MockService } from './core/mock/mock.service';
 import { MockToolbarComponent } from './core/mock/mock-toolbar.component';
+import { ChangePasswordDialogComponent } from './features/auth/change-password-dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -29,6 +32,7 @@ import { MockToolbarComponent } from './core/mock/mock-toolbar.component';
     MatTooltipModule,
     MatDividerModule,
     MatMenuModule,
+    MatDialogModule,
     TranslateModule,
     MockToolbarComponent,
   ],
@@ -98,6 +102,11 @@ import { MockToolbarComponent } from './core/mock/mock-toolbar.component';
                 {{ 'language.de' | translate }}
               </button>
             </mat-menu>
+            @if (!configService.isOAuthEnabled()) {
+              <button mat-icon-button (click)="openChangePassword()" [matTooltip]="'password.change_title' | translate">
+                <mat-icon>key</mat-icon>
+              </button>
+            }
             <span class="user-info">{{ auth.user()?.display_name }}</span>
             <button mat-icon-button (click)="auth.logout()" [matTooltip]="'app.logout' | translate">
               <mat-icon>logout</mat-icon>
@@ -186,8 +195,10 @@ import { MockToolbarComponent } from './core/mock/mock-toolbar.component';
 })
 export class AppComponent implements OnInit {
   auth = inject(AuthService);
+  configService = inject(ConfigService);
   mockService = inject(MockService);
   private translate = inject(TranslateService);
+  private dialog = inject(MatDialog);
   @ViewChild('sidenav') sidenav!: MatSidenav;
   isMobile = signal(false);
   currentLang = signal('en');
@@ -208,6 +219,13 @@ export class AppComponent implements OnInit {
     this.translate.use(lang);
     this.currentLang.set(lang);
     localStorage.setItem('hournest_lang', lang);
+  }
+
+  openChangePassword(): void {
+    this.dialog.open(ChangePasswordDialogComponent, {
+      width: '400px',
+      data: { forced: false },
+    });
   }
 
   closeSidenav(): void {

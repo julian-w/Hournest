@@ -46,7 +46,7 @@ All notable changes to Hournest are documented on this page.
 
 **Authentication and Roles**
 
-- OpenID Connect login via Synology SSO Server
+- OpenID Connect login (any OIDC provider)
 - Superadmin emergency access with local credentials
 - Three roles: Employee, Admin, Superadmin
 - Automatic role assignment based on admin email list

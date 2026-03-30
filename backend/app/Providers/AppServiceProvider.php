@@ -19,10 +19,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Event::listen(
-            SocialiteWasCalled::class,
-            OpenIDConnectExtendSocialite::class . '@handle',
-        );
+        if (config('auth.oauth_enabled')) {
+            \Illuminate\Support\Facades\Event::listen(
+                SocialiteWasCalled::class,
+                OpenIDConnectExtendSocialite::class . '@handle',
+            );
+        }
 
         Gate::define('viewApiDocs', function ($user = null) {
             // In local env, allow everyone (including unauthenticated)

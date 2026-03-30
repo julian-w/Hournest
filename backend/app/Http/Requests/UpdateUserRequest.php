@@ -18,7 +18,7 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'role' => ['sometimes', Rule::in([UserRole::Employee->value, UserRole::Admin->value, UserRole::Superadmin->value])],
+            'role' => ['sometimes', Rule::in([UserRole::Employee->value, UserRole::Admin->value])],
             'vacation_days_per_year' => ['sometimes', 'integer', 'min:0', 'max:365'],
             'holidays_exempt' => ['sometimes', 'boolean'],
             'weekend_worker' => ['sometimes', 'boolean'],

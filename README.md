@@ -1,76 +1,80 @@
 # Hournest
 
-> Team-Urlaubsverwaltung, Zeittracking & Einsatzplanung -- einfach und übersichtlich.
+> Team vacation management, time tracking & shift planning -- simple and clear.
 
-## Features (Phase 1 -- Urlaubsverwaltung)
+## Features (Phase 1 -- Vacation Management)
 
-- **Dashboard:** Resturlaub, offene Anfragen, nächster Urlaub, Admin: Team-Status
-- **Team-Kalender:** Monatsansicht mit Feiertagen, Urlaube farblich nach Status
-- **Urlaubsanträge:** Mitarbeiter beantragen Urlaub (Von/Bis/Kommentar), Admins genehmigen oder lehnen ab
-- **Urlaubskonto:** Jahreslog mit Anspruch, Übertrag, Sonderurlaub, genommenen Tagen; Admin kann Einträge hinzufügen und löschen
-- **Feiertage:** Admin pflegt fixe und variable Feiertage mit Start-/Endjahr; fixe Feiertage werden jährlich automatisch übernommen, variable Feiertage müssen pro Jahr bestätigt werden; Urlaubsbuchung erst möglich wenn alle Feiertage eines Jahres bestätigt sind
-- **Urlaubsplanung:** Zwei Modi -- Urlaubssperre (kein Urlaub erlaubt, keine Tage abgezogen) und Betriebsferien (Zwangsurlaub, Tage werden automatisch abgezogen); Einträge können erstellt, bearbeitet und gelöscht werden
-- **Arbeitstage:** Individuelle Arbeitszeitmodelle pro Mitarbeiter (z.B. Brückenteilzeit)
-- **Resturlaub:** Automatische Berechnung, automatischer Übertrag, konfigurierbarer Verfall
-- **Einstellungen:** Konfigurierbarer Buchungsstart für Urlaub im neuen Jahr (DD.MM-Format), Übertrag-Verfall
-- **SSO Login:** Authentifizierung über Synology SSO Server (OIDC)
-- **Superadmin:** Notfall-Zugang ohne SSO (Credentials in `.env`)
-- **Rollen:** Employee (Standard), Admin (per Email-Liste), Superadmin
-- **i18n:** Deutsch + Englisch umschaltbar
-- **API-Dokumentation:** Auto-generierte OpenAPI-Spec unter `/docs/api`
+- **Dashboard:** Remaining vacation days, pending requests, next vacation, admin: team status
+- **Team Calendar:** Monthly view with holidays, vacations color-coded by status
+- **Vacation Requests:** Employees request vacation (from/to/comment), admins approve or reject
+- **Vacation Account:** Annual ledger with entitlement, carryover, bonus days, taken days; admin can add and delete entries
+- **Holidays:** Admin manages fixed and variable holidays with start/end year; fixed holidays are carried over automatically, variable holidays need yearly confirmation; vacation booking only possible when all holidays for a year are confirmed
+- **Vacation Planning:** Two modes -- vacation freeze (no vacation allowed, no days deducted) and company holiday (forced vacation, days automatically deducted); entries can be created, edited and deleted
+- **Work Schedules:** Individual work schedule models per employee (e.g. part-time bridge schedules)
+- **Remaining Vacation:** Automatic calculation, automatic carryover, configurable expiry
+- **Maintenance:** `php artisan hournest:yearly-maintenance` -- books annual entitlements, carryover and expiry for all users (idempotent, schedulable)
+- **Settings:** Configurable booking start for new year vacation (DD.MM format), carryover expiry
+- **Authentication:** Two modes controlled by `AUTH_OAUTH_ENABLED`:
+  - **OAuth mode (default):** OpenID Connect via any OIDC provider (e.g. Keycloak, Azure AD)
+  - **Local mode:** Email + password login, admins create users with default password, forced password change on first login
+- **Superadmin:** Emergency access without SSO (credentials in `.env`), always available
+- **User Management:** Admin can create users (both modes -- pre-provisioning in OAuth), delete users (soft-delete), reset passwords (local mode), assign roles
+- **Roles:** Employee (default), Admin (via email list or manual assignment), Superadmin
+- **i18n:** German + English, switchable at runtime
+- **API Documentation:** Auto-generated OpenAPI spec at `/docs/api`
 
-## Geplante Features (Phase 2)
+## Planned Features (Phase 2)
 
-- Gruppen-Sichtbarkeit im Kalender
-- Weitere Benachrichtigungskanäle (WhatsApp etc.)
-- Zeiterfassung / Stundenbuchung
-- Einsatz- & Schichtplanung
-- Auswertungen & Reports
+- Group visibility in calendar
+- Additional notification channels (WhatsApp, etc.)
+- Time tracking / hour booking
+- Shift planning
+- Reports & analytics
 
 ## Tech Stack
 
-| Bereich   | Technologie                          |
+| Area      | Technology                           |
 |-----------|--------------------------------------|
 | Frontend  | Angular 18, Angular Material, SCSS   |
-| Backend   | Laravel, PHP 8.2+                    |
-| Datenbank | SQLite (Dev), MySQL/PostgreSQL (Prod)|
-| Auth      | Synology SSO Server (OIDC), Sanctum  |
+| Backend   | Laravel 11, PHP 8.2+                 |
+| Database  | SQLite (dev), MySQL/PostgreSQL (prod) |
+| Auth      | OIDC (any provider) or local email+password, Sanctum |
 | Docs      | MkDocs Material (DE + EN)            |
 | CI/CD     | GitHub Actions                       |
 
-## Projektstruktur
+## Project Structure
 
 ```
 hournest/
 ├── frontend/          # Angular 18 SPA
 ├── backend/           # Laravel API
 ├── documentation/     # MkDocs Material (DE + EN)
-├── scripts/           # Build-, Dev- und CI-Skripte
-├── .github/workflows/ # GitHub Actions (Release bei Tag)
-├── CLAUDE.md          # Konventionen für Claude Code
-├── CONCEPT.md         # Gesamtkonzept & Fachlichkeit
-├── .env.example       # Umgebungsvariablen-Vorlage
+├── scripts/           # Build, dev and CI scripts
+├── .github/workflows/ # GitHub Actions (release on tag)
+├── CLAUDE.md          # Conventions for Claude Code
+├── CONCEPT.md         # Full concept & domain logic
+├── .env.example       # Environment variable template
 └── README.md
 ```
 
-## Schnellstart
+## Quick Start
 
-### Voraussetzungen
+### Prerequisites
 
-- PHP 8.2+ mit Extensions: sqlite3, mbstring, openssl, tokenizer, xml, curl, fileinfo
+- PHP 8.2+ with extensions: sqlite3, mbstring, openssl, tokenizer, xml, curl, fileinfo
 - Composer
 - Node.js 18+ & npm
-- Python 3 + pip (für Dokumentation)
+- Python 3 + pip (for documentation)
 
-### Alles auf einmal starten (Backend + Frontend)
+### Start Everything (Backend + Frontend)
 
 ```bash
 ./scripts/dev.sh
 ```
 
-Startet Backend auf http://localhost:8000 und Frontend auf http://localhost:4200 parallel. `Ctrl+C` stoppt beides.
+Starts backend on http://localhost:8000 and frontend on http://localhost:4200 in parallel. `Ctrl+C` stops both.
 
-### Oder einzeln
+### Or Individually
 
 ```bash
 # Backend
@@ -87,177 +91,195 @@ npm install
 ng serve                         # http://localhost:4200
 ```
 
-## Skripte
+### Authentication Setup
 
-Alle Skripte liegen in `scripts/` und funktionieren unter Windows (Git Bash) und Linux.
+**Local mode (no external SSO needed):**
+```env
+AUTH_OAUTH_ENABLED=false
+SUPERADMIN_USERNAME=superadmin
+SUPERADMIN_PASSWORD=$2y$12$...   # bcrypt hash
+```
+Log in with the superadmin credentials, then create users in the admin panel.
 
-### Entwicklung
+**OAuth mode (OIDC provider):**
+```env
+AUTH_OAUTH_ENABLED=true
+OIDC_CLIENT_ID=your-client-id
+OIDC_CLIENT_SECRET=your-client-secret
+OIDC_WELLKNOWN_URL=https://your-oidc-provider/.well-known/openid-configuration
+```
 
-| Skript | Beschreibung |
+## Scripts
+
+All scripts are in `scripts/` and work on Windows (Git Bash) and Linux.
+
+### Development
+
+| Script | Description |
 |--------|-------------|
-| `./scripts/dev.sh` | Startet Backend + Frontend parallel |
-| `./scripts/dev-mock.sh` | Startet Frontend im Mock-Modus (ohne Backend) |
-| `./scripts/dev-docs.sh` | Startet MkDocs Dev-Server auf http://localhost:8001 |
+| `./scripts/dev.sh` | Start backend + frontend in parallel |
+| `./scripts/dev-mock.sh` | Start frontend in mock mode (no backend needed) |
+| `./scripts/dev-docs.sh` | Start MkDocs dev server on http://localhost:8001 |
 
 ### Build
 
-| Skript | Beschreibung |
+| Script | Description |
 |--------|-------------|
-| `./scripts/build-all.sh` | Baut Frontend + Backend + Dokumentation |
-| `./scripts/build-frontend.sh` | Baut nur Angular (Production) |
-| `./scripts/build-backend.sh` | Baut nur Laravel (Production, cached) |
-| `./scripts/build-docs.sh` | Baut nur MkDocs-Dokumentation |
+| `./scripts/build-all.sh` | Build frontend + backend + documentation |
+| `./scripts/build-frontend.sh` | Build Angular only (production) |
+| `./scripts/build-backend.sh` | Build Laravel only (production, cached) |
+| `./scripts/build-docs.sh` | Build MkDocs documentation only |
 
 ### Test & CI
 
-| Skript | Beschreibung |
+| Script | Description |
 |--------|-------------|
-| `./scripts/test.sh` | Führt Backend-Tests + Frontend-Build-Check aus |
-| `./scripts/ci.sh` | Vollständige CI-Pipeline lokal (Tests + alle Builds + Artefakt-Check) |
-| `./scripts/package.sh [version]` | Baut alles und erstellt ein Release-Archiv (ZIP/TAR) |
+| `./scripts/test.sh` | Run backend tests + frontend build check |
+| `./scripts/ci.sh` | Full CI pipeline locally (tests + all builds + artifact check) |
+| `./scripts/package.sh [version]` | Build everything and create a release archive (ZIP/TAR) |
 
 ### Installation & Deployment
 
-| Skript | Beschreibung |
+| Script | Description |
 |--------|-------------|
-| `./scripts/install.sh` | Erstinstallation auf dem Zielserver (interaktiv) |
-| `./scripts/install.sh --seed` | Wie oben, aber mit Testdaten |
+| `./scripts/install.sh` | Initial installation on target server (interactive) |
+| `./scripts/install.sh --seed` | Same as above, with test data |
 
-Das Installationsscript prüft PHP-Extensions, erstellt `.env`, führt Migrationen durch, setzt Caches und gibt Webserver-Konfiguration (Apache/Nginx) aus.
+The installation script checks PHP extensions, creates `.env`, runs migrations, sets caches and outputs web server configuration (Apache/Nginx).
 
-## Mock-Modus (Frontend ohne Backend)
+## Mock Mode (Frontend without Backend)
 
-Zum Testen des Frontends ohne laufendes Backend:
+For testing the frontend without a running backend:
 
 ```bash
-# Option 1: Über Script
+# Option 1: Via script
 ./scripts/dev-mock.sh
 
-# Option 2: Manuell
+# Option 2: Manually
 cd frontend && ng serve --configuration=mock
 
-# Option 3: URL-Parameter bei normalem Start
-ng serve    # dann http://localhost:4200?mock=true
+# Option 3: URL parameter with normal start
+ng serve    # then http://localhost:4200?mock=true
 ```
 
-Im Mock-Modus:
-- Floating Toolbar unten rechts zum Umschalten zwischen **Employee**, **Admin** und **Superadmin**
-- Realistische Testdaten: 6 Benutzer, 8 Urlaube, 9 Feiertage, Urlaubskonto-Einträge
-- Alle API-Endpoints werden in-memory simuliert
-- Änderungen gehen beim Neuladen verloren
+In mock mode:
+- Floating toolbar at bottom right to switch between **Employee**, **Admin** and **Superadmin**
+- Realistic test data: 6 users, 8 vacations, 9 holidays, vacation account entries
+- All API endpoints are simulated in-memory
+- Changes are lost on reload
 
-## Dokumentation
+## Documentation
 
-Die Dokumentation ist zweisprachig (Deutsch + Englisch) mit MkDocs Material.
+Documentation is bilingual (German + English) with MkDocs Material.
 
 ```bash
-# Dokumentation bauen
+# Build documentation
 ./scripts/build-docs.sh
 
-# Dev-Server starten (Live-Reload)
+# Start dev server (live reload)
 ./scripts/dev-docs.sh              # http://localhost:8001
 ```
 
-Die gebaute Dokumentation liegt in `documentation/site/` (von .gitignore erfasst).
+Built documentation is in `documentation/site/` (covered by .gitignore).
 
 ## Tests
 
 ```bash
-# Nur Backend-Tests
-cd backend && php artisan test     # 28 Tests, SQLite :memory:
+# Backend tests only
+cd backend && php artisan test     # PHPUnit, SQLite :memory:
 
-# Alles testen (Backend + Frontend-Build)
+# Test everything (backend + frontend build)
 ./scripts/test.sh
 
-# Vollständige CI-Pipeline lokal
+# Full CI pipeline locally
 ./scripts/ci.sh
 ```
 
-## API-Dokumentation
+## API Documentation
 
-Wenn das Backend läuft:
+When the backend is running:
 ```
-http://localhost:8000/docs/api       # Interaktive Swagger UI
-http://localhost:8000/docs/api.json  # OpenAPI JSON-Spec
+http://localhost:8000/docs/api       # Interactive Swagger UI
+http://localhost:8000/docs/api.json  # OpenAPI JSON spec
 ```
 
 ## CI/CD & Releases
 
-### Lokal testen vor dem Release
+### Test Locally Before Release
 
 ```bash
-# Vollständige Pipeline lokal ausführen
+# Run full pipeline locally
 ./scripts/ci.sh
 
-# Release-Archiv lokal bauen
+# Build release archive locally
 ./scripts/package.sh v0.1.0
 ```
 
-### GitHub Release erstellen
+### Create GitHub Release
 
-Die GitHub Action (`.github/workflows/release.yml`) wird nur bei Tags ausgelöst:
+The GitHub Action (`.github/workflows/release.yml`) is triggered on tags:
 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-Das erstellt automatisch:
-- Backend-Tests + Production Build
-- Frontend Production Build
-- MkDocs Build
-- Release-Archiv (ZIP + TAR.GZ) als GitHub Release
+This automatically creates:
+- Backend tests + production build
+- Frontend production build
+- MkDocs build
+- Release archive (ZIP + TAR.GZ) as GitHub Release
 
-Tags mit `-rc`, `-beta` oder `-alpha` werden als Pre-Release markiert.
+Tags with `-rc`, `-beta` or `-alpha` are marked as pre-release.
 
-### GitHub Action lokal testen (optional)
+### Test GitHub Action Locally (optional)
 
-Mit [act](https://github.com/nektos/act) kann man die GitHub Action lokal ausführen:
+With [act](https://github.com/nektos/act) you can run the GitHub Action locally:
 
 ```bash
-# act installieren
+# Install act
 winget install nektos.act         # Windows
 brew install act                  # macOS/Linux
 
-# Release-Workflow lokal simulieren
+# Simulate release workflow locally
 act push --tag v0.1.0
 ```
 
 ## Deployment
 
-### Mit Installationsscript (empfohlen)
+### With Installation Script (recommended)
 
 ```bash
-# Release-Archiv auf Server entpacken, dann:
+# Unpack release archive on server, then:
 ./scripts/install.sh
 
-# Oder mit Testdaten:
+# Or with test data:
 ./scripts/install.sh --seed
 ```
 
-Das Script prüft automatisch:
-- PHP-Version und Extensions
-- Erstellt `.env` (interaktiv)
-- Führt Migrationen durch
-- Baut Caches
-- Gibt Webserver-Konfiguration für **Apache** und **Nginx** aus
+The script automatically:
+- Checks PHP version and extensions
+- Creates `.env` (interactive)
+- Runs migrations
+- Builds caches
+- Outputs web server configuration for **Apache** and **Nginx**
 
-### Manuell
+### Manual
 
-1. Release-Archiv entpacken oder `./scripts/package.sh` lokal bauen
-2. `backend/` auf den Server, `backend/public/` als Document Root
-3. `frontend/` als statische Dateien bereitstellen
-4. `.env` konfigurieren, `php artisan migrate --force`
-5. SSO Server: OIDC aktivieren, App registrieren, Redirect-URL eintragen
+1. Unpack release archive or build locally with `./scripts/package.sh`
+2. Place `backend/` on server, set `backend/public/` as document root
+3. Serve `frontend/` as static files
+4. Configure `.env`, run `php artisan migrate --force`
+5. If using OAuth: configure OIDC provider, register app, set redirect URL
 
-### Webserver
+### Web Server
 
-**Apache:** `.htaccess` ist in `backend/public/` enthalten -- `mod_rewrite` muss aktiviert sein.
+**Apache:** `.htaccess` is included in `backend/public/` -- `mod_rewrite` must be enabled.
 
-**Nginx:** SPA-Routing für Frontend + PHP-FPM für Backend konfigurieren. Details gibt `./scripts/install.sh` aus.
+**Nginx:** Configure SPA routing for frontend + PHP-FPM for backend. Details are output by `./scripts/install.sh`.
 
-Detaillierte Anleitung in der Dokumentation unter "Deployment".
+See the documentation under "Deployment" for detailed instructions.
 
-## Lizenz
+## License
 
-MIT License -- siehe [LICENSE](LICENSE)
+MIT License -- see [LICENSE](LICENSE)

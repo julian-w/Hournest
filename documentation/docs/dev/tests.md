@@ -1,10 +1,10 @@
 # Tests
 
-Das Backend von Hournest wird mit PHPUnit getestet. Die Tests decken die API-Endpoints und die Geschaeftslogik ab.
+Das Backend von Hournest wird mit PHPUnit getestet. Die Tests decken die API-Endpoints und die Geschäftslogik ab.
 
 ---
 
-## Tests ausfuehren
+## Tests ausführen
 
 ```bash
 cd backend
@@ -21,7 +21,7 @@ cd backend
 ### Test-Ausgabe filtern
 
 ```bash
-# Nur einen bestimmten Test ausfuehren
+# Nur einen bestimmten Test ausführen
 php artisan test --filter=test_user_can_request_vacation
 
 # Nur eine bestimmte Test-Klasse
@@ -36,11 +36,11 @@ php artisan test tests/Unit
 
 ---
 
-## Datenbank fuer Tests
+## Datenbank für Tests
 
-Die Tests verwenden eine **SQLite :memory:-Datenbank**. Diese wird vor jedem Test automatisch erstellt und nach dem Test verworfen. Keine separate Datenbankkonfiguration noetig.
+Die Tests verwenden eine **SQLite :memory:-Datenbank**. Diese wird vor jedem Test automatisch erstellt und nach dem Test verworfen. Keine separate Datenbankkonfiguration nötig.
 
-Die Konfiguration erfolgt ueber das Trait `RefreshDatabase`, das in jeder Feature-Test-Klasse verwendet wird:
+Die Konfiguration erfolgt über das Trait `RefreshDatabase`, das in jeder Feature-Test-Klasse verwendet wird:
 
 ```php
 class VacationTest extends TestCase
@@ -62,19 +62,19 @@ backend/tests/
 │   ├── VacationTest.php  # Urlaubsantrag-Tests
 │   └── AdminTest.php     # Admin-Funktions-Tests
 └── Unit/
-    └── VacationTest.php  # Unit-Tests fuer Urlaubsberechnung
+    └── VacationTest.php  # Unit-Tests für Urlaubsberechnung
 ```
 
 ---
 
-## Test-Uebersicht
+## Test-Übersicht
 
 ### Feature/AuthTest (3 Tests)
 
 | Test                                         | Beschreibung                                           |
 |----------------------------------------------|--------------------------------------------------------|
 | `test_unauthenticated_user_cannot_access_api`| Nicht-authentifizierte Benutzer erhalten 401            |
-| `test_authenticated_user_can_get_own_info`   | Authentifizierte Benutzer koennen eigene Infos abrufen |
+| `test_authenticated_user_can_get_own_info`   | Authentifizierte Benutzer können eigene Infos abrufen |
 | `test_logout_invalidates_session`            | Logout beendet die Session korrekt                     |
 
 ### Feature/VacationTest (10 Tests)
@@ -86,25 +86,25 @@ backend/tests/
 | `test_user_can_request_vacation`                  | Urlaubsantrag wird korrekt erstellt (Status: pending)  |
 | `test_user_cannot_request_vacation_in_the_past`   | Urlaub in der Vergangenheit wird abgelehnt (422)       |
 | `test_user_cannot_request_vacation_with_end_before_start` | End vor Start wird abgelehnt (422)             |
-| `test_user_cannot_request_overlapping_vacation`   | Ueberlappung mit genehmigtem Urlaub wird abgelehnt    |
-| `test_user_can_cancel_pending_vacation`           | Offene Antraege koennen storniert werden (Soft Delete) |
-| `test_user_cannot_cancel_approved_vacation`       | Genehmigte Antraege koennen nicht storniert werden     |
-| `test_user_cannot_cancel_other_users_vacation`    | Fremde Antraege koennen nicht storniert werden (403)   |
+| `test_user_cannot_request_overlapping_vacation`   | Überlappung mit genehmigtem Urlaub wird abgelehnt    |
+| `test_user_can_cancel_pending_vacation`           | Offene Anträge können storniert werden (Soft Delete) |
+| `test_user_cannot_cancel_approved_vacation`       | Genehmigte Anträge können nicht storniert werden     |
+| `test_user_cannot_cancel_other_users_vacation`    | Fremde Anträge können nicht storniert werden (403)   |
 | `test_remaining_vacation_days_are_calculated`     | Resturlaub wird korrekt berechnet                      |
 
 ### Feature/AdminTest (10 Tests)
 
 | Test                                                | Beschreibung                                           |
 |-----------------------------------------------------|--------------------------------------------------------|
-| `test_admin_can_view_pending_vacations`             | Admin sieht alle offenen Antraege                      |
+| `test_admin_can_view_pending_vacations`             | Admin sieht alle offenen Anträge                      |
 | `test_admin_can_approve_vacation`                   | Admin kann Urlaub genehmigen                           |
 | `test_admin_can_reject_vacation_with_comment`       | Admin kann Urlaub mit Kommentar ablehnen               |
-| `test_admin_cannot_review_already_reviewed_vacation` | Bereits bearbeitete Antraege koennen nicht erneut bearbeitet werden |
+| `test_admin_cannot_review_already_reviewed_vacation` | Bereits bearbeitete Anträge können nicht erneut bearbeitet werden |
 | `test_admin_can_view_all_users`                     | Admin sieht alle Benutzer                              |
-| `test_admin_can_update_user_role`                   | Admin kann Benutzer-Rolle aendern                      |
-| `test_admin_can_update_user_vacation_days`          | Admin kann Urlaubstage pro Jahr aendern                |
+| `test_admin_can_update_user_role`                   | Admin kann Benutzer-Rolle ändern                      |
+| `test_admin_can_update_user_vacation_days`          | Admin kann Urlaubstage pro Jahr ändern                |
 | `test_employee_cannot_access_admin_routes`          | Employees erhalten 403 auf Admin-Routen                |
-| `test_invalid_role_is_rejected`                     | Ungueltige Rollen werden mit 422 abgelehnt             |
+| `test_invalid_role_is_rejected`                     | Ungültige Rollen werden mit 422 abgelehnt             |
 | `test_invalid_vacation_days_rejected`               | Negative Urlaubstage werden mit 422 abgelehnt          |
 
 ### Unit/VacationTest (5 Tests)
@@ -115,17 +115,17 @@ backend/tests/
 | `test_count_workdays_full_two_weeks`          | 2 Wochen Mo-Fr = 10 Arbeitstage                        |
 | `test_count_workdays_single_day`              | Ein Tag (Montag) = 1 Arbeitstag                        |
 | `test_count_workdays_weekend_only_returns_zero`| Sa-So = 0 Arbeitstage                                 |
-| `test_count_workdays_filtered_by_year`        | Jahresuebergreifender Urlaub: nur Tage im angegebenen Jahr zaehlen |
+| `test_count_workdays_filtered_by_year`        | Jahresübergreifender Urlaub: nur Tage im angegebenen Jahr zählen |
 
 ---
 
 ## Factories
 
-Fuer die Test-Datengeneration werden Laravel Factories verwendet:
+Für die Test-Datengeneration werden Laravel Factories verwendet:
 
 ### UserFactory
 
-Erstellt Benutzer mit zufaelligen Daten. Verfuegbare States:
+Erstellt Benutzer mit zufälligen Daten. Verfügbare States:
 
 - `admin()` -- Erstellt einen Benutzer mit der Rolle Admin
 
@@ -136,7 +136,7 @@ $admin = User::factory()->admin()->create(); // Admin
 
 ### VacationFactory
 
-Erstellt Urlaubsantraege mit zufaelligen Daten. Verfuegbare States:
+Erstellt Urlaubsanträge mit zufälligen Daten. Verfügbare States:
 
 - `approved()` -- Erstellt einen genehmigten Urlaub
 
@@ -203,6 +203,6 @@ class NewUnitTest extends TestCase
 ### Wichtige Konventionen
 
 - Testmethoden beginnen mit `test_` (Snake Case)
-- Feature-Tests verwenden `actingAs()` fuer authentifizierte Requests
-- Verwende `assertOk()`, `assertStatus()`, `assertJsonPath()`, `assertJsonStructure()` fuer Response-Pruefungen
-- Verwende `assertDatabaseHas()` und `assertSoftDeleted()` fuer Datenbankpruefungen
+- Feature-Tests verwenden `actingAs()` für authentifizierte Requests
+- Verwende `assertOk()`, `assertStatus()`, `assertJsonPath()`, `assertJsonStructure()` für Response-Prüfungen
+- Verwende `assertDatabaseHas()` und `assertSoftDeleted()` für Datenbankprüfungen

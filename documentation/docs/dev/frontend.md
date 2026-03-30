@@ -10,10 +10,10 @@ Das Frontend ist eine Angular 18 Single Page Application (SPA) mit Angular Mater
 frontend/src/app/
 ├── core/
 │   ├── guards/
-│   │   ├── auth.guard.ts          # Schuetzt authentifizierte Routen
-│   │   └── admin.guard.ts         # Schuetzt Admin-Routen
+│   │   ├── auth.guard.ts          # Schützt authentifizierte Routen
+│   │   └── admin.guard.ts         # Schützt Admin-Routen
 │   ├── interceptors/
-│   │   └── credentials.interceptor.ts  # Setzt withCredentials fuer Sanctum-Cookies
+│   │   └── credentials.interceptor.ts  # Setzt withCredentials für Sanctum-Cookies
 │   ├── models/
 │   │   ├── user.model.ts
 │   │   ├── vacation.model.ts
@@ -23,14 +23,14 @@ frontend/src/app/
 │   │   └── setting.model.ts
 │   ├── services/
 │   │   ├── auth.service.ts         # Login, Logout, User-Info
-│   │   ├── vacation.service.ts     # Urlaubsantraege CRUD
+│   │   ├── vacation.service.ts     # Urlaubsanträge CRUD
 │   │   ├── admin.service.ts        # Admin-Operationen
 │   │   ├── holiday.service.ts      # Feiertage
 │   │   ├── vacation-ledger.service.ts  # Urlaubskonto
 │   │   └── settings.service.ts     # Globale Einstellungen
 │   └── mock/
 │       ├── mock.service.ts         # Mock-Modus-Verwaltung
-│       ├── mock.interceptor.ts     # HTTP-Interceptor fuer Mock-Daten
+│       ├── mock.interceptor.ts     # HTTP-Interceptor für Mock-Daten
 │       ├── mock-data.ts            # Testdaten
 │       └── mock-toolbar.component.ts  # Rollen-Umschalter
 ├── features/
@@ -63,7 +63,7 @@ frontend/src/app/
 
 ## Standalone Components
 
-Hournest verwendet ausschliesslich **Standalone Components** (keine NgModules). Jede Komponente deklariert ihre eigenen Imports:
+Hournest verwendet ausschließlich **Standalone Components** (keine NgModules). Jede Komponente deklariert ihre eigenen Imports:
 
 ```typescript
 @Component({
@@ -86,28 +86,28 @@ Alle Services liegen unter `core/services/` und kapseln die HTTP-Kommunikation m
 | Service               | Aufgabe                                       |
 |-----------------------|-----------------------------------------------|
 | `AuthService`         | Login, Logout, aktuellen User abrufen         |
-| `VacationService`     | Urlaube laden, erstellen, loeschen            |
-| `AdminService`        | Offene Antraege, User-Verwaltung, Review      |
+| `VacationService`     | Urlaube laden, erstellen, löschen            |
+| `AdminService`        | Offene Anträge, User-Verwaltung, Review      |
 | `HolidayService`      | Feiertage CRUD                                |
-| `VacationLedgerService`| Urlaubskonto-Eintraege laden und erstellen   |
+| `VacationLedgerService`| Urlaubskonto-Einträge laden und erstellen   |
 | `SettingsService`     | Globale Einstellungen laden und speichern     |
 
 ### Guards
 
 | Guard        | Zweck                                               |
 |--------------|-----------------------------------------------------|
-| `authGuard`  | Prueft ob der Benutzer eingeloggt ist, sonst Redirect zu `/login` |
-| `adminGuard` | Prueft ob der Benutzer admin oder superadmin ist    |
+| `authGuard`  | Prüft ob der Benutzer eingeloggt ist, sonst Redirect zu `/login` |
+| `adminGuard` | Prüft ob der Benutzer admin oder superadmin ist    |
 
 ### Interceptors
 
 | Interceptor              | Zweck                                       |
 |--------------------------|---------------------------------------------|
-| `credentialsInterceptor` | Setzt `withCredentials: true` fuer alle API-Anfragen, damit Sanctum-Session-Cookies mitgesendet werden |
+| `credentialsInterceptor` | Setzt `withCredentials: true` für alle API-Anfragen, damit Sanctum-Session-Cookies mitgesendet werden |
 
 ### Models
 
-TypeScript-Interfaces fuer alle Datentypen. Beispiel:
+TypeScript-Interfaces für alle Datentypen. Beispiel:
 
 ```typescript
 export interface User {
@@ -143,13 +143,13 @@ export const routes: Routes = [
 ];
 ```
 
-Admin-Routen sind doppelt geschuetzt: sowohl `authGuard` als auch `adminGuard` muessen bestanden werden.
+Admin-Routen sind doppelt geschützt: sowohl `authGuard` als auch `adminGuard` müssen bestanden werden.
 
 ---
 
 ## Angular Signals
 
-Hournest nutzt Angular Signals fuer reaktives State-Management, wo es sinnvoll ist. Signals ersetzen teilweise die Verwendung von BehaviorSubjects und RxJS-Streams fuer lokalen Component-State.
+Hournest nutzt Angular Signals für reaktives State-Management, wo es sinnvoll ist. Signals ersetzen teilweise die Verwendung von BehaviorSubjects und RxJS-Streams für lokalen Component-State.
 
 ---
 
@@ -169,20 +169,20 @@ Die gesamte UI basiert auf Angular Material-Komponenten:
 
 ### Theming
 
-Das Theme verwendet die Farben **Amber** (Primaer) und **Deep Orange** (Akzent) mit einem dunklen Standardmodus (Slate). Ein Umschalter zwischen Hell- und Dunkelmodus ist verfuegbar.
+Das Theme verwendet die Farben **Amber** (Primär) und **Deep Orange** (Akzent) mit einem dunklen Standardmodus (Slate). Ein Umschalter zwischen Hell- und Dunkelmodus ist verfügbar.
 
 ---
 
 ## Internationalisierung (i18n)
 
-Die Uebersetzung erfolgt zur Laufzeit ueber `ngx-translate`. Kein separater Build pro Sprache erforderlich.
+Die Übersetzung erfolgt zur Laufzeit über `ngx-translate`. Kein separater Build pro Sprache erforderlich.
 
 ### Struktur
 
 ```
 frontend/src/assets/i18n/
-├── de.json     # Deutsche Uebersetzungen
-└── en.json     # Englische Uebersetzungen
+├── de.json     # Deutsche Übersetzungen
+└── en.json     # Englische Übersetzungen
 ```
 
 ### Verwendung in Templates
@@ -191,21 +191,21 @@ frontend/src/assets/i18n/
 <h1>{{ 'DASHBOARD.TITLE' | translate }}</h1>
 ```
 
-### Neue Uebersetzungsschluessel hinzufuegen
+### Neue Übersetzungsschlüssel hinzufügen
 
-1. Oeffne `src/assets/i18n/de.json` und fuege den neuen Schluessel hinzu
-2. Oeffne `src/assets/i18n/en.json` und fuege die englische Uebersetzung hinzu
-3. Verwende den Schluessel im Template mit der `translate`-Pipe
+1. Öffne `src/assets/i18n/de.json` und füge den neuen Schlüssel hinzu
+2. Öffne `src/assets/i18n/en.json` und füge die englische Übersetzung hinzu
+3. Verwende den Schlüssel im Template mit der `translate`-Pipe
 
-!!! warning "Vollstaendigkeit"
-    Stelle sicher, dass jeder Schluessel in **beiden** Sprachdateien vorhanden ist. Fehlende Schluessel werden als Rohtext angezeigt.
+!!! warning "Vollständigkeit"
+    Stelle sicher, dass jeder Schlüssel in **beiden** Sprachdateien vorhanden ist. Fehlende Schlüssel werden als Rohtext angezeigt.
 
 ---
 
 ## Styles und Theming
 
-- **SCSS** wird als CSS-Praeprozessor verwendet
+- **SCSS** wird als CSS-Präprozessor verwendet
 - Globale Styles liegen in `src/styles.scss`
 - Komponenten-spezifische Styles in den jeweiligen `.scss`-Dateien
 - Das Material-Theme wird in der `angular.json` konfiguriert
-- Farben: Amber (Primaer), Deep Orange (Akzent)
+- Farben: Amber (Primär), Deep Orange (Akzent)

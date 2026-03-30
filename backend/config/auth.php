@@ -140,4 +140,16 @@ return [
 
     'admin_emails' => env('ADMIN_EMAILS', ''),
 
+    /*
+    |--------------------------------------------------------------------------
+    | OAuth Enabled
+    |--------------------------------------------------------------------------
+    |
+    | Controls whether OIDC/SSO authentication is available.
+    | Set to false to use local email/password authentication.
+    |
+    */
+
+    'oauth_enabled' => (bool) env('AUTH_OAUTH_ENABLED', true),
+
 ];

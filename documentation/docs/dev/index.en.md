@@ -38,13 +38,13 @@ SQLite / MySQL / PostgreSQL
 
 ## Authentication Flow
 
-The standard login uses OpenID Connect (OIDC) with the Synology SSO Server:
+The standard login uses OpenID Connect (OIDC) with an external OIDC provider:
 
 ```
 1. Angular redirects to:         GET /api/auth/redirect
-2. Laravel redirects to:         Synology SSO Server (OIDC)
-3. User authenticates on:        Synology SSO Server
-4. SSO Server redirects to:      GET /api/auth/callback
+2. Laravel redirects to:         OIDC Provider
+3. User authenticates on:        OIDC Provider
+4. OIDC Provider redirects to:   GET /api/auth/callback
 5. Laravel creates/updates user and session
 6. Laravel redirects to:         FRONTEND_URL (e.g., http://localhost:4200)
 7. Angular checks authentication: GET /api/user
@@ -83,7 +83,7 @@ The admin check is handled in the backend via the `EnsureAdmin` middleware, whic
 | display_name         | string     | Display name                          |
 | role                 | string     | employee / admin / superadmin         |
 | vacation_days_per_year| integer   | Annual vacation entitlement           |
-| synology_id          | string     | Unique ID from SSO Server             |
+| oidc_id              | string     | Unique ID from OIDC provider (null for local users) |
 | holidays_exempt      | boolean    | Holidays count as working days        |
 | weekend_worker       | boolean    | Weekends count as working days        |
 | remember_token       | string     | Laravel remember token                |

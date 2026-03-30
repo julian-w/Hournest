@@ -2,23 +2,26 @@
 
 ## Overview
 Hournest is an internal team management app for vacation tracking, time tracking, and shift planning.
-Small company (<20 employees). Hosted on Synology NAS (Web Station) or classic PHP hosting.
+Small company (<20 employees). Hosted on any PHP-capable server (NAS, shared hosting, VPS).
 
 ## Tech Stack
 - **Frontend:** Angular 18+ with Angular Material, TypeScript, SCSS
 - **Backend:** Laravel 11+ (PHP 8.2+), SQLite, Laravel Sanctum (SPA auth)
-- **Auth:** OpenID Connect (OIDC) via Synology SSO Server, using Laravel Socialite with a generic OIDC provider
+- **Auth:** Two modes controlled by `AUTH_OAUTH_ENABLED` env variable:
+  - **OAuth mode (default):** OpenID Connect (OIDC) via any OIDC provider (e.g. Keycloak, Azure AD, Synology SSO), using Laravel Socialite
+  - **Local mode:** Email + password authentication, users managed by admins in the admin panel
 - **Monorepo:** `/frontend` (Angular) and `/backend` (Laravel)
 
 ## Architecture
 - Backend serves a REST API under `/api/*`
 - Frontend is a standalone Angular SPA, communicates with the backend via API
-- Auth flow: Angular redirects to `/api/auth/redirect` → Synology SSO login → callback to `/api/auth/callback` → session cookie via Sanctum
+- Auth flow (OAuth mode): Angular redirects to `/api/auth/redirect` → OIDC provider login → callback to `/api/auth/callback` → session cookie via Sanctum
+- Auth flow (Local mode): Angular POST to `/api/auth/login` with email + password → session cookie via Sanctum
 - CORS configured for local dev (Angular on :4200, Laravel on :8000)
 
 ## Roles
-- `employee` – Default role on first login. Can view team calendar, request vacation, track time.
-- `admin` – Can approve/reject vacation requests, manage users, see reports. Set manually in DB or via admin panel.
+- `employee` – Default role on first login (OAuth) or when created by admin (local). Can view team calendar, request vacation, track time.
+- `admin` – Can approve/reject vacation requests, manage users, see reports. In OAuth mode auto-assigned via `ADMIN_EMAILS`, in local mode set during user creation.
 
 ## Database Conventions
 - Use Laravel migrations, snake_case column names
@@ -46,6 +49,12 @@ Small company (<20 employees). Hosted on Synology NAS (Web Station) or classic P
 - PHP: PSR-12, use strict types
 - TypeScript: strict mode, no `any` types
 - English everywhere: UI labels, code, variable names, comments, API endpoints
+
+## Documentation Language
+- **Code, CLAUDE.md, CONCEPT.md, README.md:** English
+- **MkDocs German docs (`*.md` without `.en.md`):** German with **proper Umlaute** (ä, ö, ü, ß) -- never use ae, oe, ue, ss substitutes
+- **MkDocs English docs (`*.en.md`):** English
+- **i18n JSON files:** `en.json` English, `de.json` German with proper Umlaute
 
 ## Testing
 - Backend: PHPUnit feature tests for API endpoints

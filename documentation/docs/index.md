@@ -1,9 +1,9 @@
 # Hournest -- Team-Urlaubsverwaltung
 
-Hournest ist eine interne Webanwendung zur **Team-Urlaubsverwaltung** fuer kleine Unternehmen (unter 20 Mitarbeiter). Die Anwendung bietet ein zentrales Dashboard, einen Teamkalender, Urlaubsantraege mit Genehmigungsworkflow sowie ein vollstaendiges Urlaubskonto mit Jahreslog.
+Hournest ist eine interne Webanwendung zur **Team-Urlaubsverwaltung** für kleine Unternehmen (unter 20 Mitarbeiter). Die Anwendung bietet ein zentrales Dashboard, einen Teamkalender, Urlaubsanträge mit Genehmigungsworkflow sowie ein vollständiges Urlaubskonto mit Jahreslog.
 
 !!! info "Aktueller Stand"
-    Hournest befindet sich in **Phase 1** (Urlaubsverwaltung). Weitere Funktionen wie Zeiterfassung, Einsatzplanung und Reports sind fuer Phase 2 geplant.
+    Hournest befindet sich in **Phase 1** (Urlaubsverwaltung). Weitere Funktionen wie Zeiterfassung, Einsatzplanung und Reports sind für Phase 2 geplant.
 
 ---
 
@@ -12,45 +12,45 @@ Hournest ist eine interne Webanwendung zur **Team-Urlaubsverwaltung** fuer klein
 ### Dashboard
 - Verbleibende Urlaubstage im aktuellen Jahr
 - Offene eigene Anfragen (Status: Pending)
-- Naechster geplanter Urlaub
+- Nächster geplanter Urlaub
 - Admin-Sicht: zu bearbeitende Anfragen, Team-Status (wer ist heute/diese Woche abwesend)
 
 ### Teamkalender
-- Monatsansicht mit Navigation (vor/zurueck, Heute-Button)
+- Monatsansicht mit Navigation (vor/zurück, Heute-Button)
 - Farbliche Unterscheidung: Wochenenden (grau), Feiertage (markiert), Urlaube nach Status
 - Mitarbeiter sehen eigene Urlaube, Admins sehen alle
 
-### Urlaubsantraege
+### Urlaubsanträge
 - Antrag stellen mit Von-/Bis-Datum und optionalem Kommentar
-- Validierung: kein Urlaub in der Vergangenheit, keine Ueberlappung
-- Stornierung offener Antraege durch Mitarbeiter
+- Validierung: kein Urlaub in der Vergangenheit, keine Überlappung
+- Stornierung offener Anträge durch Mitarbeiter
 - Genehmigung/Ablehnung durch Admins
 
 ### Urlaubskonto (Jahreslog)
-- Vollstaendige Buchungsuebersicht pro Jahr: Anspruch, Uebertrag, Sonderurlaub, genommene Tage, Verfall
-- Automatischer Resturlaub-Uebertrag mit konfigurierbarem Verfallsdatum
+- Vollständige Buchungsübersicht pro Jahr: Anspruch, Übertrag, Sonderurlaub, genommene Tage, Verfall
+- Automatischer Resturlaub-Übertrag mit konfigurierbarem Verfallsdatum
 - Sonderurlaub-Buchungen nur durch Admin
 
 ### Feiertage
 - Verwaltung fixer und variabler Feiertage durch Admins
 - Feiertage werden bei der Urlaubstage-Berechnung automatisch abgezogen
-- Ausnahme-Flag fuer Mitarbeiter, bei denen Feiertage als Arbeitstage zaehlen
+- Ausnahme-Flag für Mitarbeiter, bei denen Feiertage als Arbeitstage zählen
 
 ### Arbeitszeitmodelle
-- Individuelle Arbeitstage-Perioden pro Mitarbeiter (z.B. Brueckenteilzeit: nur Mi+Do)
+- Individuelle Arbeitstage-Perioden pro Mitarbeiter (z.B. Brückenteilzeit: nur Mi+Do)
 - Globale Standard-Arbeitstage (konfigurierbar)
-- Wochenend-Arbeiter-Flag fuer Sonderfaelle
+- Wochenend-Arbeiter-Flag für Sonderfälle
 
 ### Rollen und Authentifizierung
 - **Employee** -- Standardrolle bei erstem Login via SSO
 - **Admin** -- automatisch bei SSO-Login, wenn Email in ADMIN_EMAILS-Liste steht
 - **Superadmin** -- Notfallzugang mit lokalen Credentials (Username/Passwort in `.env`)
-- OpenID Connect Login ueber Synology SSO Server
+- Authentifizierung: OpenID Connect (OIDC) oder lokale Email+Passwort-Anmeldung
 
 ### Weitere Funktionen
 - Zweisprachig: Deutsch und Englisch (umschaltbar zur Laufzeit)
 - Auto-generierte API-Dokumentation (OpenAPI/Scramble) unter `/docs/api`
-- Mock-Modus fuer Frontend-Entwicklung ohne Backend
+- Mock-Modus für Frontend-Entwicklung ohne Backend
 
 ---
 
@@ -61,7 +61,7 @@ Hournest ist eine interne Webanwendung zur **Team-Urlaubsverwaltung** fuer klein
 | Frontend   | Angular 18+, Angular Material, SCSS, ngx-translate |
 | Backend    | Laravel 11+, PHP 8.2+                        |
 | Datenbank  | SQLite (Entwicklung), MySQL/PostgreSQL (Produktion) |
-| Auth       | Synology SSO Server (OpenID Connect), Laravel Sanctum |
+| Auth       | OIDC (beliebiger Provider) oder lokales Login, Laravel Sanctum |
 | API-Doku   | Scramble (auto-generierte OpenAPI-Spec)       |
 
 ---
@@ -85,16 +85,16 @@ hournest/
 │   └── routes/api.php     # API-Routen
 ├── documentation/         # MkDocs-Dokumentation (dieses Dokument)
 ├── .env.example           # Umgebungsvariablen-Vorlage
-├── CLAUDE.md              # Konventionen fuer Claude Code
+├── CLAUDE.md              # Konventionen für Claude Code
 └── CONCEPT.md             # Fachkonzept
 ```
 
 ---
 
-## Weiterfuehrende Links
+## Weiterführende Links
 
-- **[Voraussetzungen](home/prerequisites.md)** -- Was wird benoetigt?
-- **[Installation](home/installation.md)** -- Schritt-fuer-Schritt-Anleitung
-- **[Konfiguration](home/configuration.md)** -- Alle Umgebungsvariablen erklaert
-- **[Endanwender-Handbuch](user/index.md)** -- Anleitung fuer Benutzer und Admins
+- **[Voraussetzungen](home/prerequisites.md)** -- Was wird benötigt?
+- **[Installation](home/installation.md)** -- Schritt-für-Schritt-Anleitung
+- **[Konfiguration](home/configuration.md)** -- Alle Umgebungsvariablen erklärt
+- **[Endanwender-Handbuch](user/index.md)** -- Anleitung für Benutzer und Admins
 - **[Entwickler-Dokumentation](dev/index.md)** -- Architektur, API, Tests, Deployment
