@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find /c/Users/juwo01/gitPriv/HourNest/frontend/src/app -name *.ts -path *login* -o -name *.html -path *login*)"
+      "Bash(find /c/Users/juwo01/gitPriv/HourNest/frontend/src/app -name *.ts -path *login* -o -name *.html -path *login*)",
+      "Bash(php artisan:*)"
     ]
   }
 }

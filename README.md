@@ -27,9 +27,23 @@
 
 - Group visibility in calendar
 - Additional notification channels (WhatsApp, etc.)
-- Time tracking / hour booking
+- **Time tracking & cost center booking** (Phase 2a -- implemented)
 - Shift planning
 - Reports & analytics
+- Working time account (Arbeitszeitkonto)
+
+## Features (Phase 2a -- Time Tracking)
+
+- **Time Recording:** Daily time entries with start, end, break; net working time calculated automatically
+- **Cost Centers:** Admin-managed cost centers with code, name, description; 4 system cost centers (Vacation, Illness, Special Leave, Holiday)
+- **Percentage Booking:** Employees distribute working time across cost centers by percentage (must total 100%)
+- **User Groups:** Group users for bulk cost center assignment; direct assignment also supported
+- **Favorites:** Employees can mark frequently used cost centers as favorites
+- **Absence Management:** Report illness (employee → admin acknowledges), request special leave (employee → admin approves/rejects), admin can create directly
+- **Half-day Absences:** Support for full day, morning, or afternoon absences
+- **Weekly Target Hours:** Configurable per work schedule; actual vs. target comparison with weekly delta
+- **Locking:** Auto-lock after configurable days (default 30), manual month lock by admin
+- **10-Year Retention:** All data soft-deleted only, compliant with German retention requirements
 
 ## Tech Stack
 

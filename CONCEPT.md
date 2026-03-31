@@ -219,6 +219,412 @@ Per employee and year, a complete list of all bookings:
 ### Phase 2 (Planned)
 - Group visibility in calendar
 - Additional notification channels (WhatsApp, etc.)
-- Time tracking / hour booking
+- Time tracking & cost center booking (see below)
 - Shift planning
 - Reports & analytics
+
+---
+
+## 13. Time Tracking & Cost Center Booking
+
+### Overview
+
+Employees record their **daily working hours** (start, end, break) and distribute that time **by percentage** across assigned cost centers. Admins manage cost centers, assign them to users (directly or via groups), and handle absence management (illness, special leave).
+
+### 13.1 Daily Time Recording
+
+Each working day, the employee records:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `date` | DATE | The working day |
+| `start_time` | TIME | Work start (e.g. 08:00) |
+| `end_time` | TIME | Work end (e.g. 17:00) |
+| `break_minutes` | integer | Total break duration in minutes (e.g. 30) |
+
+**Calculated:** `net_working_minutes` = (end - start) - break
+
+- Only one time entry per user per day
+- Non-working days (weekends per work schedule) require no entry
+- Days fully blocked by absences (vacation, holiday, full-day illness) require no time entry
+- Half-day absences: employee records the worked portion only (e.g. morning off sick → records afternoon hours)
+
+#### Target Hours (Soll-Stunden)
+
+Each employee has a **weekly target** defining their contracted working hours.
+
+| Field (on WorkSchedule) | Type | Description |
+|--------------------------|------|-------------|
+| `weekly_target_minutes` | integer | Contracted weekly working time in minutes (e.g. 2400 = 40h) |
+
+The daily target is derived: `weekly_target_minutes / number_of_work_days` (e.g. 40h / 5 days = 8h/day).
+
+**Global default** (Setting): `default_weekly_target_minutes` (e.g. 2400 for 40h). Applies when no individual schedule is defined.
+
+#### Weekly & Monthly Summary
+
+The UI shows actual vs. target hours:
+
+| | Mon | Tue | Wed | Thu | Fri | **Week Total** |
+|---|---|---|---|---|---|---|
+| **Actual** | 8:30 | 8:00 | 4:00 | 8:15 | 8:30 | **37:15** |
+| **Target** | 8:00 | 8:00 | 8:00 | 8:00 | 8:00 | **40:00** |
+| **Delta** | +0:30 | ±0:00 | -4:00 | +0:15 | +0:30 | **-2:45** |
+
+- Green delta = overtime, red = undertime
+- Half-day absences: target is halved for that day (4h instead of 8h)
+- Full-day absences (vacation, illness, special leave, holiday): target counts as fulfilled (delta = 0)
+- Monthly overview aggregates weekly summaries
+
+#### Working Time Account (Arbeitszeitkonto) -- Phase 2c
+
+A **running balance** of overtime and undertime across months.
+
+- Each day's delta (actual - target) feeds into the account
+- Balance carries over month to month
+- Admin can configure:
+  - Maximum positive balance (overtime cap, e.g. +40h)
+  - Maximum negative balance (undertime cap, e.g. -20h)
+  - Monthly reset or continuous carry-over
+- Admin can make manual adjustments with comment (e.g. overtime payout)
+- Employee sees their current balance on the dashboard
+- Monthly statement showing opening balance, daily deltas, adjustments, closing balance
+
+### 13.2 Cost Centers
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | PK | |
+| `code` | string, unique | Short code (e.g. "PRJ-ALPHA", "INTERN") |
+| `name` | string | Display name (e.g. "Project Alpha") |
+| `description` | text, nullable | Optional description |
+| `is_system` | boolean | System cost center (cannot be deleted or deactivated) |
+| `is_active` | boolean | Inactive cost centers are hidden from booking but preserved in history |
+| `timestamps` | | |
+| `soft_deletes` | | Archival only -- **never hard-delete** (10-year retention in Germany) |
+
+**System cost centers** (created by migration, cannot be modified or deleted):
+
+| Code | Name | Behavior |
+|------|------|----------|
+| `VACATION` | Vacation | Auto-booked when vacation is approved (full or half day) |
+| `ILLNESS` | Illness | Booked via absence management (user reports or admin creates) |
+| `SPECIAL_LEAVE` | Special Leave | Booked via absence management (user requests or admin creates) |
+| `HOLIDAY` | Holiday | Auto-booked on holidays (except `holidays_exempt` employees) |
+
+System cost centers are **always available** to all users. They are booked exclusively through the absence system -- employees cannot manually book to them.
+
+### 13.3 User Groups
+
+Groups simplify bulk assignment of cost centers to multiple employees.
+
+| Field | Type |
+|-------|------|
+| `id` | PK |
+| `name` | string (e.g. "Development", "Marketing") |
+| `description` | text, nullable |
+
+**Pivot tables:**
+- `user_group_members`: `user_id`, `user_group_id`
+- `user_group_cost_centers`: `user_group_id`, `cost_center_id`
+
+A user's **available cost centers** = directly assigned + via groups + system cost centers.
+
+Admin manages groups in a dedicated admin section:
+- Create/edit/delete groups
+- Add/remove users to/from groups
+- Add/remove cost centers to/from groups
+
+### 13.4 Direct Cost Center Assignment
+
+In addition to group-based assignment, admins can assign cost centers directly to individual users.
+
+**Pivot table** `user_cost_centers`: `user_id`, `cost_center_id`
+
+Both mechanisms (direct + group) work in parallel. The UI merges them into a single list of available cost centers per user.
+
+### 13.5 Favorites & Templates
+
+#### Favorites
+Employees can mark cost centers as favorites from their available list.
+
+| Field | Type |
+|-------|------|
+| `user_id` | FK |
+| `cost_center_id` | FK |
+| `sort_order` | integer |
+
+In the booking UI, favorites appear at the top, remaining cost centers below.
+
+#### Booking Templates
+Employees can save a percentage distribution as a reusable template.
+
+| Field | Type |
+|-------|------|
+| `id` | PK |
+| `user_id` | FK |
+| `name` | string (e.g. "Normal day", "Workshop day") |
+
+Template items: `template_id`, `cost_center_id`, `percentage`
+
+Templates can be applied to fill the day's distribution quickly.
+
+### 13.6 Percentage Booking
+
+After recording working hours, the employee distributes the day's net working time across cost centers **by percentage**.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | PK | |
+| `user_id` | FK | |
+| `date` | DATE | Booking day |
+| `cost_center_id` | FK | |
+| `percentage` | integer (5-100) | Share of the working day |
+| `comment` | text, nullable | Optional note |
+| `timestamps` | | |
+
+**Rules:**
+- Sum of all bookings per user per day must equal **exactly 100%** of the worked portion
+- Minimum granularity: **5%** increments
+- A day can be split across **multiple** cost centers (e.g. 60% Project A, 40% Project B)
+- Days with absences (vacation, illness, special leave, holiday):
+  - **Full-day absence:** 100% auto-booked to the corresponding system cost center. No manual booking possible. Day is locked.
+  - **Half-day absence:** 50% auto-booked to system cost center. Remaining 50% must be manually distributed across regular cost centers. The absence portion is locked.
+- The actual hours per cost center are derived: `net_working_minutes × percentage / 100`
+
+### 13.7 Absence Management
+
+Absences affect time booking by locking days (fully or partially). There are two new absence types managed here; vacation and holidays are handled by existing systems.
+
+#### Absence Types
+
+| Type | Initiated by | Workflow | Covers |
+|------|-------------|----------|--------|
+| **Illness** | Employee reports **or** admin creates | Employee → admin acknowledges | Sick days, doctor visits |
+| **Special Leave** | Employee requests **or** admin creates | Employee → admin approves/rejects | Bereavement, maternity, moving day, marriage, etc. |
+
+Vacation and holidays continue to use their existing workflows (sections 4 and 6) but integrate with time booking via auto-booking.
+
+#### Absence Model
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | PK | |
+| `user_id` | FK | |
+| `start_date` | DATE | First day of absence |
+| `end_date` | DATE | Last day of absence |
+| `type` | enum | `illness`, `special_leave` |
+| `scope` | enum | `full_day`, `morning`, `afternoon` |
+| `status` | enum | See below |
+| `comment` | text, nullable | Reason / note |
+| `admin_comment` | text, nullable | Admin's note |
+| `reviewed_by` | FK, nullable | Admin who reviewed |
+| `reviewed_at` | timestamp, nullable | |
+| `timestamps` | | |
+| `soft_deletes` | | |
+
+**Status workflows:**
+
+| Type | Statuses | Flow |
+|------|----------|------|
+| Illness | `reported` → `acknowledged` | Employee reports → admin takes note (no approval needed) |
+| Special Leave | `pending` → `approved` / `rejected` | Employee requests → admin decides |
+| Both | `admin_created` | Admin creates directly, no workflow needed |
+
+**Effect on time booking:**
+- Approved/acknowledged/admin-created absences **lock** the affected days
+- Full-day: entire day locked, 100% booked to system cost center
+- Morning/afternoon: 50% locked, other half open for regular booking
+
+#### Admin Absence Management
+
+Admins get a dedicated section to:
+- View all reported illnesses and special leave requests
+- Acknowledge illness reports
+- Approve/reject special leave requests
+- Create absences directly (e.g. when employee calls in sick by phone)
+- View absence history per employee
+
+### 13.8 Locking & Auto-Lock
+
+Time bookings become **locked** after a configurable period to ensure data integrity.
+
+**Rules:**
+- **Employees** can edit their bookings until:
+  - The admin manually locks the period, **or**
+  - The auto-lock period expires (configurable, e.g. 30 days after the booking date)
+- **Admins** can always edit any booking, even locked ones
+- **Absence-locked days** (vacation, illness, special leave, holiday) cannot be edited by employees regardless of lock status
+
+**Settings:**
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `time_booking_auto_lock_days` | integer | 30 | Days after which bookings are automatically locked (0 = no auto-lock) |
+
+**Admin controls:**
+- Manually lock/unlock a month for all employees
+- View lock status per employee/month
+- Override individual locked bookings
+
+### 13.9 Booking UI (Frontend)
+
+**Weekly view** as the primary interface:
+
+| | Mon 2 | Tue 3 | Wed 4 | Thu 5 | Fri 6 |
+|---|---|---|---|---|---|
+| **Hours** | 8:00-17:00 (30min) | 8:00-17:00 (30min) | -- VACATION -- | 8:00-12:00 (0min) | 8:00-17:00 (30min) |
+| ★ Project Alpha | 60% | 80% | 🔒 | 50% | 60% |
+| ★ Internal | 20% | 20% | 🔒 | 50% | 40% |
+| Support | 20% | -- | 🔒 | -- | -- |
+| **Total** | ✅ 100% | ✅ 100% | 🔒 100% | ✅ 100% | ✅ 100% |
+
+- ★ = Favorite cost centers (shown first)
+- 🔒 = Locked (absence day)
+- Grayed out: locked/absence days, non-working days
+- Red total: if sum ≠ 100%
+- Optional month view toggle for overview
+
+**Convenience features:**
+- **Copy previous day:** Copies percentage distribution from the last booked day
+- **Copy previous week:** Copies entire week's distribution
+- **Apply template:** Fills in a saved distribution pattern
+- **Quick entry:** If only one cost center is used, auto-fill 100%
+
+### 13.10 Interaction with Existing Systems
+
+#### Vacation System (Section 4)
+- When a vacation is **approved**, the affected days are automatically booked to the `VACATION` system cost center
+- Half-day vacations: 50% booked to `VACATION`, remaining 50% open for manual booking
+- If a vacation is **cancelled**, the auto-booking is removed and the day becomes editable again
+
+#### Holidays (Section 6)
+- On holidays, working days are automatically booked to the `HOLIDAY` system cost center (100%)
+- Exception: `holidays_exempt` employees -- holidays are treated as regular working days
+
+#### Work Schedules (Section 7)
+- Non-working days (per employee's work schedule) require no time entry or booking
+- The booking UI hides non-working days or shows them as disabled
+
+### 13.11 Retention & Archival
+
+**Legal requirement (Germany):** All time tracking and booking data must be retained for **10 years**.
+
+- Cost centers are **soft-deleted** only -- deactivated cost centers remain visible in historical bookings
+- Time bookings and absence records are **never deleted**
+- The `is_active` flag hides cost centers from new bookings but preserves them in reports and history
+- All modifications are tracked via `timestamps` (consider adding an audit log in a later phase)
+
+### 13.12 Reports (Admin)
+
+- **Per employee:** Working hours and cost center distribution for a period
+- **Per cost center:** Which employees booked how much time, aggregated
+- **Missing entries:** List of employees with incomplete days (no time entry or percentage ≠ 100%)
+- **Absence overview:** Illness and special leave per employee, per period
+- **CSV export:** For accounting / payroll systems
+
+### 13.13 Dashboard Integration
+
+**Employee dashboard additions:**
+- "X unbooked working days this week/month" warning
+- Quick link to time booking view
+- Current week's booking status (complete / incomplete)
+
+**Admin dashboard additions:**
+- "X employees with missing time entries" alert
+- Pending illness reports and special leave requests count
+- Link to absence management
+
+### 13.14 API Endpoints
+
+```
+# Time Recording (Employee)
+GET    /api/time-entries?from=&to=              Own time entries for period
+PUT    /api/time-entries/{date}                 Create/update day's time entry (start, end, break)
+DELETE /api/time-entries/{date}                 Remove time entry (if not locked)
+
+# Cost Center Booking (Employee)
+GET    /api/time-bookings?from=&to=             Own bookings for period
+PUT    /api/time-bookings/{date}                Save day's distribution [{cost_center_id, percentage, comment}]
+
+# Available Cost Centers (Employee)
+GET    /api/cost-centers                        Own available cost centers (direct + groups + system)
+
+# Favorites (Employee)
+GET    /api/cost-center-favorites
+POST   /api/cost-center-favorites
+DELETE /api/cost-center-favorites/{ccId}
+PATCH  /api/cost-center-favorites/reorder
+
+# Templates (Employee)
+GET    /api/time-booking-templates
+POST   /api/time-booking-templates
+PATCH  /api/time-booking-templates/{id}
+DELETE /api/time-booking-templates/{id}
+
+# Absences (Employee)
+POST   /api/absences                            Report illness or request special leave
+GET    /api/absences/mine                       Own absence history
+DELETE /api/absences/{id}                       Cancel pending request (if not yet reviewed)
+
+# Cost Centers (Admin)
+GET    /api/admin/cost-centers                  All cost centers (incl. inactive)
+POST   /api/admin/cost-centers
+PATCH  /api/admin/cost-centers/{id}
+DELETE /api/admin/cost-centers/{id}             Soft-delete only
+
+# User Groups (Admin)
+GET    /api/admin/user-groups
+POST   /api/admin/user-groups
+PATCH  /api/admin/user-groups/{id}
+DELETE /api/admin/user-groups/{id}
+PUT    /api/admin/user-groups/{id}/members      Set group members
+PUT    /api/admin/user-groups/{id}/cost-centers  Set group cost centers
+
+# Direct Assignment (Admin)
+GET    /api/admin/users/{id}/cost-centers
+PUT    /api/admin/users/{id}/cost-centers       Set user's direct cost centers
+
+# Absence Management (Admin)
+GET    /api/admin/absences?status=&type=        All absences (filterable)
+PATCH  /api/admin/absences/{id}                 Acknowledge/approve/reject
+POST   /api/admin/absences                      Create absence directly
+DELETE /api/admin/absences/{id}                 Remove absence (soft delete)
+
+# Time Booking Admin
+GET    /api/admin/time-bookings?user_id=&from=&to=  View any user's bookings
+PUT    /api/admin/time-bookings/{userId}/{date}      Edit bookings (even locked)
+POST   /api/admin/time-lock                          Lock/unlock a period
+
+# Reports (Admin)
+GET    /api/admin/reports/time-bookings?from=&to=&group_by=user|cost_center
+GET    /api/admin/reports/missing-entries?from=&to=
+GET    /api/admin/reports/absences?from=&to=
+GET    /api/admin/reports/export?format=csv&from=&to=
+```
+
+### 13.15 Phase Planning for Time Tracking
+
+#### Phase 2a (Core)
+- Daily time recording (start, end, break)
+- Cost center management (CRUD, system cost centers)
+- User groups with cost center assignment
+- Direct cost center assignment to users
+- Percentage booking per day
+- Absence management (illness, special leave)
+- Locking & auto-lock
+- Integration with existing vacation & holiday systems
+- Dashboard integration (missing entries warning)
+
+#### Phase 2b (Convenience)
+- Favorites & sort order
+- Booking templates
+- Copy previous day/week
+- Reports & CSV export
+
+#### Phase 2c (Future)
+- Working time account (Arbeitszeitkonto) with running balance
+- Reminders (email/push for missing time entries)
+- Budget tracking per cost center
+- Audit log for all modifications
+- Advanced reports & analytics

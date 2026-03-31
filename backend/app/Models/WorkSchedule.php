@@ -14,6 +14,7 @@ class WorkSchedule extends Model
         'start_date',
         'end_date',
         'work_days',
+        'weekly_target_minutes',
     ];
 
     protected function casts(): array
@@ -22,6 +23,7 @@ class WorkSchedule extends Model
             'start_date' => 'date',
             'end_date' => 'date',
             'work_days' => 'array',
+            'weekly_target_minutes' => 'integer',
         ];
     }
 

@@ -25,7 +25,7 @@ Small company (<20 employees). Hosted on any PHP-capable server (NAS, shared hos
 
 ## Database Conventions
 - Use Laravel migrations, snake_case column names
-- Soft deletes on Users and Vacations
+- Soft deletes on core entities (Users, Vacations, CostCenters, Absences)
 - All dates stored as `DATE` (not datetime) for vacation entries
 - Use Enums for status fields: `pending`, `approved`, `rejected`
 
@@ -42,7 +42,7 @@ Small company (<20 employees). Hosted on any PHP-capable server (NAS, shared hos
 - Use Angular Signals where appropriate
 - Lazy-load feature routes
 - Services in `/core/services/`, Guards in `/core/guards/`
-- Feature folders: `/features/calendar/`, `/features/vacation/`, `/features/admin/`
+- Feature folders: `/features/calendar/`, `/features/vacation/`, `/features/time-tracking/`, `/features/absences/`, `/features/admin/`
 - Shared components in `/shared/`
 
 ## Code Style

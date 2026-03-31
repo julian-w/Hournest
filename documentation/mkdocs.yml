@@ -88,6 +88,11 @@ plugins:
             Mock-Modus: Mock Mode
             Tests: Tests
             Deployment: Deployment
+            Zeiterfassung: Time Tracking
+            Abwesenheiten: Absences
+            Kostenstellen verwalten: Manage Cost Centers
+            Benutzergruppen: User Groups
+            Abwesenheitsverwaltung: Absence Management
 
 nav:
   - Startseite:
@@ -102,11 +107,16 @@ nav:
       - Kalender: user/calendar.md
       - Urlaubsanträge: user/vacations.md
       - Urlaubskonto: user/ledger.md
+      - Zeiterfassung: user/time-tracking.md
+      - Abwesenheiten: user/absences.md
       - Administration:
           - Benutzerverwaltung: user/admin/users.md
           - Feiertage verwalten: user/admin/holidays.md
           - Urlaubsplanung: user/admin/blackouts.md
           - Einstellungen: user/admin/settings.md
+          - Kostenstellen verwalten: user/admin/cost-centers.md
+          - Benutzergruppen: user/admin/user-groups.md
+          - Abwesenheitsverwaltung: user/admin/absences.md
   - Entwickler:
       - Architektur: dev/index.md
       - Backend: dev/backend.md

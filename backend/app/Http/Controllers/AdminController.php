@@ -12,9 +12,12 @@ use App\Http\Requests\ReviewVacationRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\VacationResource;
+use App\Models\TimeBooking;
+use App\Models\TimeEntry;
 use App\Models\User;
 use App\Models\Vacation;
 use App\Models\VacationLedgerEntry;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -47,7 +50,7 @@ class AdminController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        // If approved, create a 'taken' ledger entry
+        // If approved, create a 'taken' ledger entry and clean up time data
         if ($vacation->status === VacationStatus::Approved) {
             $vacation->load('user');
             $workdays = $vacation->countWorkdays();
@@ -67,6 +70,20 @@ class AdminController extends Controller
                 ),
                 'vacation_id' => $vacation->id,
             ]);
+
+            // Clean up any existing time entries and bookings for vacation days
+            $start = $vacation->start_date;
+            $end = $vacation->end_date;
+
+            TimeBooking::where('user_id', $vacation->user_id)
+                ->whereDate('date', '>=', $start)
+                ->whereDate('date', '<=', $end)
+                ->delete();
+
+            TimeEntry::where('user_id', $vacation->user_id)
+                ->whereDate('date', '>=', $start)
+                ->whereDate('date', '<=', $end)
+                ->delete();
         }
 
         $vacation->load(['user', 'reviewer']);

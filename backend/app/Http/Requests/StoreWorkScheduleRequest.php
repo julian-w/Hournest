@@ -20,6 +20,7 @@ class StoreWorkScheduleRequest extends FormRequest
             'end_date' => ['nullable', 'date', 'after:start_date'],
             'work_days' => ['required', 'array', 'min:1'],
             'work_days.*' => ['integer', 'min:1', 'max:7'],
+            'weekly_target_minutes' => ['sometimes', 'integer', 'min:0', 'max:6000'],
         ];
     }
 }

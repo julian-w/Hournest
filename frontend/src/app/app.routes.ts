@@ -21,6 +21,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/vacation/my-vacations.component').then(m => m.MyVacationsComponent),
   },
   {
+    path: 'time-tracking',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/time-tracking/time-tracking.component').then(m => m.TimeTrackingComponent),
+  },
+  {
+    path: 'my-absences',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/absences/my-absences.component').then(m => m.MyAbsencesComponent),
+  },
+  {
     path: 'admin/requests',
     canActivate: [authGuard, adminGuard],
     loadComponent: () => import('./features/admin/requests/admin-requests.component').then(m => m.AdminRequestsComponent),
@@ -44,6 +54,21 @@ export const routes: Routes = [
     path: 'admin/settings',
     canActivate: [authGuard, adminGuard],
     loadComponent: () => import('./features/admin/settings/admin-settings.component').then(m => m.AdminSettingsComponent),
+  },
+  {
+    path: 'admin/cost-centers',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () => import('./features/admin/cost-centers/admin-cost-centers.component').then(m => m.AdminCostCentersComponent),
+  },
+  {
+    path: 'admin/user-groups',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () => import('./features/admin/user-groups/admin-user-groups.component').then(m => m.AdminUserGroupsComponent),
+  },
+  {
+    path: 'admin/absences',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () => import('./features/admin/absences/admin-absences.component').then(m => m.AdminAbsencesComponent),
   },
   { path: '**', redirectTo: 'dashboard' },
 ];

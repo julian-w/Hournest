@@ -17,6 +17,7 @@ class WorkScheduleResource extends JsonResource
             'start_date' => $this->start_date->toDateString(),
             'end_date' => $this->end_date?->toDateString(),
             'work_days' => $this->work_days,
+            'weekly_target_minutes' => $this->weekly_target_minutes,
         ];
     }
 }

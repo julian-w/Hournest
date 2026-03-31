@@ -2,10 +2,19 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AbsenceAdminController;
+use App\Http\Controllers\AbsenceController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CostCenterAdminController;
+use App\Http\Controllers\CostCenterController;
+use App\Http\Controllers\CostCenterFavoriteController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\TimeBookingAdminController;
+use App\Http\Controllers\TimeBookingController;
+use App\Http\Controllers\TimeEntryController;
+use App\Http\Controllers\UserGroupController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\VacationLedgerController;
 use App\Http\Controllers\WorkScheduleController;
@@ -50,6 +59,29 @@ Route::middleware('auth:sanctum')->group(function () {
     // Settings (read for everyone)
     Route::get('/settings', [SettingController::class, 'index']);
 
+    // Time Tracking
+    Route::get('/time-entries', [TimeEntryController::class, 'index']);
+    Route::put('/time-entries/{date}', [TimeEntryController::class, 'store']);
+    Route::delete('/time-entries/{date}', [TimeEntryController::class, 'destroy']);
+
+    // Time Bookings
+    Route::get('/time-bookings', [TimeBookingController::class, 'index']);
+    Route::put('/time-bookings/{date}', [TimeBookingController::class, 'store']);
+
+    // Cost Centers (own available)
+    Route::get('/cost-centers', [CostCenterController::class, 'index']);
+
+    // Cost Center Favorites
+    Route::get('/cost-center-favorites', [CostCenterFavoriteController::class, 'index']);
+    Route::post('/cost-center-favorites', [CostCenterFavoriteController::class, 'store']);
+    Route::delete('/cost-center-favorites/{costCenterId}', [CostCenterFavoriteController::class, 'destroy']);
+    Route::patch('/cost-center-favorites/reorder', [CostCenterFavoriteController::class, 'reorder']);
+
+    // Absences (own)
+    Route::get('/absences/mine', [AbsenceController::class, 'mine']);
+    Route::post('/absences', [AbsenceController::class, 'store']);
+    Route::delete('/absences/{absence}', [AbsenceController::class, 'destroy']);
+
     // Admin routes
     Route::middleware(EnsureAdmin::class)->prefix('admin')->group(function () {
         // Existing
@@ -78,6 +110,39 @@ Route::middleware('auth:sanctum')->group(function () {
         // Vacation Ledger per user (admin)
         Route::get('/users/{user}/vacation-ledger', [VacationLedgerController::class, 'adminIndex']);
         Route::post('/users/{user}/vacation-ledger', [VacationLedgerController::class, 'store']);
+
+        // Cost Centers (admin CRUD)
+        Route::get('/cost-centers', [CostCenterAdminController::class, 'index']);
+        Route::post('/cost-centers', [CostCenterAdminController::class, 'store']);
+        Route::patch('/cost-centers/{costCenter}', [CostCenterAdminController::class, 'update']);
+        Route::delete('/cost-centers/{costCenter}', [CostCenterAdminController::class, 'destroy']);
+
+        // User Groups
+        Route::get('/user-groups', [UserGroupController::class, 'index']);
+        Route::post('/user-groups', [UserGroupController::class, 'store']);
+        Route::patch('/user-groups/{userGroup}', [UserGroupController::class, 'update']);
+        Route::delete('/user-groups/{userGroup}', [UserGroupController::class, 'destroy']);
+        Route::put('/user-groups/{userGroup}/members', [UserGroupController::class, 'setMembers']);
+        Route::put('/user-groups/{userGroup}/cost-centers', [UserGroupController::class, 'setCostCenters']);
+
+        // Direct cost center assignment per user
+        Route::get('/users/{user}/cost-centers', [TimeBookingAdminController::class, 'userCostCenters']);
+        Route::put('/users/{user}/cost-centers', [TimeBookingAdminController::class, 'setUserCostCenters']);
+
+        // Absence management
+        Route::get('/absences', [AbsenceAdminController::class, 'index']);
+        Route::patch('/absences/{absence}', [AbsenceAdminController::class, 'review']);
+        Route::post('/absences', [AbsenceAdminController::class, 'store']);
+        Route::delete('/absences/{absence}', [AbsenceAdminController::class, 'destroy']);
+
+        // Time booking admin
+        Route::get('/time-bookings', [TimeBookingAdminController::class, 'index']);
+        Route::put('/time-bookings/{userId}/{date}/entry', [TimeBookingAdminController::class, 'storeEntry']);
+        Route::put('/time-bookings/{userId}/{date}/bookings', [TimeBookingAdminController::class, 'storeBookings']);
+
+        // Time locks
+        Route::get('/time-locks', [TimeBookingAdminController::class, 'locks']);
+        Route::post('/time-locks', [TimeBookingAdminController::class, 'toggleLock']);
     });
 
     }); // end EnsurePasswordChanged group

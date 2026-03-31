@@ -117,6 +117,17 @@ backend/tests/
 | `test_count_workdays_weekend_only_returns_zero`| Sa-So = 0 Arbeitstage                                 |
 | `test_count_workdays_filtered_by_year`        | Jahresübergreifender Urlaub: nur Tage im angegebenen Jahr zählen |
 
+### Zeiterfassung & Kostenstellen
+
+| Testdatei | Beschreibung |
+|-----------|-------------|
+| `CostCenterTest` | CRUD für Kostenstellen, Systemkostenstellen-Schutz, Berechtigungen |
+| `UserGroupTest` | Benutzergruppen-Verwaltung, Mitglieder- und Kostenstellenzuordnung |
+| `TimeEntryTest` | Arbeitszeiterfassung, Validierung, Sperrung |
+| `TimeBookingTest` | Prozentuale Buchung, 100%-Validierung, Systemkostenstellen-Schutz |
+| `AbsenceTest` | Krankmeldung, Sonderurlaub, Genehmigungsworkflow |
+| `TimeLockTest` | Monatsabschluss, Sperren/Entsperren |
+
 ---
 
 ## Factories

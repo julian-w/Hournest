@@ -54,6 +54,14 @@ import { ChangePasswordDialogComponent } from './features/auth/change-password-d
               <mat-icon matListItemIcon>beach_access</mat-icon>
               <span matListItemTitle>{{ 'nav.my_vacations' | translate }}</span>
             </a>
+            <a mat-list-item routerLink="/time-tracking" routerLinkActive="active" (click)="closeSidenav()">
+              <mat-icon matListItemIcon>timer</mat-icon>
+              <span matListItemTitle>{{ 'nav.time_tracking' | translate }}</span>
+            </a>
+            <a mat-list-item routerLink="/my-absences" routerLinkActive="active" (click)="closeSidenav()">
+              <mat-icon matListItemIcon>sick</mat-icon>
+              <span matListItemTitle>{{ 'nav.my_absences' | translate }}</span>
+            </a>
             @if (auth.isAdmin()) {
               <mat-divider></mat-divider>
               <div class="nav-section-label">{{ 'nav.admin' | translate }}</div>
@@ -72,6 +80,18 @@ import { ChangePasswordDialogComponent } from './features/auth/change-password-d
               <a mat-list-item routerLink="/admin/blackouts" routerLinkActive="active" (click)="closeSidenav()">
                 <mat-icon matListItemIcon>event_busy</mat-icon>
                 <span matListItemTitle>{{ 'nav.blackouts' | translate }}</span>
+              </a>
+              <a mat-list-item routerLink="/admin/cost-centers" routerLinkActive="active" (click)="closeSidenav()">
+                <mat-icon matListItemIcon>account_tree</mat-icon>
+                <span matListItemTitle>{{ 'nav.cost_centers' | translate }}</span>
+              </a>
+              <a mat-list-item routerLink="/admin/user-groups" routerLinkActive="active" (click)="closeSidenav()">
+                <mat-icon matListItemIcon>group_work</mat-icon>
+                <span matListItemTitle>{{ 'nav.user_groups' | translate }}</span>
+              </a>
+              <a mat-list-item routerLink="/admin/absences" routerLinkActive="active" (click)="closeSidenav()">
+                <mat-icon matListItemIcon>event_busy</mat-icon>
+                <span matListItemTitle>{{ 'nav.absences' | translate }}</span>
               </a>
               <a mat-list-item routerLink="/admin/settings" routerLinkActive="active" (click)="closeSidenav()">
                 <mat-icon matListItemIcon>settings</mat-icon>

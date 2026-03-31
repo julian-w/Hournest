@@ -117,6 +117,17 @@ backend/tests/
 | `test_count_workdays_weekend_only_returns_zero`| Sat-Sun = 0 work days                                 |
 | `test_count_workdays_filtered_by_year`        | Cross-year vacation: only days in specified year count  |
 
+### Time Tracking & Cost Centers
+
+| Test File | Description |
+|-----------|-------------|
+| `CostCenterTest` | CRUD for cost centers, system cost center protection, permissions |
+| `UserGroupTest` | User group management, member and cost center assignment |
+| `TimeEntryTest` | Time recording, validation, locking |
+| `TimeBookingTest` | Percentage booking, 100% validation, system cost center protection |
+| `AbsenceTest` | Illness reporting, special leave, approval workflow |
+| `TimeLockTest` | Month closing, lock/unlock |
+
 ---
 
 ## Factories

@@ -8,6 +8,7 @@ use App\Enums\LedgerEntryType;
 use App\Enums\UserRole;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -64,6 +65,83 @@ class User extends Authenticatable
     public function ledgerEntries(): HasMany
     {
         return $this->hasMany(VacationLedgerEntry::class);
+    }
+
+    public function timeEntries(): HasMany
+    {
+        return $this->hasMany(TimeEntry::class);
+    }
+
+    public function timeBookings(): HasMany
+    {
+        return $this->hasMany(TimeBooking::class);
+    }
+
+    public function absences(): HasMany
+    {
+        return $this->hasMany(Absence::class);
+    }
+
+    public function costCenters(): BelongsToMany
+    {
+        return $this->belongsToMany(CostCenter::class, 'user_cost_centers');
+    }
+
+    public function costCenterFavorites(): BelongsToMany
+    {
+        return $this->belongsToMany(CostCenter::class, 'cost_center_favorites')
+            ->withPivot('sort_order')
+            ->orderByPivot('sort_order');
+    }
+
+    public function userGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(UserGroup::class, 'user_group_members');
+    }
+
+    /**
+     * Get all available cost centers for this user (direct + groups + system).
+     */
+    public function availableCostCenters(): \Illuminate\Support\Collection
+    {
+        $directIds = $this->costCenters()->pluck('cost_centers.id');
+
+        $groupIds = CostCenter::whereHas('userGroups', function ($query) {
+            $query->whereHas('members', function ($q) {
+                $q->where('users.id', $this->id);
+            });
+        })->pluck('id');
+
+        $systemIds = CostCenter::where('is_system', true)->pluck('id');
+
+        $allIds = $directIds->merge($groupIds)->merge($systemIds)->unique();
+
+        return CostCenter::whereIn('id', $allIds)
+            ->where('is_active', true)
+            ->orderBy('is_system', 'desc')
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Get the daily target minutes for a given date.
+     */
+    public function getDailyTargetMinutes(?Carbon $date = null): int
+    {
+        $date = $date ?? Carbon::today();
+        $schedule = $this->getActiveWorkSchedule($date);
+
+        if ($schedule !== null) {
+            $weeklyTarget = $schedule->weekly_target_minutes;
+            $workDaysCount = count($schedule->work_days);
+        } else {
+            $weeklyTarget = (int) Setting::get('default_weekly_target_minutes', '2400');
+            $defaultWorkDays = Setting::get('default_work_days', '[1,2,3,4,5]');
+            $workDays = is_string($defaultWorkDays) ? json_decode($defaultWorkDays, true) : $defaultWorkDays;
+            $workDaysCount = is_array($workDays) ? count($workDays) : 5;
+        }
+
+        return $workDaysCount > 0 ? (int) round($weeklyTarget / $workDaysCount) : 0;
     }
 
     public function isAdmin(): bool
