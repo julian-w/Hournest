@@ -54,12 +54,13 @@ Below the working hours, available cost centers are shown as rows. For each day,
 
 ---
 
-## Favorites, Templates, and Copy Previous Week
+## Favorites, Templates, and Copy Earlier Bookings
 
 Three features help with recurring allocations:
 
 - **Favorites** -- Favorite cost centers are shown first in the grid
 - **Booking Templates** -- Save a day's percentage distribution and apply it to other days
+- **Copy Previous Day** -- Copies the allocation from the latest earlier booked day into the selected day
 - **Copy Previous Week** -- Copies the previous week's percentage distribution into the current week
 
 !!! tip "Favorites"
@@ -77,6 +78,13 @@ Templates only store the **cost center distribution** of a day, not the working 
 
 !!! info "Template CRUD"
     Employees can create, update, and delete their own booking templates. System cost centers such as `VACATION` or `HOLIDAY` cannot be part of a template.
+
+### Copying Earlier Bookings
+
+Two copy helpers are now available for the selected day:
+
+- **Copy Previous Day** looks for the latest earlier booked day and copies its cost center distribution
+- **Copy Previous Week** copies the previous calendar week's distribution day by day
 
 ---
 

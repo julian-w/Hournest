@@ -188,4 +188,35 @@ describe('TimeTrackingComponent', () => {
     expect(templateServiceStub.deleteTemplate).toHaveBeenCalledWith(7);
     expect(component.templates()).toEqual([]);
   });
+
+  it('should copy the latest previously booked day into the selected target day', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const targetDate = component.selectedTemplateDate();
+    timeServiceStub.getTimeBookings.and.returnValue(of([
+      { id: 1, user_id: 3, date: '2026-03-31', cost_center_id: 21, percentage: 80, comment: null },
+      { id: 2, user_id: 3, date: '2026-03-31', cost_center_id: 22, percentage: 20, comment: null },
+      { id: 3, user_id: 3, date: '2026-03-28', cost_center_id: 21, percentage: 100, comment: null },
+    ]));
+
+    component.copyPreviousDay();
+
+    expect(timeServiceStub.getTimeBookings).toHaveBeenCalled();
+    expect(component.bookingRows()[0].percentages[targetDate]).toBe(80);
+    expect(component.bookingRows()[1].percentages[targetDate]).toBe(20);
+  });
+
+  it('should show a message when there is no previous booked day to copy', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    timeServiceStub.getTimeBookings.and.returnValue(of([]));
+
+    component.copyPreviousDay();
+
+    expect(snackBarStub.open).toHaveBeenCalledWith('time_tracking.copy_prev_day_empty', 'common.ok', { duration: 2500 });
+  });
 });

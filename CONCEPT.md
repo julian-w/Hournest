@@ -488,7 +488,7 @@ Time bookings become **locked** after a configurable period to ensure data integ
 
 **Convenience features:**
 - **Copy previous day:** Copies percentage distribution from the last booked day
-  - Current implementation note: not implemented yet
+  - Current implementation note: implemented
 - **Copy previous week:** Copies entire week's distribution
   - Current implementation note: implemented
 - **Apply template:** Fills in a saved distribution pattern
@@ -626,7 +626,7 @@ GET    /api/admin/reports/export?format=csv&from=&to=
 - Booking templates
 - Copy previous day/week
 - Reports & CSV export
-  - Current implementation note: favorites, booking templates, and copy previous week are implemented; copy previous day remains planned
+  - Current implementation note: favorites, booking templates, copy previous day, and copy previous week are implemented
 
 #### Phase 2c (Future)
 - Working time account (Arbeitszeitkonto) with running balance

@@ -211,6 +211,10 @@ interface BookingRow {
         </div>
 
         <div class="save-actions">
+          <button mat-stroked-button (click)="copyPreviousDay()" [disabled]="!selectedTemplateDate()">
+            <mat-icon>redo</mat-icon>
+            {{ 'time_tracking.copy_prev_day' | translate }}
+          </button>
           <button mat-stroked-button (click)="copyPreviousWeek()" [matTooltip]="'time_tracking.copy_prev_week' | translate">
             <mat-icon>content_copy</mat-icon>
             {{ 'time_tracking.copy_prev_week' | translate }}
@@ -605,6 +609,56 @@ export class TimeTrackingComponent implements OnInit {
 
       this.snackBar.open(
         this.translate.instant('time_tracking.copied'),
+        this.translate.instant('common.ok'),
+        { duration: 2000 },
+      );
+    });
+  }
+
+  copyPreviousDay(): void {
+    const targetDate = this.selectedTemplateDate();
+    if (!targetDate) {
+      return;
+    }
+
+    const target = new Date(`${targetDate}T00:00:00`);
+    const searchFrom = new Date(target);
+    searchFrom.setDate(target.getDate() - 42);
+    const searchTo = new Date(target);
+    searchTo.setDate(target.getDate() - 1);
+
+    this.timeService.getTimeBookings(
+      searchFrom.toISOString().split('T')[0],
+      searchTo.toISOString().split('T')[0],
+    ).subscribe(previousBookings => {
+      const previousDates = [...new Set(previousBookings.map(booking => booking.date))]
+        .filter(date => date < targetDate)
+        .sort()
+        .reverse();
+      const sourceDate = previousDates[0];
+
+      if (!sourceDate) {
+        this.snackBar.open(
+          this.translate.instant('time_tracking.copy_prev_day_empty'),
+          this.translate.instant('common.ok'),
+          { duration: 2500 },
+        );
+        return;
+      }
+
+      this.bookingRows.update(rows => rows.map(row => {
+        const percentages = { ...row.percentages };
+        const previousBooking = previousBookings.find(booking =>
+          booking.date === sourceDate && booking.cost_center_id === row.costCenter.id
+        );
+
+        percentages[targetDate] = previousBooking?.percentage ?? null;
+
+        return { ...row, percentages };
+      }));
+
+      this.snackBar.open(
+        this.translate.instant('time_tracking.copied_prev_day'),
         this.translate.instant('common.ok'),
         { duration: 2000 },
       );

@@ -54,12 +54,13 @@ Unterhalb der Arbeitszeiten werden die verfügbaren Kostenstellen als Zeilen ang
 
 ---
 
-## Favoriten, Vorlagen und Vorwoche kopieren
+## Favoriten, Vorlagen und frühere Buchungen kopieren
 
 Um wiederkehrende Buchungen zu beschleunigen, stehen drei Funktionen zur Verfügung:
 
 - **Favoriten** -- Favorisierte Kostenstellen werden im Grid zuerst angezeigt
 - **Buchungsvorlagen** -- Speichern eine prozentuale Verteilung eines Tages und wenden sie auf andere Tage an
+- **Vortag kopieren** -- Übernimmt die Verteilung des zuletzt zuvor gebuchten Tages auf den ausgewählten Tag
 - **Vorwoche kopieren** -- Übernimmt die Prozentverteilung der Vorwoche in die aktuelle Woche
 
 !!! tip "Favoriten"
@@ -77,6 +78,13 @@ Vorlagen speichern nur die **Kostenstellen-Verteilung** eines Tages, nicht die A
 
 !!! info "CRUD für Vorlagen"
     Mitarbeiter können ihre eigenen Buchungsvorlagen anlegen, aktualisieren und löschen. System-Kostenstellen wie `VACATION` oder `HOLIDAY` können nicht Teil einer Vorlage sein.
+
+### Frühere Buchungen kopieren
+
+Für den ausgewählten Tag stehen jetzt zwei Kopierhilfen zur Verfügung:
+
+- **Vortag kopieren** sucht den zuletzt zuvor gebuchten Tag und übernimmt dessen Kostenstellen-Verteilung
+- **Vorwoche kopieren** überträgt die Verteilung der vorherigen Kalenderwoche tageweise
 
 ---
 

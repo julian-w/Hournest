@@ -17,6 +17,7 @@ All notable changes to Hournest are documented on this page.
 
 - Automatic system bookings added for `VACATION`, `ILLNESS`, `SPECIAL_LEAVE`, and `HOLIDAY`
 - Booking templates added for employees: save, apply, update, and delete directly in the weekly view
+- New convenience feature `Copy previous day`: reuses the distribution from the latest earlier booked day
 - Full effective absences remove existing time entries and lock the day
 - Half-day absences create automatic **50% bookings**, while the remaining 50% stays open for manual booking
 - Holidays take precedence over vacation on the same day; for holidays-exempt users, vacation remains bookable as normal

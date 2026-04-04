@@ -17,6 +17,7 @@ Alle nennenswerten Änderungen an Hournest werden auf dieser Seite dokumentiert.
 
 - Automatische System-Buchungen für `VACATION`, `ILLNESS`, `SPECIAL_LEAVE` und `HOLIDAY` ergänzt
 - Buchungsvorlagen für Mitarbeiter ergänzt: speichern, anwenden, aktualisieren und löschen direkt in der Wochenansicht
+- Neue Komfortfunktion `Vortag kopieren`: übernimmt die Verteilung des zuletzt zuvor gebuchten Tages
 - Volle effektive Abwesenheiten entfernen vorhandene Zeiteinträge und sperren den Tag
 - Halbtägige Abwesenheiten erzeugen automatische **50-%-Buchungen**, die übrigen 50 % bleiben manuell buchbar
 - Feiertage haben Vorrang vor Urlaub auf demselben Tag; bei Feiertags-Ausnahme bleibt Urlaub regulär buchbar
