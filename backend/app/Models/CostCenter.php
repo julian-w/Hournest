@@ -44,4 +44,9 @@ class CostCenter extends Model
     {
         return $this->hasMany(TimeBooking::class);
     }
+
+    public function timeBookingTemplateItems(): HasMany
+    {
+        return $this->hasMany(TimeBookingTemplateItem::class);
+    }
 }

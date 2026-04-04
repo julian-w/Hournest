@@ -6,7 +6,7 @@ All Hournest API endpoints are accessible under `/api`. Authentication uses Lara
     An interactive API documentation is available at `http://localhost:8000/docs/api` when the backend is running. The OpenAPI JSON spec is at `http://localhost:8000/docs/api.json`.
 
 !!! info "Current Status"
-    This Markdown reference covers the core endpoints, but it is not yet fully expanded to all newer time-booking, favorites, absence, and admin routes. For the full current implementation, `backend/routes/api.php` and the OpenAPI documentation are authoritative.
+    This Markdown reference covers the core endpoints, but it is not yet fully expanded to all newer time-booking, favorites, templates, absence, and admin routes. For the full current implementation, `backend/routes/api.php` and the OpenAPI documentation are authoritative.
 
 ---
 
@@ -437,6 +437,79 @@ Returns all global settings.
   ]
 }
 ```
+
+---
+
+## Time Booking Template Endpoints
+
+### GET /api/time-booking-templates
+
+Returns the authenticated user's own booking templates.
+
+**Auth:** Sanctum
+
+**Response (200):**
+
+```json
+{
+  "data": [
+    {
+      "id": 7,
+      "user_id": 2,
+      "name": "Standard Day",
+      "items": [
+        {
+          "id": 11,
+          "cost_center_id": 21,
+          "cost_center_name": "Project Alpha",
+          "cost_center_code": "PRJ-ALPHA",
+          "percentage": 60
+        },
+        {
+          "id": 12,
+          "cost_center_id": 22,
+          "cost_center_name": "Internal",
+          "cost_center_code": "INT",
+          "percentage": 40
+        }
+      ]
+    }
+  ]
+}
+```
+
+### POST /api/time-booking-templates
+
+Creates a new booking template for the authenticated user.
+
+**Auth:** Sanctum
+
+**Request Body:**
+
+```json
+{
+  "name": "Standard Day",
+  "items": [
+    { "cost_center_id": 21, "percentage": 60 },
+    { "cost_center_id": 22, "percentage": 40 }
+  ]
+}
+```
+
+### PATCH /api/time-booking-templates/{id}
+
+Updates one of the authenticated user's own booking templates.
+
+**Auth:** Sanctum
+
+### DELETE /api/time-booking-templates/{id}
+
+Deletes one of the authenticated user's own booking templates.
+
+**Auth:** Sanctum
+
+!!! warning "Validation"
+    Templates must total exactly **100%**, may not contain duplicate cost centers, and may only use regular cost centers that are available to the user. System cost centers are excluded.
 
 ---
 

@@ -19,6 +19,7 @@ import { VacationLedgerEntry } from '../models/vacation-ledger-entry.model';
 import { AppSetting } from '../models/setting.model';
 import { User } from '../models/user.model';
 import { BlackoutPeriod } from '../models/blackout-period.model';
+import { TimeBookingTemplate } from '../models/time-booking-template.model';
 
 const MOCK_DELAY = 200;
 
@@ -35,9 +36,21 @@ let nextHolidayId = 100;
 let nextWorkScheduleId = 100;
 let nextLedgerId = 10000;
 let nextBlackoutId = 100;
+let nextTemplateId = 100;
 let blackouts: BlackoutPeriod[] = [
   { id: 1, type: 'company_holiday', start_date: '2026-12-21', end_date: '2026-12-31', reason: 'Betriebsferien', created_at: '2026-01-15T00:00:00+00:00' },
   { id: 2, type: 'freeze', start_date: '2026-11-15', end_date: '2026-11-30', reason: 'Inventur', created_at: '2026-01-15T00:00:00+00:00' },
+];
+let timeBookingTemplates: TimeBookingTemplate[] = [
+  {
+    id: 1,
+    user_id: 2,
+    name: 'Standard Day',
+    items: [
+      { id: 1, cost_center_id: 201, cost_center_name: 'Projekt Alpha', cost_center_code: 'PRJ-ALPHA', percentage: 60 },
+      { id: 2, cost_center_id: 202, cost_center_name: 'Intern', cost_center_code: 'INT', percentage: 40 },
+    ],
+  },
 ];
 
 function jsonResponse<T>(body: T, status = 200): HttpResponse<T> {
@@ -479,6 +492,57 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
       b.start_date <= endDate && b.end_date >= startDate
     );
     return of(jsonResponse({ data: overlapping })).pipe(delay(MOCK_DELAY));
+  }
+
+  // GET /api/time-booking-templates
+  if (method === 'GET' && url.endsWith('/api/time-booking-templates')) {
+    const userId = mockService.currentUser().id;
+    return of(jsonResponse({ data: timeBookingTemplates.filter(template => template.user_id === userId) })).pipe(delay(MOCK_DELAY));
+  }
+
+  // POST /api/time-booking-templates
+  if (method === 'POST' && url.endsWith('/api/time-booking-templates')) {
+    const body = parseBody<{ name: string; items: TimeBookingTemplate['items'] }>(req);
+    const template: TimeBookingTemplate = {
+      id: nextTemplateId++,
+      user_id: mockService.currentUser().id,
+      name: body.name,
+      items: body.items.map((item, index) => ({
+        ...item,
+        id: index + 1,
+      })),
+    };
+    timeBookingTemplates.push(template);
+    return of(jsonResponse({ data: template, message: 'Template created.' }, 201)).pipe(delay(MOCK_DELAY));
+  }
+
+  // PATCH /api/time-booking-templates/:id
+  const patchTemplateId = extractIdFromUrl(url, /\/api\/time-booking-templates\/(\d+)$/);
+  if (method === 'PATCH' && patchTemplateId !== null) {
+    const template = timeBookingTemplates.find(entry =>
+      entry.id === patchTemplateId && entry.user_id === mockService.currentUser().id
+    );
+    if (!template) {
+      return of(jsonResponse({ message: 'Not found' }, 404)).pipe(delay(MOCK_DELAY));
+    }
+
+    const body = parseBody<{ name: string; items: TimeBookingTemplate['items'] }>(req);
+    template.name = body.name;
+    template.items = body.items.map((item, index) => ({
+      ...item,
+      id: index + 1,
+    }));
+
+    return of(jsonResponse({ data: template, message: 'Template updated.' })).pipe(delay(MOCK_DELAY));
+  }
+
+  // DELETE /api/time-booking-templates/:id
+  const deleteTemplateId = extractIdFromUrl(url, /\/api\/time-booking-templates\/(\d+)$/);
+  if (method === 'DELETE' && deleteTemplateId !== null) {
+    timeBookingTemplates = timeBookingTemplates.filter(template =>
+      !(template.id === deleteTemplateId && template.user_id === mockService.currentUser().id)
+    );
+    return of(jsonResponse(null, 200)).pipe(delay(MOCK_DELAY));
   }
 
   // Fallback: pass through to real backend

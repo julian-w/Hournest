@@ -88,6 +88,7 @@ backend/tests/
 │   ├── SecurityTest.php
 │   ├── SettingTest.php
 │   ├── TimeBookingAdminTest.php
+│   ├── TimeBookingTemplateTest.php
 │   ├── TimeBookingTest.php
 │   ├── TimeEntryTest.php
 │   ├── TimeLockTest.php
@@ -106,6 +107,7 @@ frontend/src/app/
 ├── core/services/*.spec.ts
 └── features/
     ├── login/login.component.spec.ts
+    ├── time-tracking/time-tracking.component.spec.ts
     └── vacation/my-vacations.component.spec.ts
 ```
 
@@ -113,9 +115,9 @@ frontend/src/app/
 
 ## Current Status
 
-- Backend suite: **330 tests / 897 assertions**
+- Backend suite: **341 tests / 935 assertions**
 - Frontend: every service under `frontend/src/app/core/services` has a matching spec file
-- First feature components with specs: Login and My Vacations
+- Feature components with specs: Login, My Vacations, and Time Tracking
 
 ---
 
@@ -152,6 +154,7 @@ frontend/src/app/
 | `TimeEntryTest` | Time recording, holidays, locking, auto-lock |
 | `TimeBookingTest` | Percentage booking, 100%/50% rules, system cost center protection, auto-lock |
 | `TimeBookingAdminTest` | Admin access to bookings and direct user cost center assignment |
+| `TimeBookingTemplateTest` | Own booking templates, 100% validation, ownership rules, no system cost centers |
 | `TimeLockTest` | Month closing, lock/unlock |
 | `CrossSystemTest` | Interactions between vacations, holidays, illness, special leave, time entries, and system bookings |
 
@@ -168,6 +171,7 @@ frontend/src/app/
 | `app.component.spec.ts` | Language initialization and switching |
 | `core/services/*.spec.ts` | Request URLs, payloads, and response mapping for all core services |
 | `features/login/login.component.spec.ts` | Login flow, error states, forced password change |
+| `features/time-tracking/time-tracking.component.spec.ts` | Applying, saving, updating, and deleting templates |
 | `features/vacation/my-vacations.component.spec.ts` | Loading, cancelling, dialog refresh, ledger year switching |
 
 ---

@@ -1,23 +1,27 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { TimeTrackingService } from '../../core/services/time-tracking.service';
-import { CostCenterService } from '../../core/services/cost-center.service';
-import { AbsenceService } from '../../core/services/absence.service';
-import { TimeEntry } from '../../core/models/time-entry.model';
-import { TimeBooking } from '../../core/models/time-booking.model';
-import { CostCenter } from '../../core/models/cost-center.model';
 import { Absence } from '../../core/models/absence.model';
+import { CostCenter } from '../../core/models/cost-center.model';
+import { TimeBookingTemplate } from '../../core/models/time-booking-template.model';
+import { TimeBooking } from '../../core/models/time-booking.model';
+import { TimeEntry } from '../../core/models/time-entry.model';
+import { AbsenceService } from '../../core/services/absence.service';
+import { CostCenterService } from '../../core/services/cost-center.service';
+import { TimeBookingTemplateService } from '../../core/services/time-booking-template.service';
+import { TimeTrackingService } from '../../core/services/time-tracking.service';
+import { TimeBookingTemplateDialogComponent } from './time-booking-template-dialog.component';
 
 interface DayData {
   date: string;
@@ -25,7 +29,6 @@ interface DayData {
   isToday: boolean;
   isWeekend: boolean;
   timeEntry: TimeEntry | null;
-  bookings: TimeBooking[];
   absence: Absence | null;
   isLocked: boolean;
   startTime: string;
@@ -43,9 +46,18 @@ interface BookingRow {
   selector: 'app-time-tracking',
   standalone: true,
   imports: [
-    MatButtonModule, MatIconModule, MatCardModule, MatInputModule, MatFormFieldModule,
-    MatSelectModule, MatTooltipModule, MatChipsModule, MatSnackBarModule,
-    FormsModule, DatePipe, TranslateModule,
+    DatePipe,
+    FormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatChipsModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatSelectModule,
+    MatSnackBarModule,
+    MatTooltipModule,
+    TranslateModule,
   ],
   template: `
     <div class="page-header">
@@ -64,7 +76,6 @@ interface BookingRow {
 
     <mat-card class="time-grid">
       <div class="grid-container">
-        <!-- Header row -->
         <div class="grid-header">
           <div class="label-col">{{ 'time_tracking.cost_center' | translate }}</div>
           @for (day of days(); track day.date) {
@@ -75,7 +86,6 @@ interface BookingRow {
           }
         </div>
 
-        <!-- Time entry row -->
         <div class="grid-row time-row">
           <div class="label-col">
             <mat-icon>schedule</mat-icon>
@@ -110,7 +120,6 @@ interface BookingRow {
           }
         </div>
 
-        <!-- Booking rows per cost center -->
         @for (row of bookingRows(); track row.costCenter.id) {
           <div class="grid-row" [class.favorite-row]="row.isFavorite">
             <div class="label-col cost-center-label">
@@ -134,13 +143,12 @@ interface BookingRow {
           </div>
         }
 
-        <!-- Total row -->
         <div class="grid-row total-row">
           <div class="label-col"><strong>{{ 'time_tracking.total' | translate }}</strong></div>
           @for (day of days(); track day.date) {
             <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend"
-                 [class.total-ok]="getDayTotal(day.date) === 100"
-                 [class.total-warn]="getDayTotal(day.date) > 0 && getDayTotal(day.date) !== 100 && !(day.absence && day.absence.scope === 'full_day')">
+                 [class.total-ok]="getDayTotal(day.date) === expectedDayTotal(day)"
+                 [class.total-warn]="getDayTotal(day.date) > 0 && getDayTotal(day.date) !== expectedDayTotal(day) && !(day.absence && day.absence.scope === 'full_day')">
               @if (!day.isWeekend) {
                 <strong>{{ getDayTotal(day.date) }}%</strong>
               }
@@ -148,7 +156,6 @@ interface BookingRow {
           }
         </div>
 
-        <!-- Weekly summary row -->
         <div class="grid-row summary-row">
           <div class="label-col summary-label">
             <div>{{ 'time_tracking.week_actual' | translate }}: <strong>{{ weekActual() }}</strong></div>
@@ -160,16 +167,59 @@ interface BookingRow {
         </div>
       </div>
 
-      <!-- Action buttons -->
       <div class="actions">
-        <button mat-stroked-button (click)="copyPreviousWeek()" [matTooltip]="'time_tracking.copy_prev_week' | translate">
-          <mat-icon>content_copy</mat-icon>
-          {{ 'time_tracking.copy_prev_week' | translate }}
-        </button>
-        <button mat-raised-button color="primary" (click)="saveAll()">
-          <mat-icon>save</mat-icon>
-          {{ 'time_tracking.save_all' | translate }}
-        </button>
+        <div class="template-actions">
+          <mat-form-field appearance="outline" class="template-field">
+            <mat-label>{{ 'time_tracking.template_day' | translate }}</mat-label>
+            <mat-select [ngModel]="selectedTemplateDate()" (ngModelChange)="selectedTemplateDate.set($event)">
+              @for (day of templateDays(); track day.date) {
+                <mat-option [value]="day.date">
+                  {{ day.date | date:'EEE dd.MM.' }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="template-field">
+            <mat-label>{{ 'time_tracking.template_label' | translate }}</mat-label>
+            <mat-select [ngModel]="selectedTemplateId()" (ngModelChange)="selectedTemplateId.set($event)">
+              @for (template of templates(); track template.id) {
+                <mat-option [value]="template.id">{{ template.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-stroked-button (click)="applySelectedTemplate()" [disabled]="!selectedTemplateId() || !selectedTemplateDate()">
+            <mat-icon>play_arrow</mat-icon>
+            {{ 'time_tracking.apply_template' | translate }}
+          </button>
+
+          <button mat-stroked-button (click)="openSaveTemplateDialog()" [disabled]="!selectedTemplateDate()">
+            <mat-icon>bookmark_add</mat-icon>
+            {{ 'time_tracking.save_template' | translate }}
+          </button>
+
+          <button mat-stroked-button (click)="openUpdateTemplateDialog()" [disabled]="!selectedTemplateId() || !selectedTemplateDate()">
+            <mat-icon>edit</mat-icon>
+            {{ 'time_tracking.update_template' | translate }}
+          </button>
+
+          <button mat-stroked-button color="warn" (click)="deleteSelectedTemplate()" [disabled]="!selectedTemplateId()">
+            <mat-icon>delete</mat-icon>
+            {{ 'time_tracking.delete_template' | translate }}
+          </button>
+        </div>
+
+        <div class="save-actions">
+          <button mat-stroked-button (click)="copyPreviousWeek()" [matTooltip]="'time_tracking.copy_prev_week' | translate">
+            <mat-icon>content_copy</mat-icon>
+            {{ 'time_tracking.copy_prev_week' | translate }}
+          </button>
+          <button mat-raised-button color="primary" (click)="saveAll()">
+            <mat-icon>save</mat-icon>
+            {{ 'time_tracking.save_all' | translate }}
+          </button>
+        </div>
       </div>
     </mat-card>
   `,
@@ -238,7 +288,7 @@ interface BookingRow {
     .day-name {
       font-size: 12px;
       text-transform: uppercase;
-      color: rgba(0,0,0,0.54);
+      color: rgba(0, 0, 0, 0.54);
     }
     .day-date {
       font-size: 13px;
@@ -261,7 +311,7 @@ interface BookingRow {
       font-size: 12px;
     }
     .time-sep {
-      color: rgba(0,0,0,0.38);
+      color: rgba(0, 0, 0, 0.38);
     }
     .break-input {
       width: 36px;
@@ -274,7 +324,7 @@ interface BookingRow {
     }
     .net-hours {
       font-size: 11px;
-      color: rgba(0,0,0,0.54);
+      color: rgba(0, 0, 0, 0.54);
       margin-top: 2px;
     }
     .pct-input {
@@ -342,48 +392,69 @@ interface BookingRow {
     }
     .actions {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
       gap: 12px;
       padding: 16px 12px 8px;
+    }
+    .template-actions,
+    .save-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .template-field {
+      width: 190px;
+      margin-bottom: -1.25em;
     }
   `],
 })
 export class TimeTrackingComponent implements OnInit {
   private timeService = inject(TimeTrackingService);
+  private templateService = inject(TimeBookingTemplateService);
   private costCenterService = inject(CostCenterService);
   private absenceService = inject(AbsenceService);
+  private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
 
   private weekOffset = signal(0);
+  private targetMinutesPerDay = signal(480);
+  private weekBookings = signal<TimeBooking[]>([]);
+
   days = signal<DayData[]>([]);
   costCenters = signal<CostCenter[]>([]);
   favorites = signal<CostCenter[]>([]);
   absences = signal<Absence[]>([]);
+  templates = signal<TimeBookingTemplate[]>([]);
   bookingRows = signal<BookingRow[]>([]);
-  private targetMinutesPerDay = signal(480); // default 8h
+  selectedTemplateDate = signal('');
+  selectedTemplateId = signal<number | null>(null);
 
   weekLabel = computed(() => {
-    const d = this.days();
-    if (d.length === 0) return '';
-    return `${d[0].date} — ${d[d.length - 1].date}`;
+    const weekDays = this.days();
+    if (weekDays.length === 0) {
+      return '';
+    }
+
+    return `${weekDays[0].date} — ${weekDays[weekDays.length - 1].date}`;
   });
 
   weekActual = computed(() => {
-    const total = this.days().reduce((sum, day) => {
-      return sum + (day.timeEntry?.net_working_minutes ?? 0);
-    }, 0);
+    const total = this.days().reduce((sum, day) => sum + (day.timeEntry?.net_working_minutes ?? 0), 0);
     return this.formatMinutes(total);
   });
 
   weekTarget = computed(() => {
-    const workDays = this.days().filter(d => !d.isWeekend).length;
+    const workDays = this.days().filter(day => !day.isWeekend).length;
     return this.formatMinutes(workDays * this.targetMinutesPerDay());
   });
 
   weekDeltaMinutes = computed(() => {
     const actual = this.days().reduce((sum, day) => sum + (day.timeEntry?.net_working_minutes ?? 0), 0);
-    const workDays = this.days().filter(d => !d.isWeekend).length;
+    const workDays = this.days().filter(day => !day.isWeekend).length;
     return actual - workDays * this.targetMinutesPerDay();
   });
 
@@ -393,12 +464,14 @@ export class TimeTrackingComponent implements OnInit {
     return sign + this.formatMinutes(Math.abs(delta));
   });
 
+  templateDays = computed(() => this.days().filter(day => this.canEditBookingsForDay(day)));
+
   ngOnInit(): void {
     this.loadWeek();
   }
 
   navigateWeek(direction: number): void {
-    this.weekOffset.update(v => v + direction);
+    this.weekOffset.update(value => value + direction);
     this.loadWeek();
   }
 
@@ -407,16 +480,269 @@ export class TimeTrackingComponent implements OnInit {
     this.loadWeek();
   }
 
+  onPercentageChange(row: BookingRow, date: string, value: number | null): void {
+    this.bookingRows.update(rows => rows.map(entry =>
+      entry.costCenter.id === row.costCenter.id
+        ? { ...entry, percentages: { ...entry.percentages, [date]: value } }
+        : entry
+    ));
+  }
+
+  getDayTotal(date: string): number {
+    return this.bookingRows().reduce((sum, row) => sum + (row.percentages[date] ?? 0), 0);
+  }
+
+  expectedDayTotal(day: DayData): number {
+    if (day.absence && day.absence.scope !== 'full_day') {
+      return 50;
+    }
+
+    return 100;
+  }
+
+  saveTimeEntry(day: DayData): void {
+    if (!day.startTime || !day.endTime) {
+      return;
+    }
+
+    this.timeService.saveTimeEntry(day.date, {
+      start_time: day.startTime,
+      end_time: day.endTime,
+      break_minutes: day.breakMinutes || 0,
+    }).subscribe(entry => {
+      this.days.update(days => days.map(item =>
+        item.date === day.date ? { ...item, timeEntry: entry } : item
+      ));
+    });
+  }
+
+  saveAll(): void {
+    const days = this.days().filter(day => !day.isWeekend && !(day.absence && day.absence.scope === 'full_day'));
+    let pending = 0;
+    let completed = 0;
+
+    for (const day of days) {
+      const bookings = this.bookingRows()
+        .filter(row => (row.percentages[day.date] ?? 0) > 0)
+        .map(row => ({
+          cost_center_id: row.costCenter.id,
+          percentage: row.percentages[day.date]!,
+        }));
+
+      if (bookings.length === 0) {
+        continue;
+      }
+
+      const total = bookings.reduce((sum, booking) => sum + booking.percentage, 0);
+      if (total !== this.expectedDayTotal(day)) {
+        continue;
+      }
+
+      pending++;
+      this.timeService.saveTimeBookings(day.date, bookings).subscribe({
+        next: () => {
+          completed++;
+          if (completed === pending) {
+            this.snackBar.open(
+              this.translate.instant('time_tracking.saved'),
+              this.translate.instant('common.ok'),
+              { duration: 3000 },
+            );
+          }
+        },
+        error: () => {
+          this.snackBar.open(
+            this.translate.instant('time_tracking.save_error'),
+            this.translate.instant('common.ok'),
+            { duration: 3000 },
+          );
+        },
+      });
+    }
+
+    if (pending === 0) {
+      this.snackBar.open(
+        this.translate.instant('time_tracking.nothing_to_save'),
+        this.translate.instant('common.ok'),
+        { duration: 3000 },
+      );
+    }
+  }
+
+  copyPreviousWeek(): void {
+    const currentDays = this.days();
+    if (currentDays.length === 0) {
+      return;
+    }
+
+    const prevFrom = new Date(currentDays[0].date);
+    prevFrom.setDate(prevFrom.getDate() - 7);
+    const prevTo = new Date(currentDays[6].date);
+    prevTo.setDate(prevTo.getDate() - 7);
+
+    this.timeService.getTimeBookings(
+      prevFrom.toISOString().split('T')[0],
+      prevTo.toISOString().split('T')[0],
+    ).subscribe(previousBookings => {
+      this.bookingRows.update(rows => rows.map(row => {
+        const percentages = { ...row.percentages };
+        for (let index = 0; index < 7; index++) {
+          const previousDate = new Date(prevFrom);
+          previousDate.setDate(prevFrom.getDate() + index);
+          const previousDateString = previousDate.toISOString().split('T')[0];
+          const currentDate = currentDays[index].date;
+          const previousBooking = previousBookings.find(booking =>
+            booking.date === previousDateString && booking.cost_center_id === row.costCenter.id
+          );
+
+          if (previousBooking) {
+            percentages[currentDate] = previousBooking.percentage;
+          }
+        }
+
+        return { ...row, percentages };
+      }));
+
+      this.snackBar.open(
+        this.translate.instant('time_tracking.copied'),
+        this.translate.instant('common.ok'),
+        { duration: 2000 },
+      );
+    });
+  }
+
+  applySelectedTemplate(): void {
+    const template = this.getSelectedTemplate();
+    const date = this.selectedTemplateDate();
+    const day = this.days().find(entry => entry.date === date);
+
+    if (!template || !date || !day || !this.canEditBookingsForDay(day)) {
+      return;
+    }
+
+    const percentages = new Map(template.items.map(item => [item.cost_center_id, item.percentage]));
+
+    this.bookingRows.update(rows => rows.map(row => ({
+      ...row,
+      percentages: {
+        ...row.percentages,
+        [date]: percentages.get(row.costCenter.id) ?? null,
+      },
+    })));
+
+    this.snackBar.open(
+      this.translate.instant('time_tracking.template_applied'),
+      this.translate.instant('common.ok'),
+      { duration: 2500 },
+    );
+  }
+
+  openSaveTemplateDialog(): void {
+    const date = this.selectedTemplateDate();
+    const items = this.getTemplatePayloadForDate(date);
+
+    if (!date || items.length === 0) {
+      this.snackBar.open(
+        this.translate.instant('time_tracking.template_empty_day'),
+        this.translate.instant('common.ok'),
+        { duration: 3000 },
+      );
+      return;
+    }
+
+    this.dialog.open(TimeBookingTemplateDialogComponent, {
+      data: {
+        titleKey: 'time_tracking.template_save_title',
+        confirmKey: 'common.save',
+        initialName: this.translate.instant('time_tracking.template_default_name', { date }),
+      },
+    }).afterClosed().subscribe(name => {
+      if (!name) {
+        return;
+      }
+
+      this.templateService.createTemplate({ name, items }).subscribe(() => {
+        this.loadTemplates();
+        this.snackBar.open(
+          this.translate.instant('time_tracking.template_saved'),
+          this.translate.instant('common.ok'),
+          { duration: 2500 },
+        );
+      });
+    });
+  }
+
+  openUpdateTemplateDialog(): void {
+    const template = this.getSelectedTemplate();
+    const date = this.selectedTemplateDate();
+    const items = this.getTemplatePayloadForDate(date);
+
+    if (!template || !date || items.length === 0) {
+      this.snackBar.open(
+        this.translate.instant('time_tracking.template_empty_day'),
+        this.translate.instant('common.ok'),
+        { duration: 3000 },
+      );
+      return;
+    }
+
+    this.dialog.open(TimeBookingTemplateDialogComponent, {
+      data: {
+        titleKey: 'time_tracking.template_update_title',
+        confirmKey: 'common.save',
+        initialName: template.name,
+      },
+    }).afterClosed().subscribe(name => {
+      if (!name) {
+        return;
+      }
+
+      this.templateService.updateTemplate(template.id, { name, items }).subscribe(() => {
+        this.loadTemplates();
+        this.snackBar.open(
+          this.translate.instant('time_tracking.template_updated'),
+          this.translate.instant('common.ok'),
+          { duration: 2500 },
+        );
+      });
+    });
+  }
+
+  deleteSelectedTemplate(): void {
+    const template = this.getSelectedTemplate();
+    if (!template) {
+      return;
+    }
+
+    this.templateService.deleteTemplate(template.id).subscribe(() => {
+      this.templates.update(templates => templates.filter(entry => entry.id !== template.id));
+      this.syncTemplateSelection();
+      this.snackBar.open(
+        this.translate.instant('time_tracking.template_deleted'),
+        this.translate.instant('common.ok'),
+        { duration: 2500 },
+      );
+    });
+  }
+
+  formatMinutes(minutes: number): string {
+    const hours = Math.floor(Math.abs(minutes) / 60);
+    const remainder = Math.abs(minutes) % 60;
+    return `${hours}:${remainder.toString().padStart(2, '0')}`;
+  }
+
   private loadWeek(): void {
     const { from, to, days } = this.getWeekDates();
     this.days.set(days);
+    this.syncTemplateDateSelection();
 
-    this.costCenterService.getAvailableCostCenters().subscribe(ccs => {
-      this.costCenters.set(ccs.filter(cc => !cc.is_system));
+    this.costCenterService.getAvailableCostCenters().subscribe(costCenters => {
+      this.costCenters.set(costCenters.filter(costCenter => !costCenter.is_system));
+      this.buildBookingRows();
     });
 
-    this.costCenterService.getFavorites().subscribe(favs => {
-      this.favorites.set(favs);
+    this.costCenterService.getFavorites().subscribe(favorites => {
+      this.favorites.set(favorites);
       this.buildBookingRows();
     });
 
@@ -425,12 +751,23 @@ export class TimeTrackingComponent implements OnInit {
     });
 
     this.timeService.getTimeBookings(from, to).subscribe(bookings => {
-      this.applyBookings(bookings);
+      this.weekBookings.set(bookings);
+      this.buildBookingRows();
     });
 
-    this.absenceService.getMyAbsences().subscribe(abs => {
-      this.absences.set(abs);
-      this.applyAbsences(abs);
+    this.absenceService.getMyAbsences().subscribe(absences => {
+      this.absences.set(absences);
+      this.applyAbsences(absences);
+      this.syncTemplateDateSelection();
+    });
+
+    this.loadTemplates();
+  }
+
+  private loadTemplates(): void {
+    this.templateService.getTemplates().subscribe(templates => {
+      this.templates.set(templates);
+      this.syncTemplateSelection();
     });
   }
 
@@ -443,18 +780,18 @@ export class TimeTrackingComponent implements OnInit {
     const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
     const days: DayData[] = [];
 
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-      const dateStr = d.toISOString().split('T')[0];
-      const todayStr = today.toISOString().split('T')[0];
+    for (let index = 0; index < 7; index++) {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      const dateString = date.toISOString().split('T')[0];
+      const todayString = today.toISOString().split('T')[0];
+
       days.push({
-        date: dateStr,
-        dayLabel: dayNames[d.getDay()],
-        isToday: dateStr === todayStr,
-        isWeekend: d.getDay() === 0 || d.getDay() === 6,
+        date: dateString,
+        dayLabel: dayNames[date.getDay()],
+        isToday: dateString === todayString,
+        isWeekend: date.getDay() === 0 || date.getDay() === 6,
         timeEntry: null,
-        bookings: [],
         absence: null,
         isLocked: false,
         startTime: '',
@@ -467,187 +804,100 @@ export class TimeTrackingComponent implements OnInit {
   }
 
   private applyTimeEntries(entries: TimeEntry[]): void {
-    this.days.update(days => {
-      return days.map(day => {
-        const entry = entries.find(e => e.date === day.date);
-        return {
-          ...day,
-          timeEntry: entry ?? null,
-          startTime: entry?.start_time ?? '',
-          endTime: entry?.end_time ?? '',
-          breakMinutes: entry?.break_minutes ?? 0,
-        };
-      });
-    });
-  }
-
-  private applyBookings(bookings: TimeBooking[]): void {
-    const rows = this.bookingRows();
-    const updated = rows.map(row => {
-      const pcts = { ...row.percentages };
-      for (const b of bookings) {
-        if (b.cost_center_id === row.costCenter.id) {
-          pcts[b.date] = b.percentage;
-        }
-      }
-      return { ...row, percentages: pcts };
-    });
-    this.bookingRows.set(updated);
+    this.days.update(days => days.map(day => {
+      const entry = entries.find(item => item.date === day.date);
+      return {
+        ...day,
+        timeEntry: entry ?? null,
+        startTime: entry?.start_time ?? '',
+        endTime: entry?.end_time ?? '',
+        breakMinutes: entry?.break_minutes ?? 0,
+      };
+    }));
   }
 
   private applyAbsences(absences: Absence[]): void {
-    this.days.update(days => {
-      return days.map(day => {
-        const absence = absences.find(a =>
-          a.start_date <= day.date && a.end_date >= day.date &&
-          ['acknowledged', 'approved', 'admin_created'].includes(a.status)
-        );
-        return { ...day, absence: absence ?? null };
-      });
-    });
+    this.days.update(days => days.map(day => {
+      const absence = absences.find(entry =>
+        entry.start_date <= day.date &&
+        entry.end_date >= day.date &&
+        ['acknowledged', 'approved', 'admin_created'].includes(entry.status)
+      );
+
+      return { ...day, absence: absence ?? null };
+    }));
   }
 
   private buildBookingRows(): void {
-    const favIds = new Set(this.favorites().map(f => f.id));
-    const allCCs = this.costCenters().filter(cc => !cc.is_system);
+    const favoriteIds = new Set(this.favorites().map(favorite => favorite.id));
+    const allCostCenters = this.costCenters().filter(costCenter => !costCenter.is_system);
+    const bookings = this.weekBookings();
 
-    const favRows: BookingRow[] = this.favorites()
-      .filter(f => !f.is_system)
-      .map(cc => ({
-        costCenter: cc,
+    const favoriteRows: BookingRow[] = this.favorites()
+      .filter(favorite => !favorite.is_system)
+      .map(costCenter => ({
+        costCenter,
         isFavorite: true,
-        percentages: {},
+        percentages: this.getPercentagesForCostCenter(costCenter.id, bookings),
       }));
 
-    const otherRows: BookingRow[] = allCCs
-      .filter(cc => !favIds.has(cc.id))
-      .map(cc => ({
-        costCenter: cc,
+    const otherRows: BookingRow[] = allCostCenters
+      .filter(costCenter => !favoriteIds.has(costCenter.id))
+      .map(costCenter => ({
+        costCenter,
         isFavorite: false,
-        percentages: {},
+        percentages: this.getPercentagesForCostCenter(costCenter.id, bookings),
       }));
 
-    this.bookingRows.set([...favRows, ...otherRows]);
+    this.bookingRows.set([...favoriteRows, ...otherRows]);
   }
 
-  onPercentageChange(row: BookingRow, date: string, value: number | null): void {
-    this.bookingRows.update(rows => {
-      return rows.map(r => {
-        if (r.costCenter.id === row.costCenter.id) {
-          return { ...r, percentages: { ...r.percentages, [date]: value } };
-        }
-        return r;
-      });
-    });
-  }
+  private getPercentagesForCostCenter(costCenterId: number, bookings: TimeBooking[]): { [date: string]: number | null } {
+    const percentages: { [date: string]: number | null } = {};
 
-  getDayTotal(date: string): number {
-    return this.bookingRows().reduce((sum, row) => sum + (row.percentages[date] ?? 0), 0);
-  }
-
-  saveTimeEntry(day: DayData): void {
-    if (!day.startTime || !day.endTime) return;
-
-    this.timeService.saveTimeEntry(day.date, {
-      start_time: day.startTime,
-      end_time: day.endTime,
-      break_minutes: day.breakMinutes || 0,
-    }).subscribe(entry => {
-      this.days.update(days => days.map(d =>
-        d.date === day.date ? { ...d, timeEntry: entry } : d
-      ));
-    });
-  }
-
-  saveAll(): void {
-    const days = this.days().filter(d => !d.isWeekend && !(d.absence && d.absence.scope === 'full_day'));
-    let pending = 0;
-    let completed = 0;
-
-    for (const day of days) {
-      const bookings = this.bookingRows()
-        .filter(r => (r.percentages[day.date] ?? 0) > 0)
-        .map(r => ({
-          cost_center_id: r.costCenter.id,
-          percentage: r.percentages[day.date]!,
-        }));
-
-      if (bookings.length === 0) continue;
-      const total = bookings.reduce((s, b) => s + b.percentage, 0);
-      if (total !== 100) continue;
-
-      pending++;
-      this.timeService.saveTimeBookings(day.date, bookings).subscribe({
-        next: () => {
-          completed++;
-          if (completed === pending) {
-            this.snackBar.open(
-              this.translate.instant('time_tracking.saved'),
-              this.translate.instant('common.ok'),
-              { duration: 3000 }
-            );
-          }
-        },
-        error: () => {
-          this.snackBar.open(
-            this.translate.instant('time_tracking.save_error'),
-            this.translate.instant('common.ok'),
-            { duration: 3000 }
-          );
-        },
-      });
+    for (const booking of bookings) {
+      if (booking.cost_center_id === costCenterId) {
+        percentages[booking.date] = booking.percentage;
+      }
     }
 
-    if (pending === 0) {
-      this.snackBar.open(
-        this.translate.instant('time_tracking.nothing_to_save'),
-        this.translate.instant('common.ok'),
-        { duration: 3000 }
-      );
+    return percentages;
+  }
+
+  private canEditBookingsForDay(day: DayData): boolean {
+    return !day.isWeekend && !day.isLocked && !(day.absence && day.absence.scope === 'full_day');
+  }
+
+  private syncTemplateDateSelection(): void {
+    const availableDates = this.templateDays().map(day => day.date);
+
+    if (availableDates.includes(this.selectedTemplateDate())) {
+      return;
     }
+
+    this.selectedTemplateDate.set(availableDates[0] ?? '');
   }
 
-  copyPreviousWeek(): void {
-    const prevFrom = new Date(this.days()[0].date);
-    prevFrom.setDate(prevFrom.getDate() - 7);
-    const prevTo = new Date(this.days()[6].date);
-    prevTo.setDate(prevTo.getDate() - 7);
+  private syncTemplateSelection(): void {
+    const templateIds = this.templates().map(template => template.id);
 
-    this.timeService.getTimeBookings(
-      prevFrom.toISOString().split('T')[0],
-      prevTo.toISOString().split('T')[0]
-    ).subscribe(prevBookings => {
-      this.bookingRows.update(rows => {
-        return rows.map(row => {
-          const pcts = { ...row.percentages };
-          for (let i = 0; i < 7; i++) {
-            const prevDate = new Date(prevFrom);
-            prevDate.setDate(prevFrom.getDate() + i);
-            const prevDateStr = prevDate.toISOString().split('T')[0];
-            const currentDate = this.days()[i].date;
+    if (this.selectedTemplateId() !== null && templateIds.includes(this.selectedTemplateId()!)) {
+      return;
+    }
 
-            const prevBooking = prevBookings.find(
-              b => b.date === prevDateStr && b.cost_center_id === row.costCenter.id
-            );
-            if (prevBooking) {
-              pcts[currentDate] = prevBooking.percentage;
-            }
-          }
-          return { ...row, percentages: pcts };
-        });
-      });
-
-      this.snackBar.open(
-        this.translate.instant('time_tracking.copied'),
-        this.translate.instant('common.ok'),
-        { duration: 2000 }
-      );
-    });
+    this.selectedTemplateId.set(templateIds[0] ?? null);
   }
 
-  formatMinutes(minutes: number): string {
-    const h = Math.floor(Math.abs(minutes) / 60);
-    const m = Math.abs(minutes) % 60;
-    return `${h}:${m.toString().padStart(2, '0')}`;
+  private getTemplatePayloadForDate(date: string): { cost_center_id: number; percentage: number }[] {
+    return this.bookingRows()
+      .map(row => ({
+        cost_center_id: row.costCenter.id,
+        percentage: row.percentages[date] ?? 0,
+      }))
+      .filter(item => item.percentage > 0);
+  }
+
+  private getSelectedTemplate(): TimeBookingTemplate | undefined {
+    return this.templates().find(template => template.id === this.selectedTemplateId());
   }
 }

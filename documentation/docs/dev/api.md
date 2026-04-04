@@ -6,7 +6,7 @@ Alle API-Endpoints von Hournest sind unter `/api` erreichbar. Die Authentifizier
     Eine interaktive API-Dokumentation ist unter `http://localhost:8000/docs/api` verfügbar, wenn das Backend läuft. Die OpenAPI-JSON-Spec liegt unter `http://localhost:8000/docs/api.json`.
 
 !!! info "Aktueller Stand"
-    Diese Markdown-Referenz deckt die Kern-Endpoints ab, ist aber noch nicht vollständig auf alle neueren Zeitbuchungs-, Favoriten-, Abwesenheits- und Admin-Routen erweitert. Für den vollständigen Ist-Zustand sind `backend/routes/api.php` und die OpenAPI-Dokumentation maßgeblich.
+    Diese Markdown-Referenz deckt die Kern-Endpoints ab, ist aber noch nicht vollständig auf alle neueren Zeitbuchungs-, Favoriten-, Vorlagen-, Abwesenheits- und Admin-Routen erweitert. Für den vollständigen Ist-Zustand sind `backend/routes/api.php` und die OpenAPI-Dokumentation maßgeblich.
 
 ---
 
@@ -437,6 +437,79 @@ Gibt alle globalen Einstellungen zurück.
   ]
 }
 ```
+
+---
+
+## Time Booking Template Endpoints
+
+### GET /api/time-booking-templates
+
+Gibt die eigenen Buchungsvorlagen des angemeldeten Benutzers zurück.
+
+**Auth:** Sanctum
+
+**Response (200):**
+
+```json
+{
+  "data": [
+    {
+      "id": 7,
+      "user_id": 2,
+      "name": "Standardtag",
+      "items": [
+        {
+          "id": 11,
+          "cost_center_id": 21,
+          "cost_center_name": "Projekt Alpha",
+          "cost_center_code": "PRJ-ALPHA",
+          "percentage": 60
+        },
+        {
+          "id": 12,
+          "cost_center_id": 22,
+          "cost_center_name": "Intern",
+          "cost_center_code": "INT",
+          "percentage": 40
+        }
+      ]
+    }
+  ]
+}
+```
+
+### POST /api/time-booking-templates
+
+Erstellt eine neue eigene Buchungsvorlage.
+
+**Auth:** Sanctum
+
+**Request Body:**
+
+```json
+{
+  "name": "Standardtag",
+  "items": [
+    { "cost_center_id": 21, "percentage": 60 },
+    { "cost_center_id": 22, "percentage": 40 }
+  ]
+}
+```
+
+### PATCH /api/time-booking-templates/{id}
+
+Aktualisiert eine eigene Buchungsvorlage.
+
+**Auth:** Sanctum
+
+### DELETE /api/time-booking-templates/{id}
+
+Löscht eine eigene Buchungsvorlage.
+
+**Auth:** Sanctum
+
+!!! warning "Validierung"
+    Vorlagen müssen genau **100 %** ergeben, dürfen keine doppelten Kostenstellen enthalten und nur reguläre, dem Benutzer verfügbare Kostenstellen verwenden. System-Kostenstellen sind ausgeschlossen.
 
 ---
 

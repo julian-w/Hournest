@@ -50,19 +50,33 @@ Unterhalb der Arbeitszeiten werden die verfügbaren Kostenstellen als Zeilen ang
 3. Gib die Verteilung in **5-%-Schritten** ein
 
 !!! warning "100-%-Regel"
-    Die Summe aller Buchungen eines Tages muss genau **100 %** der manuell buchbaren Tagesanteile ergeben.
+    Die Summe aller Buchungen eines Tages muss genau **100 %** der manuell buchbaren Tagesanteile ergeben. Bei halbtägigen Abwesenheiten sind entsprechend genau **50 %** manuell zu verteilen.
 
 ---
 
-## Favoriten und Vorwoche kopieren
+## Favoriten, Vorlagen und Vorwoche kopieren
 
-Um wiederkehrende Buchungen zu beschleunigen, stehen zwei Funktionen zur Verfügung:
+Um wiederkehrende Buchungen zu beschleunigen, stehen drei Funktionen zur Verfügung:
 
 - **Favoriten** -- Favorisierte Kostenstellen werden im Grid zuerst angezeigt
+- **Buchungsvorlagen** -- Speichern eine prozentuale Verteilung eines Tages und wenden sie auf andere Tage an
 - **Vorwoche kopieren** -- Übernimmt die Prozentverteilung der Vorwoche in die aktuelle Woche
 
 !!! tip "Favoriten"
     Favoriten werden getrennt von der Wochenansicht verwaltet. In der Zeiterfassung erscheinen sie automatisch oben.
+
+### Buchungsvorlagen verwenden
+
+Im Aktionsbereich der Wochenansicht können Vorlagen direkt verwaltet werden:
+
+1. **Tag für Vorlage** auswählen
+2. Eine bestehende **Vorlage** auswählen oder einen aktuellen Tag als neue Vorlage speichern
+3. Vorlage auf den ausgewählten Tag anwenden oder aus den aktuellen Tageswerten aktualisieren
+
+Vorlagen speichern nur die **Kostenstellen-Verteilung** eines Tages, nicht die Arbeitszeiten selbst.
+
+!!! info "CRUD für Vorlagen"
+    Mitarbeiter können ihre eigenen Buchungsvorlagen anlegen, aktualisieren und löschen. System-Kostenstellen wie `VACATION` oder `HOLIDAY` können nicht Teil einer Vorlage sein.
 
 ---
 

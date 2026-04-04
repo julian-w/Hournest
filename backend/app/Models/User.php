@@ -77,6 +77,11 @@ class User extends Authenticatable
         return $this->hasMany(TimeBooking::class);
     }
 
+    public function timeBookingTemplates(): HasMany
+    {
+        return $this->hasMany(TimeBookingTemplate::class);
+    }
+
     public function absences(): HasMany
     {
         return $this->hasMany(Absence::class);

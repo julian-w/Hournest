@@ -360,8 +360,6 @@ In the booking UI, favorites appear at the top, remaining cost centers below.
 #### Booking Templates
 Employees can save a percentage distribution as a reusable template.
 
-Current implementation note: favorites are implemented, but booking templates and their API endpoints are still planned.
-
 | Field | Type |
 |-------|------|
 | `id` | PK |
@@ -494,7 +492,7 @@ Time bookings become **locked** after a configurable period to ensure data integ
 - **Copy previous week:** Copies entire week's distribution
   - Current implementation note: implemented
 - **Apply template:** Fills in a saved distribution pattern
-  - Current implementation note: not implemented yet
+  - Current implementation note: implemented
 - **Quick entry:** If only one cost center is used, auto-fill 100%
 
 ### 13.10 Interaction with Existing Systems
@@ -568,7 +566,6 @@ GET    /api/time-booking-templates
 POST   /api/time-booking-templates
 PATCH  /api/time-booking-templates/{id}
 DELETE /api/time-booking-templates/{id}
-       Current implementation note: these endpoints are planned, not implemented yet
 
 # Absences (Employee)
 POST   /api/absences                            Report illness or request special leave
@@ -629,7 +626,7 @@ GET    /api/admin/reports/export?format=csv&from=&to=
 - Booking templates
 - Copy previous day/week
 - Reports & CSV export
-  - Current implementation note: favorites and copy previous week are implemented; templates and copy previous day remain planned
+  - Current implementation note: favorites, booking templates, and copy previous week are implemented; copy previous day remains planned
 
 #### Phase 2c (Future)
 - Working time account (Arbeitszeitkonto) with running balance

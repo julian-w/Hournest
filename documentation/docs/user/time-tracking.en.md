@@ -50,19 +50,33 @@ Below the working hours, available cost centers are shown as rows. For each day,
 3. Enter the distribution in **5% increments**
 
 !!! warning "100% Rule"
-    The total of all bookings for a day must equal exactly **100%** of the manually bookable part of the day.
+    The total of all bookings for a day must equal exactly **100%** of the manually bookable part of the day. On half-day absences, that means exactly **50%** must be booked manually.
 
 ---
 
-## Favorites and Copy Previous Week
+## Favorites, Templates, and Copy Previous Week
 
-Two features help with recurring allocations:
+Three features help with recurring allocations:
 
 - **Favorites** -- Favorite cost centers are shown first in the grid
+- **Booking Templates** -- Save a day's percentage distribution and apply it to other days
 - **Copy Previous Week** -- Copies the previous week's percentage distribution into the current week
 
 !!! tip "Favorites"
     Favorites are managed outside the weekly grid. In time tracking they are shown at the top automatically.
+
+### Using Booking Templates
+
+Templates are managed directly from the action area of the weekly view:
+
+1. Select a **template day**
+2. Choose an existing **template** or save the current day's allocation as a new template
+3. Apply the template to the selected day or update the selected template from the current day
+
+Templates only store the **cost center distribution** of a day, not the working hours.
+
+!!! info "Template CRUD"
+    Employees can create, update, and delete their own booking templates. System cost centers such as `VACATION` or `HOLIDAY` cannot be part of a template.
 
 ---
 

@@ -1,0 +1,191 @@
+import { TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { of } from 'rxjs';
+import { AbsenceService } from '../../core/services/absence.service';
+import { CostCenterService } from '../../core/services/cost-center.service';
+import { TimeBookingTemplateService } from '../../core/services/time-booking-template.service';
+import { TimeTrackingService } from '../../core/services/time-tracking.service';
+import { TimeTrackingComponent } from './time-tracking.component';
+
+describe('TimeTrackingComponent', () => {
+  let timeServiceStub: {
+    getTimeEntries: jasmine.Spy;
+    getTimeBookings: jasmine.Spy;
+    saveTimeEntry: jasmine.Spy;
+    saveTimeBookings: jasmine.Spy;
+  };
+  let templateServiceStub: {
+    getTemplates: jasmine.Spy;
+    createTemplate: jasmine.Spy;
+    updateTemplate: jasmine.Spy;
+    deleteTemplate: jasmine.Spy;
+  };
+  let costCenterServiceStub: {
+    getAvailableCostCenters: jasmine.Spy;
+    getFavorites: jasmine.Spy;
+  };
+  let absenceServiceStub: {
+    getMyAbsences: jasmine.Spy;
+  };
+  let dialogStub: {
+    open: jasmine.Spy;
+  };
+  let snackBarStub: {
+    open: jasmine.Spy;
+  };
+
+  const costCenters = [
+    { id: 21, code: 'PRJ-ALPHA', name: 'Project Alpha', description: null, is_system: false, is_active: true },
+    { id: 22, code: 'INT', name: 'Internal', description: null, is_system: false, is_active: true },
+  ];
+
+  const template = {
+    id: 7,
+    user_id: 3,
+    name: 'Standard Day',
+    items: [
+      { id: 1, cost_center_id: 21, cost_center_name: 'Project Alpha', cost_center_code: 'PRJ-ALPHA', percentage: 60 },
+      { id: 2, cost_center_id: 22, cost_center_name: 'Internal', cost_center_code: 'INT', percentage: 40 },
+    ],
+  };
+
+  beforeEach(async () => {
+    timeServiceStub = {
+      getTimeEntries: jasmine.createSpy('getTimeEntries').and.returnValue(of([])),
+      getTimeBookings: jasmine.createSpy('getTimeBookings').and.returnValue(of([])),
+      saveTimeEntry: jasmine.createSpy('saveTimeEntry').and.returnValue(of({
+        id: 1,
+        user_id: 3,
+        date: '2026-04-06',
+        start_time: '08:00',
+        end_time: '17:00',
+        break_minutes: 30,
+        net_working_minutes: 510,
+      })),
+      saveTimeBookings: jasmine.createSpy('saveTimeBookings').and.returnValue(of([])),
+    };
+
+    templateServiceStub = {
+      getTemplates: jasmine.createSpy('getTemplates').and.returnValue(of([template])),
+      createTemplate: jasmine.createSpy('createTemplate').and.returnValue(of(template)),
+      updateTemplate: jasmine.createSpy('updateTemplate').and.returnValue(of(template)),
+      deleteTemplate: jasmine.createSpy('deleteTemplate').and.returnValue(of(void 0)),
+    };
+
+    costCenterServiceStub = {
+      getAvailableCostCenters: jasmine.createSpy('getAvailableCostCenters').and.returnValue(of(costCenters)),
+      getFavorites: jasmine.createSpy('getFavorites').and.returnValue(of([costCenters[0]])),
+    };
+
+    absenceServiceStub = {
+      getMyAbsences: jasmine.createSpy('getMyAbsences').and.returnValue(of([])),
+    };
+
+    dialogStub = {
+      open: jasmine.createSpy('open').and.returnValue({
+        afterClosed: () => of('Focus Day'),
+      }),
+    };
+
+    snackBarStub = {
+      open: jasmine.createSpy('open'),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [
+        TimeTrackingComponent,
+        NoopAnimationsModule,
+        TranslateModule.forRoot(),
+      ],
+      providers: [
+        { provide: TimeTrackingService, useValue: timeServiceStub },
+        { provide: TimeBookingTemplateService, useValue: templateServiceStub },
+        { provide: CostCenterService, useValue: costCenterServiceStub },
+        { provide: AbsenceService, useValue: absenceServiceStub },
+        { provide: MatDialog, useValue: dialogStub },
+        { provide: MatSnackBar, useValue: snackBarStub },
+        {
+          provide: TranslateService,
+          useValue: {
+            instant: (key: string, params?: Record<string, string>) => params?.['date'] ? `${key}:${params['date']}` : key,
+            use: jasmine.createSpy('use'),
+          },
+        },
+      ],
+    }).compileComponents();
+  });
+
+  it('should load templates and apply the selected template to the chosen day', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const date = component.selectedTemplateDate();
+
+    component.applySelectedTemplate();
+
+    const firstRow = component.bookingRows()[0];
+    const secondRow = component.bookingRows()[1];
+
+    expect(templateServiceStub.getTemplates).toHaveBeenCalled();
+    expect(component.templates()).toEqual([template]);
+    expect(firstRow.percentages[date]).toBe(60);
+    expect(secondRow.percentages[date]).toBe(40);
+  });
+
+  it('should create a template from the selected day bookings', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const date = component.selectedTemplateDate();
+
+    component.onPercentageChange(component.bookingRows()[0], date, 70);
+    component.onPercentageChange(component.bookingRows()[1], date, 30);
+    component.openSaveTemplateDialog();
+
+    expect(dialogStub.open).toHaveBeenCalled();
+    expect(templateServiceStub.createTemplate).toHaveBeenCalledWith({
+      name: 'Focus Day',
+      items: [
+        { cost_center_id: 21, percentage: 70 },
+        { cost_center_id: 22, percentage: 30 },
+      ],
+    });
+  });
+
+  it('should update the selected template with the selected day bookings', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const date = component.selectedTemplateDate();
+
+    component.onPercentageChange(component.bookingRows()[0], date, 50);
+    component.onPercentageChange(component.bookingRows()[1], date, 50);
+    component.openUpdateTemplateDialog();
+
+    expect(templateServiceStub.updateTemplate).toHaveBeenCalledWith(7, {
+      name: 'Focus Day',
+      items: [
+        { cost_center_id: 21, percentage: 50 },
+        { cost_center_id: 22, percentage: 50 },
+      ],
+    });
+  });
+
+  it('should delete the selected template and remove it from the local state', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+
+    component.deleteSelectedTemplate();
+
+    expect(templateServiceStub.deleteTemplate).toHaveBeenCalledWith(7);
+    expect(component.templates()).toEqual([]);
+  });
+});

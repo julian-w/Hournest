@@ -88,6 +88,7 @@ backend/tests/
 │   ├── SecurityTest.php
 │   ├── SettingTest.php
 │   ├── TimeBookingAdminTest.php
+│   ├── TimeBookingTemplateTest.php
 │   ├── TimeBookingTest.php
 │   ├── TimeEntryTest.php
 │   ├── TimeLockTest.php
@@ -106,6 +107,7 @@ frontend/src/app/
 ├── core/services/*.spec.ts
 └── features/
     ├── login/login.component.spec.ts
+    ├── time-tracking/time-tracking.component.spec.ts
     └── vacation/my-vacations.component.spec.ts
 ```
 
@@ -113,9 +115,9 @@ frontend/src/app/
 
 ## Aktueller Stand
 
-- Backend-Suite: **330 Tests / 897 Assertions**
+- Backend-Suite: **341 Tests / 935 Assertions**
 - Frontend: alle Services unter `frontend/src/app/core/services` haben Spec-Dateien
-- Erste Feature-Komponenten mit Specs: Login und Mein Urlaub
+- Feature-Komponenten mit Specs: Login, Mein Urlaub und Zeiterfassung
 
 ---
 
@@ -152,6 +154,7 @@ frontend/src/app/
 | `TimeEntryTest` | Arbeitszeiterfassung, Feiertage, Sperren, Auto-Lock |
 | `TimeBookingTest` | Prozentbuchungen, 100-%-/50-%-Regeln, Systemkostenstellen-Schutz, Auto-Lock |
 | `TimeBookingAdminTest` | Admin-Zugriffe auf Buchungen und direkte Kostenstellenzuordnung |
+| `TimeBookingTemplateTest` | Eigene Buchungsvorlagen, 100-%-Validierung, Besitzregeln, keine Systemkostenstellen |
 | `TimeLockTest` | Monatsabschluss, Sperren und Entsperren |
 | `CrossSystemTest` | Zusammenspiel zwischen Urlaub, Feiertagen, Krankheit, Sonderurlaub, Zeiterfassung und Systembuchungen |
 
@@ -168,6 +171,7 @@ frontend/src/app/
 | `app.component.spec.ts` | Sprachinitialisierung und Sprachwechsel |
 | `core/services/*.spec.ts` | Request-URLs, Payloads und Response-Mapping aller Core-Services |
 | `features/login/login.component.spec.ts` | Login-Flow, Fehlerzustände, erzwungener Passwortwechsel |
+| `features/time-tracking/time-tracking.component.spec.ts` | Vorlagen anwenden, speichern, aktualisieren und löschen |
 | `features/vacation/my-vacations.component.spec.ts` | Laden, Stornieren, Dialog-Refresh und Ledger-Jahreswechsel |
 
 ---

@@ -8,14 +8,15 @@ Alle nennenswerten Änderungen an Hournest werden auf dieser Seite dokumentiert.
 
 ### Tests & Qualitätssicherung
 
-- Backend-Testabdeckung deutlich ausgebaut auf **330 Tests / 897 Assertions**
+- Backend-Testabdeckung deutlich ausgebaut auf **341 Tests / 935 Assertions**
 - Neue Feature-Tests für OIDC-Login, Favoriten, Admin-Abwesenheitsverwaltung, Admin-Zeitbuchungen, Jahreswartung und systemübergreifende Regeln
 - Frontend-Specs für alle Core-Services ergänzt
-- Erste Feature-Komponenten mit Tests abgesichert: Login und Mein Urlaub
+- Feature-Komponenten mit Tests abgesichert: Login, Mein Urlaub und Zeiterfassung
 
 ### Zeiterfassung & System-Buchungen
 
 - Automatische System-Buchungen für `VACATION`, `ILLNESS`, `SPECIAL_LEAVE` und `HOLIDAY` ergänzt
+- Buchungsvorlagen für Mitarbeiter ergänzt: speichern, anwenden, aktualisieren und löschen direkt in der Wochenansicht
 - Volle effektive Abwesenheiten entfernen vorhandene Zeiteinträge und sperren den Tag
 - Halbtägige Abwesenheiten erzeugen automatische **50-%-Buchungen**, die übrigen 50 % bleiben manuell buchbar
 - Feiertage haben Vorrang vor Urlaub auf demselben Tag; bei Feiertags-Ausnahme bleibt Urlaub regulär buchbar

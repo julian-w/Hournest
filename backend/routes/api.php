@@ -13,6 +13,7 @@ use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TimeBookingAdminController;
 use App\Http\Controllers\TimeBookingController;
+use App\Http\Controllers\TimeBookingTemplateController;
 use App\Http\Controllers\TimeEntryController;
 use App\Http\Controllers\UserGroupController;
 use App\Http\Controllers\VacationController;
@@ -67,6 +68,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Time Bookings
     Route::get('/time-bookings', [TimeBookingController::class, 'index']);
     Route::put('/time-bookings/{date}', [TimeBookingController::class, 'store']);
+
+    // Time Booking Templates
+    Route::get('/time-booking-templates', [TimeBookingTemplateController::class, 'index']);
+    Route::post('/time-booking-templates', [TimeBookingTemplateController::class, 'store']);
+    Route::patch('/time-booking-templates/{timeBookingTemplate}', [TimeBookingTemplateController::class, 'update']);
+    Route::delete('/time-booking-templates/{timeBookingTemplate}', [TimeBookingTemplateController::class, 'destroy']);
 
     // Cost Centers (own available)
     Route::get('/cost-centers', [CostCenterController::class, 'index']);
