@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\VacationScope;
 use App\Enums\VacationStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -19,6 +20,7 @@ class VacationFactory extends Factory
             'user_id' => User::factory(),
             'start_date' => $startDate->format('Y-m-d'),
             'end_date' => $endDate->format('Y-m-d'),
+            'scope' => VacationScope::FullDay,
             'status' => VacationStatus::Pending,
             'comment' => null,
             'reviewed_by' => null,
@@ -42,6 +44,15 @@ class VacationFactory extends Factory
             'comment' => 'Request denied.',
             'reviewed_by' => User::factory()->admin(),
             'reviewed_at' => now(),
+        ]);
+    }
+
+    public function halfDay(string $scope = 'morning'): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'start_date' => '2026-04-06',
+            'end_date' => '2026-04-06',
+            'scope' => $scope,
         ]);
     }
 }

@@ -78,6 +78,10 @@
     "request_button": "Request Vacation",
     "from": "From",
     "to": "To",
+    "scope": "Scope",
+    "scope_full_day": "Full Day",
+    "scope_morning": "Morning",
+    "scope_afternoon": "Afternoon",
     "days": "Days",
     "status": "Status",
     "comment": "Comment",
@@ -105,10 +109,12 @@
     "title": "Request Vacation",
     "start_date": "Start Date",
     "end_date": "End Date",
+    "scope": "Scope",
     "comment": "Comment (optional)",
     "cancel": "Cancel",
     "submit": "Submit Request",
     "error_overlap": "Vacation overlaps with an already approved vacation.",
+    "error_half_day_single_day": "Half-day vacation is only allowed for a single day.",
     "error_generic": "An error occurred.",
     "error_holidays_incomplete": "Not all holidays have been confirmed for this year. Vacation booking is not yet available.",
     "error_blackout_freeze": "This period falls within a vacation freeze: {{reason}}",
@@ -269,7 +275,8 @@
     "week_target": "Target",
     "week_delta": "Delta",
     "absence_illness": "Illness",
-    "absence_special_leave": "Special Leave"
+    "absence_special_leave": "Special Leave",
+    "absence_vacation": "Vacation"
   },
   "my_absences": {
     "title": "My Absences",

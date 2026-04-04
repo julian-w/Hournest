@@ -33,6 +33,7 @@ describe('MyVacationsComponent', () => {
       user_id: 3,
       start_date: '2026-06-01',
       end_date: '2026-06-05',
+      scope: 'full_day',
       workdays: 5,
       status: 'pending',
       comment: 'Summer trip',

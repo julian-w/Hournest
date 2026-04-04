@@ -14,6 +14,7 @@ describe('VacationService', () => {
     user_name: 'Alex Example',
     start_date: '2026-04-06',
     end_date: '2026-04-10',
+    scope: 'full_day',
     workdays: 5,
     status: 'pending',
     comment: 'Spring break',
@@ -71,7 +72,7 @@ describe('VacationService', () => {
   it('should send the expected payload when requesting vacation', () => {
     let result: Vacation | undefined;
 
-    service.requestVacation('2026-05-01', '2026-05-05', 'Family trip').subscribe(data => {
+    service.requestVacation('2026-05-01', '2026-05-05', 'full_day', 'Family trip').subscribe(data => {
       result = data;
     });
 
@@ -80,6 +81,7 @@ describe('VacationService', () => {
     expect(req.request.body).toEqual({
       start_date: '2026-05-01',
       end_date: '2026-05-05',
+      scope: 'full_day',
       comment: 'Family trip',
     });
     req.flush({ data: vacation });
@@ -91,8 +93,22 @@ describe('VacationService', () => {
     service.requestVacation('2026-05-01', '2026-05-05').subscribe();
 
     const req = httpMock.expectOne('/api/vacations');
+    expect(req.request.body.scope).toBe('full_day');
     expect(req.request.body.comment).toBeNull();
     req.flush({ data: vacation });
+  });
+
+  it('should send a half-day scope when requesting half-day vacation', () => {
+    service.requestVacation('2026-05-01', '2026-05-01', 'morning').subscribe();
+
+    const req = httpMock.expectOne('/api/vacations');
+    expect(req.request.body).toEqual({
+      start_date: '2026-05-01',
+      end_date: '2026-05-01',
+      scope: 'morning',
+      comment: null,
+    });
+    req.flush({ data: { ...vacation, scope: 'morning', workdays: 0.5 } });
   });
 
   it('should delete vacation by id', () => {

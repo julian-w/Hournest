@@ -11,6 +11,7 @@ This page explains how vacation requests are submitted, cancelled, and reviewed 
 3. Fill in:
    - **Start date**
    - **End date**
+   - **Scope** -- full day, morning, or afternoon
    - **Comment** optional
 4. Submit the request
 
@@ -30,6 +31,7 @@ A request may be rejected or blocked if:
 - the range overlaps with already approved vacation
 - not all holidays are confirmed for the relevant year
 - a vacation freeze is active
+- for half-day vacation, start date and end date are not the same day
 
 ### Holiday Check
 
@@ -78,8 +80,9 @@ When a request is approved:
 
 - a **Taken** entry is created in the vacation ledger
 - affected working days are automatically booked to the `VACATION` system cost center
-- existing manual time bookings on those days are removed
-- existing time entries on those days are removed
+- a half-day vacation creates an automatic **50% booking** on `VACATION`
+- for full-day vacation, existing manual time bookings on those days are removed
+- for full-day vacation, existing time entries on those days are removed
 
 ---
 
@@ -90,3 +93,14 @@ Holidays take precedence over vacation on the same day:
 - if an approved vacation day falls on a holiday, the `HOLIDAY` booking remains in place for that date
 - holidays do not count as vacation days
 - for holidays-exempt users, holidays are treated as normal working days instead
+
+---
+
+## Half-Day Vacation
+
+Half-day vacation is available for **a single day only**:
+
+- **Morning** or **afternoon** can be requested separately
+- the request counts as **0.5 vacation days**
+- time tracking automatically books **50%** to `VACATION`
+- the remaining **50%** stays open for normal working time and regular cost centers

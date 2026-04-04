@@ -380,6 +380,62 @@ class TimeBookingTest extends TestCase
             ->assertJsonValidationErrors(['bookings']);
     }
 
+    public function test_can_book_50_percent_on_half_day_vacation(): void
+    {
+        $employee = User::factory()->create();
+        $cc = CostCenter::factory()->create();
+        $employee->costCenters()->attach($cc->id);
+
+        Vacation::factory()->approved()->halfDay('morning')->create([
+            'user_id' => $employee->id,
+        ]);
+
+        TimeEntry::create([
+            'user_id' => $employee->id,
+            'date' => '2026-04-06',
+            'start_time' => '13:00',
+            'end_time' => '17:00',
+            'break_minutes' => 0,
+        ]);
+
+        $response = $this->actingAs($employee)->putJson('/api/time-bookings/2026-04-06', [
+            'bookings' => [
+                ['cost_center_id' => $cc->id, 'percentage' => 50],
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.0.percentage', 50);
+    }
+
+    public function test_half_day_vacation_rejects_100_percent_manual_booking(): void
+    {
+        $employee = User::factory()->create();
+        $cc = CostCenter::factory()->create();
+        $employee->costCenters()->attach($cc->id);
+
+        Vacation::factory()->approved()->halfDay('afternoon')->create([
+            'user_id' => $employee->id,
+        ]);
+
+        TimeEntry::create([
+            'user_id' => $employee->id,
+            'date' => '2026-04-06',
+            'start_time' => '08:00',
+            'end_time' => '12:00',
+            'break_minutes' => 0,
+        ]);
+
+        $response = $this->actingAs($employee)->putJson('/api/time-bookings/2026-04-06', [
+            'bookings' => [
+                ['cost_center_id' => $cc->id, 'percentage' => 100],
+            ],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['bookings']);
+    }
+
     public function test_cannot_book_on_vacation_day(): void
     {
         $employee = User::factory()->create();

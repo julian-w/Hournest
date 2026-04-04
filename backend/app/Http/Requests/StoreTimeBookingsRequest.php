@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Models\Absence;
+use App\Models\Vacation;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTimeBookingsRequest extends FormRequest
@@ -68,6 +69,13 @@ class StoreTimeBookingsRequest extends FormRequest
             ->whereDate('end_date', '>=', $date)
             ->exists();
 
-        return $hasEffectiveHalfDayAbsence ? 50 : 100;
+        $hasApprovedHalfDayVacation = Vacation::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->whereIn('scope', ['morning', 'afternoon'])
+            ->whereDate('start_date', '<=', $date)
+            ->whereDate('end_date', '>=', $date)
+            ->exists();
+
+        return ($hasEffectiveHalfDayAbsence || $hasApprovedHalfDayVacation) ? 50 : 100;
     }
 }

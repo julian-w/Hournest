@@ -8,6 +8,7 @@ import { AbsenceService } from '../../core/services/absence.service';
 import { CostCenterService } from '../../core/services/cost-center.service';
 import { TimeBookingTemplateService } from '../../core/services/time-booking-template.service';
 import { TimeTrackingService } from '../../core/services/time-tracking.service';
+import { VacationService } from '../../core/services/vacation.service';
 import { TimeTrackingComponent } from './time-tracking.component';
 
 describe('TimeTrackingComponent', () => {
@@ -29,6 +30,9 @@ describe('TimeTrackingComponent', () => {
   };
   let absenceServiceStub: {
     getMyAbsences: jasmine.Spy;
+  };
+  let vacationServiceStub: {
+    getMyVacations: jasmine.Spy;
   };
   let dialogStub: {
     open: jasmine.Spy;
@@ -84,6 +88,10 @@ describe('TimeTrackingComponent', () => {
       getMyAbsences: jasmine.createSpy('getMyAbsences').and.returnValue(of([])),
     };
 
+    vacationServiceStub = {
+      getMyVacations: jasmine.createSpy('getMyVacations').and.returnValue(of([])),
+    };
+
     dialogStub = {
       open: jasmine.createSpy('open').and.returnValue({
         afterClosed: () => of('Focus Day'),
@@ -105,6 +113,7 @@ describe('TimeTrackingComponent', () => {
         { provide: TimeBookingTemplateService, useValue: templateServiceStub },
         { provide: CostCenterService, useValue: costCenterServiceStub },
         { provide: AbsenceService, useValue: absenceServiceStub },
+        { provide: VacationService, useValue: vacationServiceStub },
         { provide: MatDialog, useValue: dialogStub },
         { provide: MatSnackBar, useValue: snackBarStub },
         {
@@ -218,5 +227,34 @@ describe('TimeTrackingComponent', () => {
     component.copyPreviousDay();
 
     expect(snackBarStub.open).toHaveBeenCalledWith('time_tracking.copy_prev_day_empty', 'common.ok', { duration: 2500 });
+  });
+
+  it('should reduce the expected booking total to 50 percent on a half-day vacation', () => {
+    vacationServiceStub.getMyVacations.and.returnValue(of([
+      {
+        id: 9,
+        user_id: 3,
+        start_date: '2026-04-06',
+        end_date: '2026-04-06',
+        status: 'approved',
+        comment: null,
+        admin_comment: null,
+        reviewed_by: 1,
+        reviewed_at: '2026-04-01T12:00:00Z',
+        workdays: 0.5,
+        scope: 'morning',
+        created_at: '2026-04-01T12:00:00Z',
+      },
+    ]));
+
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const vacationDay = component.days().find(day => day.date === '2026-04-06');
+
+    expect(vacationServiceStub.getMyVacations).toHaveBeenCalled();
+    expect(vacationDay?.vacation?.scope).toBe('morning');
+    expect(vacationDay ? component.expectedDayTotal(vacationDay) : null).toBe(50);
   });
 });

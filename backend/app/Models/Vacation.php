@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\VacationScope;
 use App\Enums\VacationStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,6 +21,7 @@ class Vacation extends Model
         'user_id',
         'start_date',
         'end_date',
+        'scope',
         'status',
         'comment',
         'reviewed_by',
@@ -31,6 +33,7 @@ class Vacation extends Model
         return [
             'start_date' => 'date',
             'end_date' => 'date',
+            'scope' => VacationScope::class,
             'status' => VacationStatus::class,
             'reviewed_at' => 'datetime',
         ];
@@ -56,7 +59,7 @@ class Vacation extends Model
      * Uses the user's individual work schedule and holidays if user is loaded.
      * Falls back to simple weekday counting if no user is available.
      */
-    public function countWorkdays(?int $year = null): int
+    public function countWorkdays(?int $year = null): float
     {
         $start = $this->start_date->copy();
         $end = $this->end_date->copy();
@@ -73,7 +76,7 @@ class Vacation extends Model
             }
         }
 
-        $workdays = 0;
+        $workdays = 0.0;
         $current = $start->copy();
 
         // Try to use the user's work schedule if the relationship is available
@@ -82,17 +85,33 @@ class Vacation extends Model
         while ($current->lte($end)) {
             if ($user !== null) {
                 if ($user->isWorkDay($current)) {
-                    $workdays++;
+                    $workdays += $this->dayFactorForDate($current);
                 }
             } else {
                 // Fallback: simple weekday check
                 if ($current->isWeekday()) {
-                    $workdays++;
+                    $workdays += $this->dayFactorForDate($current);
                 }
             }
             $current->addDay();
         }
 
         return $workdays;
+    }
+
+    private function dayFactorForDate(Carbon $date): float
+    {
+        if (($this->scope ?? VacationScope::FullDay) === VacationScope::FullDay) {
+            return 1.0;
+        }
+
+        if (
+            $this->start_date->isSameDay($this->end_date)
+            && $date->isSameDay($this->start_date)
+        ) {
+            return 0.5;
+        }
+
+        return 1.0;
     }
 }

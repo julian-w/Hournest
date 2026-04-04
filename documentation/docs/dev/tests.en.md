@@ -115,7 +115,7 @@ frontend/src/app/
 
 ## Current Status
 
-- Backend suite: **341 tests / 935 assertions**
+- Backend suite: **350 tests / 960 assertions**
 - Frontend: every service under `frontend/src/app/core/services` has a matching spec file
 - Feature components with specs: Login, My Vacations, and Time Tracking
 
@@ -134,7 +134,7 @@ frontend/src/app/
 
 | Test file | Description |
 |-----------|-------------|
-| `VacationTest` | Requesting, validation, team/self views, cancellation |
+| `VacationTest` | Requesting, validation, team/self views, cancellation, and half-day vacation |
 | `AdminTest` | Admin review of vacation requests and user management |
 | `VacationLedgerTest` | Vacation ledger, bonus, carryover, expired, and adjustment entries |
 | `YearlyMaintenanceTest` | Yearly entitlement, carryover, expiry, dry-run, idempotency |
@@ -151,18 +151,18 @@ frontend/src/app/
 | `UserGroupTest` | Group management, member assignment, cost center assignment |
 | `AbsenceTest` | Illness, special leave, half-day rules, overlap validation |
 | `AbsenceAdminManagementTest` | Admin filters, review, and deletion of absences |
-| `TimeEntryTest` | Time recording, holidays, locking, auto-lock |
-| `TimeBookingTest` | Percentage booking, 100%/50% rules, system cost center protection, auto-lock |
+| `TimeEntryTest` | Time recording, holidays, locking, auto-lock, and vacation locking |
+| `TimeBookingTest` | Percentage booking, 100%/50% rules, system cost center protection, auto-lock, and half-day vacation |
 | `TimeBookingAdminTest` | Admin access to bookings and direct user cost center assignment |
 | `TimeBookingTemplateTest` | Own booking templates, 100% validation, ownership rules, no system cost centers |
 | `TimeLockTest` | Month closing, lock/unlock |
-| `CrossSystemTest` | Interactions between vacations, holidays, illness, special leave, time entries, and system bookings |
+| `CrossSystemTest` | Interactions between vacations, half-day vacations, holidays, illness, special leave, time entries, and system bookings |
 
 ### Unit Tests
 
 | Test file | Description |
 |-----------|-------------|
-| `Unit/VacationTest` | Workday calculation across weekends and year boundaries |
+| `Unit/VacationTest` | Workday calculation across weekends, half days, and year boundaries |
 
 ### Frontend Specs
 
@@ -171,7 +171,7 @@ frontend/src/app/
 | `app.component.spec.ts` | Language initialization and switching |
 | `core/services/*.spec.ts` | Request URLs, payloads, and response mapping for all core services |
 | `features/login/login.component.spec.ts` | Login flow, error states, forced password change |
-| `features/time-tracking/time-tracking.component.spec.ts` | Applying, saving, updating, and deleting templates |
+| `features/time-tracking/time-tracking.component.spec.ts` | Applying, saving, updating, and deleting templates, plus half-day vacation behavior in the weekly grid |
 | `features/vacation/my-vacations.component.spec.ts` | Loading, cancelling, dialog refresh, ledger year switching |
 
 ---

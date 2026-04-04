@@ -11,6 +11,7 @@ Diese Seite erklärt, wie Urlaubsanträge gestellt, storniert und von Admins bea
 3. Fülle aus:
    - **Startdatum**
    - **Enddatum**
+   - **Umfang** -- ganztägig, vormittags oder nachmittags
    - **Kommentar** optional
 4. Reiche den Antrag ein
 
@@ -30,6 +31,7 @@ Ein Antrag kann abgelehnt oder blockiert werden, wenn:
 - sich der Zeitraum mit bereits genehmigtem Urlaub überschneidet
 - für das betroffene Jahr noch nicht alle Feiertage bestätigt sind
 - eine Urlaubssperre aktiv ist
+- bei halbtägigem Urlaub Start- und Enddatum nicht identisch sind
 
 ### Feiertagsprüfung
 
@@ -78,8 +80,9 @@ Bei Genehmigung:
 
 - wird automatisch ein **Taken/Genommen**-Eintrag im Urlaubskonto erzeugt
 - werden betroffene Arbeitstage automatisch mit der System-Kostenstelle `VACATION` gebucht
-- werden vorhandene manuelle Zeitbuchungen auf diesen Tagen entfernt
-- werden vorhandene Zeiteinträge auf diesen Tagen entfernt
+- bei halbtägigem Urlaub entsteht automatisch eine **50-%-Buchung** auf `VACATION`
+- bei ganztägigem Urlaub werden vorhandene manuelle Zeitbuchungen auf diesen Tagen entfernt
+- bei ganztägigem Urlaub werden vorhandene Zeiteinträge auf diesen Tagen entfernt
 
 ---
 
@@ -90,3 +93,14 @@ Feiertage haben Vorrang vor Urlaub auf demselben Tag:
 - fällt ein genehmigter Urlaubstag auf einen Feiertag, bleibt für diesen Tag die `HOLIDAY`-Buchung bestehen
 - Feiertage zählen nicht als Urlaubstage
 - für Mitarbeiter mit Feiertags-Ausnahme gelten Feiertage stattdessen als normale Arbeitstage
+
+---
+
+## Halbtags-Urlaub
+
+Halbtägiger Urlaub ist für **einen einzelnen Tag** möglich:
+
+- **Vormittag** oder **Nachmittag** können separat beantragt werden
+- der Antrag zählt als **0,5 Urlaubstage**
+- in der Zeiterfassung werden automatisch **50 %** auf `VACATION` gebucht
+- die übrigen **50 %** bleiben für normale Arbeitszeit und reguläre Kostenstellen offen

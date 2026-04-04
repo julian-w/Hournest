@@ -78,6 +78,10 @@
     "request_button": "Urlaub beantragen",
     "from": "Von",
     "to": "Bis",
+    "scope": "Umfang",
+    "scope_full_day": "Ganzer Tag",
+    "scope_morning": "Vormittag",
+    "scope_afternoon": "Nachmittag",
     "days": "Tage",
     "status": "Status",
     "comment": "Kommentar",
@@ -105,10 +109,12 @@
     "title": "Urlaub beantragen",
     "start_date": "Startdatum",
     "end_date": "Enddatum",
+    "scope": "Umfang",
     "comment": "Kommentar (optional)",
     "cancel": "Abbrechen",
     "submit": "Antrag einreichen",
     "error_overlap": "Urlaub überschneidet sich mit einem bereits genehmigten Urlaub.",
+    "error_half_day_single_day": "Halbtags-Urlaub ist nur für einen einzelnen Tag möglich.",
     "error_generic": "Ein Fehler ist aufgetreten.",
     "error_holidays_incomplete": "Für dieses Jahr sind noch nicht alle Feiertage bestätigt. Urlaubsbuchung ist noch nicht möglich.",
     "error_blackout_freeze": "In diesem Zeitraum gilt eine Urlaubssperre: {{reason}}",
@@ -269,7 +275,8 @@
     "week_target": "Soll",
     "week_delta": "Differenz",
     "absence_illness": "Krankheit",
-    "absence_special_leave": "Sonderurlaub"
+    "absence_special_leave": "Sonderurlaub",
+    "absence_vacation": "Urlaub"
   },
   "my_absences": {
     "title": "Meine Abwesenheiten",

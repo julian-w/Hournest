@@ -10,6 +10,7 @@ use App\Models\Setting;
 use App\Models\TimeEntry;
 use App\Models\TimeLock;
 use App\Models\User;
+use App\Models\Vacation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -268,6 +269,44 @@ class TimeEntryTest extends TestCase
         ]);
         $response->assertStatus(422)
             ->assertJsonPath('message', 'Cannot create time entry on a day with a full-day absence.');
+    }
+
+    public function test_cannot_create_time_entry_on_full_day_vacation(): void
+    {
+        $employee = User::factory()->create();
+
+        Vacation::factory()->approved()->create([
+            'user_id' => $employee->id,
+            'start_date' => '2026-04-06',
+            'end_date' => '2026-04-06',
+        ]);
+
+        $response = $this->actingAs($employee)->putJson('/api/time-entries/2026-04-06', [
+            'start_time' => '08:00',
+            'end_time' => '17:00',
+            'break_minutes' => 30,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('message', 'Cannot create time entry on a full-day vacation.');
+    }
+
+    public function test_can_create_time_entry_on_half_day_vacation(): void
+    {
+        $employee = User::factory()->create();
+
+        Vacation::factory()->approved()->halfDay('morning')->create([
+            'user_id' => $employee->id,
+        ]);
+
+        $response = $this->actingAs($employee)->putJson('/api/time-entries/2026-04-06', [
+            'start_time' => '13:00',
+            'end_time' => '17:00',
+            'break_minutes' => 0,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.date', '2026-04-06');
     }
 
     public function test_can_create_time_entry_on_half_day_absence(): void

@@ -6,10 +6,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { VacationService } from '../../core/services/vacation.service';
 import { HolidayService } from '../../core/services/holiday.service';
 import { BlackoutService } from '../../core/services/blackout.service';
+import { VacationScope } from '../../core/models/vacation.model';
 
 @Component({
   selector: 'app-vacation-dialog',
@@ -22,6 +24,7 @@ import { BlackoutService } from '../../core/services/blackout.service';
     MatDatepickerModule,
     MatNativeDateModule,
     MatButtonModule,
+    MatSelectModule,
     TranslateModule,
   ],
   template: `
@@ -43,6 +46,15 @@ import { BlackoutService } from '../../core/services/blackout.service';
                  (dateChange)="onDateChange()">
           <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
           <mat-datepicker #endPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'vacation_dialog.scope' | translate }}</mat-label>
+          <mat-select formControlName="scope" (selectionChange)="onScopeChange()">
+            <mat-option value="full_day">{{ 'vacations.scope_full_day' | translate }}</mat-option>
+            <mat-option value="morning">{{ 'vacations.scope_morning' | translate }}</mat-option>
+            <mat-option value="afternoon">{{ 'vacations.scope_afternoon' | translate }}</mat-option>
+          </mat-select>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
@@ -127,6 +139,7 @@ export class VacationDialogComponent implements OnInit {
   form = new FormGroup({
     startDate: new FormControl<Date | null>(null, Validators.required),
     endDate: new FormControl<Date | null>(null, Validators.required),
+    scope: new FormControl<VacationScope>('full_day', Validators.required),
     comment: new FormControl<string>(''),
   });
 
@@ -137,6 +150,11 @@ export class VacationDialogComponent implements OnInit {
   onDateChange(): void {
     const startDate = this.form.value.startDate;
     const endDate = this.form.value.endDate;
+    const scope = this.form.value.scope ?? 'full_day';
+
+    if (scope !== 'full_day' && startDate) {
+      this.form.patchValue({ endDate: startDate }, { emitEvent: false });
+    }
 
     if (startDate) {
       this.checkYearConfirmed(startDate.getFullYear());
@@ -149,6 +167,17 @@ export class VacationDialogComponent implements OnInit {
     }
   }
 
+  onScopeChange(): void {
+    const scope = this.form.value.scope ?? 'full_day';
+    const startDate = this.form.value.startDate;
+
+    if (scope !== 'full_day' && startDate) {
+      this.form.patchValue({ endDate: startDate }, { emitEvent: false });
+    }
+
+    this.onDateChange();
+  }
+
   submit(): void {
     if (this.form.invalid || this.holidayWarning() || (this.blackoutWarning() && this.blackoutType() === 'freeze')) return;
 
@@ -157,9 +186,10 @@ export class VacationDialogComponent implements OnInit {
 
     const startDate = this.formatDate(this.form.value.startDate!);
     const endDate = this.formatDate(this.form.value.endDate!);
+    const scope = this.form.value.scope ?? 'full_day';
     const comment = this.form.value.comment || undefined;
 
-    this.vacationService.requestVacation(startDate, endDate, comment).subscribe({
+    this.vacationService.requestVacation(startDate, endDate, scope, comment).subscribe({
       next: () => this.dialogRef.close(true),
       error: (err) => {
         this.submitting = false;

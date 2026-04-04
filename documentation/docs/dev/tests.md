@@ -115,7 +115,7 @@ frontend/src/app/
 
 ## Aktueller Stand
 
-- Backend-Suite: **341 Tests / 935 Assertions**
+- Backend-Suite: **350 Tests / 960 Assertions**
 - Frontend: alle Services unter `frontend/src/app/core/services` haben Spec-Dateien
 - Feature-Komponenten mit Specs: Login, Mein Urlaub und Zeiterfassung
 
@@ -134,7 +134,7 @@ frontend/src/app/
 
 | Testdatei | Beschreibung |
 |-----------|-------------|
-| `VacationTest` | Antragstellung, Validierung, Team-/Eigenansichten, Stornierung |
+| `VacationTest` | Antragstellung, Validierung, Team-/Eigenansichten, Stornierung und Halbtags-Urlaub |
 | `AdminTest` | Admin-Review von Urlaubsanträgen und Benutzerverwaltung |
 | `VacationLedgerTest` | Urlaubskonto, Bonus-, Carryover-, Expired- und Adjustment-Einträge |
 | `YearlyMaintenanceTest` | Jahresanspruch, Übertrag, Verfall, Dry-Run und Idempotenz |
@@ -151,18 +151,18 @@ frontend/src/app/
 | `UserGroupTest` | Gruppenverwaltung, Mitglieder- und Kostenstellenzuordnung |
 | `AbsenceTest` | Krankheit, Sonderurlaub, Halbtag-Regeln, Überschneidungen |
 | `AbsenceAdminManagementTest` | Admin-Filter, Review und Löschen von Abwesenheiten |
-| `TimeEntryTest` | Arbeitszeiterfassung, Feiertage, Sperren, Auto-Lock |
-| `TimeBookingTest` | Prozentbuchungen, 100-%-/50-%-Regeln, Systemkostenstellen-Schutz, Auto-Lock |
+| `TimeEntryTest` | Arbeitszeiterfassung, Feiertage, Sperren, Auto-Lock und Urlaubssperren |
+| `TimeBookingTest` | Prozentbuchungen, 100-%-/50-%-Regeln, Systemkostenstellen-Schutz, Auto-Lock und Halbtags-Urlaub |
 | `TimeBookingAdminTest` | Admin-Zugriffe auf Buchungen und direkte Kostenstellenzuordnung |
 | `TimeBookingTemplateTest` | Eigene Buchungsvorlagen, 100-%-Validierung, Besitzregeln, keine Systemkostenstellen |
 | `TimeLockTest` | Monatsabschluss, Sperren und Entsperren |
-| `CrossSystemTest` | Zusammenspiel zwischen Urlaub, Feiertagen, Krankheit, Sonderurlaub, Zeiterfassung und Systembuchungen |
+| `CrossSystemTest` | Zusammenspiel zwischen Urlaub, Halbtags-Urlaub, Feiertagen, Krankheit, Sonderurlaub, Zeiterfassung und Systembuchungen |
 
 ### Unit-Tests
 
 | Testdatei | Beschreibung |
 |-----------|-------------|
-| `Unit/VacationTest` | Berechnung von Arbeitstagen über Wochenenden und Jahresgrenzen hinweg |
+| `Unit/VacationTest` | Berechnung von Arbeitstagen über Wochenenden, Halbtage und Jahresgrenzen hinweg |
 
 ### Frontend-Specs
 
@@ -171,7 +171,7 @@ frontend/src/app/
 | `app.component.spec.ts` | Sprachinitialisierung und Sprachwechsel |
 | `core/services/*.spec.ts` | Request-URLs, Payloads und Response-Mapping aller Core-Services |
 | `features/login/login.component.spec.ts` | Login-Flow, Fehlerzustände, erzwungener Passwortwechsel |
-| `features/time-tracking/time-tracking.component.spec.ts` | Vorlagen anwenden, speichern, aktualisieren und löschen |
+| `features/time-tracking/time-tracking.component.spec.ts` | Vorlagen anwenden, speichern, aktualisieren, löschen und Halbtags-Urlaub im Wochengrid |
 | `features/vacation/my-vacations.component.spec.ts` | Laden, Stornieren, Dialog-Refresh und Ledger-Jahreswechsel |
 
 ---

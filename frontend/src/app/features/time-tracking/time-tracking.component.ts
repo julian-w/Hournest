@@ -17,10 +17,12 @@ import { CostCenter } from '../../core/models/cost-center.model';
 import { TimeBookingTemplate } from '../../core/models/time-booking-template.model';
 import { TimeBooking } from '../../core/models/time-booking.model';
 import { TimeEntry } from '../../core/models/time-entry.model';
+import { Vacation } from '../../core/models/vacation.model';
 import { AbsenceService } from '../../core/services/absence.service';
 import { CostCenterService } from '../../core/services/cost-center.service';
 import { TimeBookingTemplateService } from '../../core/services/time-booking-template.service';
 import { TimeTrackingService } from '../../core/services/time-tracking.service';
+import { VacationService } from '../../core/services/vacation.service';
 import { TimeBookingTemplateDialogComponent } from './time-booking-template-dialog.component';
 
 interface DayData {
@@ -30,6 +32,7 @@ interface DayData {
   isWeekend: boolean;
   timeEntry: TimeEntry | null;
   absence: Absence | null;
+  vacation: Vacation | null;
   isLocked: boolean;
   startTime: string;
   endTime: string;
@@ -79,7 +82,7 @@ interface BookingRow {
         <div class="grid-header">
           <div class="label-col">{{ 'time_tracking.cost_center' | translate }}</div>
           @for (day of days(); track day.date) {
-            <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend" [class.locked]="day.isLocked || day.absence">
+            <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend" [class.locked]="day.isLocked || day.absence || day.vacation">
               <div class="day-name">{{ day.dayLabel }}</div>
               <div class="day-date">{{ day.date | date:'dd.MM.' }}</div>
             </div>
@@ -93,7 +96,13 @@ interface BookingRow {
           </div>
           @for (day of days(); track day.date) {
             <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend" [class.locked]="day.isLocked">
-              @if (day.absence && day.absence.scope === 'full_day') {
+              @if (day.vacation && day.vacation.scope === 'full_day') {
+                <div class="absence-badge">
+                  <mat-chip class="absence-chip">
+                    {{ 'time_tracking.absence_vacation' | translate }}
+                  </mat-chip>
+                </div>
+              } @else if (day.absence && day.absence.scope === 'full_day') {
                 <div class="absence-badge">
                   <mat-chip class="absence-chip">
                     {{ 'time_tracking.absence_' + day.absence.type | translate }}
@@ -129,8 +138,8 @@ interface BookingRow {
               <span class="cc-name" [matTooltip]="row.costCenter.code">{{ row.costCenter.name }}</span>
             </div>
             @for (day of days(); track day.date) {
-              <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend" [class.locked]="day.isLocked || (day.absence && day.absence.scope === 'full_day')">
-                @if (!day.isWeekend && !(day.absence && day.absence.scope === 'full_day')) {
+              <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend" [class.locked]="day.isLocked || (day.absence && day.absence.scope === 'full_day') || (day.vacation && day.vacation.scope === 'full_day')">
+                @if (!day.isWeekend && !(day.absence && day.absence.scope === 'full_day') && !(day.vacation && day.vacation.scope === 'full_day')) {
                   <input class="pct-input" type="number"
                          [ngModel]="row.percentages[day.date]"
                          (ngModelChange)="onPercentageChange(row, day.date, $event)"
@@ -148,7 +157,7 @@ interface BookingRow {
           @for (day of days(); track day.date) {
             <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend"
                  [class.total-ok]="getDayTotal(day.date) === expectedDayTotal(day)"
-                 [class.total-warn]="getDayTotal(day.date) > 0 && getDayTotal(day.date) !== expectedDayTotal(day) && !(day.absence && day.absence.scope === 'full_day')">
+                 [class.total-warn]="getDayTotal(day.date) > 0 && getDayTotal(day.date) !== expectedDayTotal(day) && !(day.absence && day.absence.scope === 'full_day') && !(day.vacation && day.vacation.scope === 'full_day')">
               @if (!day.isWeekend) {
                 <strong>{{ getDayTotal(day.date) }}%</strong>
               }
@@ -420,6 +429,7 @@ export class TimeTrackingComponent implements OnInit {
   private templateService = inject(TimeBookingTemplateService);
   private costCenterService = inject(CostCenterService);
   private absenceService = inject(AbsenceService);
+  private vacationService = inject(VacationService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
@@ -432,6 +442,7 @@ export class TimeTrackingComponent implements OnInit {
   costCenters = signal<CostCenter[]>([]);
   favorites = signal<CostCenter[]>([]);
   absences = signal<Absence[]>([]);
+  vacations = signal<Vacation[]>([]);
   templates = signal<TimeBookingTemplate[]>([]);
   bookingRows = signal<BookingRow[]>([]);
   selectedTemplateDate = signal('');
@@ -497,7 +508,7 @@ export class TimeTrackingComponent implements OnInit {
   }
 
   expectedDayTotal(day: DayData): number {
-    if (day.absence && day.absence.scope !== 'full_day') {
+    if ((day.absence && day.absence.scope !== 'full_day') || (day.vacation && day.vacation.scope !== 'full_day')) {
       return 50;
     }
 
@@ -521,7 +532,11 @@ export class TimeTrackingComponent implements OnInit {
   }
 
   saveAll(): void {
-    const days = this.days().filter(day => !day.isWeekend && !(day.absence && day.absence.scope === 'full_day'));
+    const days = this.days().filter(day =>
+      !day.isWeekend &&
+      !(day.absence && day.absence.scope === 'full_day') &&
+      !(day.vacation && day.vacation.scope === 'full_day')
+    );
     let pending = 0;
     let completed = 0;
 
@@ -815,6 +830,12 @@ export class TimeTrackingComponent implements OnInit {
       this.syncTemplateDateSelection();
     });
 
+    this.vacationService.getMyVacations().subscribe(vacations => {
+      this.vacations.set(vacations);
+      this.applyVacations(vacations);
+      this.syncTemplateDateSelection();
+    });
+
     this.loadTemplates();
   }
 
@@ -847,6 +868,7 @@ export class TimeTrackingComponent implements OnInit {
         isWeekend: date.getDay() === 0 || date.getDay() === 6,
         timeEntry: null,
         absence: null,
+        vacation: null,
         isLocked: false,
         startTime: '',
         endTime: '',
@@ -879,6 +901,18 @@ export class TimeTrackingComponent implements OnInit {
       );
 
       return { ...day, absence: absence ?? null };
+    }));
+  }
+
+  private applyVacations(vacations: Vacation[]): void {
+    this.days.update(days => days.map(day => {
+      const vacation = vacations.find(entry =>
+        entry.start_date <= day.date &&
+        entry.end_date >= day.date &&
+        entry.status === 'approved'
+      );
+
+      return { ...day, vacation: vacation ?? null };
     }));
   }
 
@@ -919,7 +953,10 @@ export class TimeTrackingComponent implements OnInit {
   }
 
   private canEditBookingsForDay(day: DayData): boolean {
-    return !day.isWeekend && !day.isLocked && !(day.absence && day.absence.scope === 'full_day');
+    return !day.isWeekend &&
+      !day.isLocked &&
+      !(day.absence && day.absence.scope === 'full_day') &&
+      !(day.vacation && day.vacation.scope === 'full_day');
   }
 
   private syncTemplateDateSelection(): void {

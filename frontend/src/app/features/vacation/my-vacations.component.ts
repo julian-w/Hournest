@@ -53,6 +53,11 @@ import { VacationDialogComponent } from './vacation-dialog.component';
           <td mat-cell *matCellDef="let v">{{ v.workdays }}</td>
         </ng-container>
 
+        <ng-container matColumnDef="scope">
+          <th mat-header-cell *matHeaderCellDef>{{ 'vacations.scope' | translate }}</th>
+          <td mat-cell *matCellDef="let v">{{ 'vacations.scope_' + v.scope | translate }}</td>
+        </ng-container>
+
         <ng-container matColumnDef="status">
           <th mat-header-cell *matHeaderCellDef>{{ 'vacations.status' | translate }}</th>
           <td mat-cell *matCellDef="let v">
@@ -206,7 +211,7 @@ export class MyVacationsComponent implements OnInit {
   vacations = signal<Vacation[]>([]);
   ledgerEntries = signal<VacationLedgerEntry[]>([]);
   selectedYear = signal(new Date().getFullYear());
-  displayedColumns = ['start_date', 'end_date', 'workdays', 'status', 'comment', 'actions'];
+  displayedColumns = ['start_date', 'end_date', 'scope', 'workdays', 'status', 'comment', 'actions'];
   ledgerColumns = ['type', 'days', 'comment', 'created_at'];
 
   availableYears: number[] = [];

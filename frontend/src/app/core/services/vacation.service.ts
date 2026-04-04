@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { Vacation } from '../models/vacation.model';
+import { Vacation, VacationScope } from '../models/vacation.model';
 
 interface ApiResponse<T> {
   data: T;
@@ -24,10 +24,11 @@ export class VacationService {
     );
   }
 
-  requestVacation(startDate: string, endDate: string, comment?: string): Observable<Vacation> {
+  requestVacation(startDate: string, endDate: string, scope: VacationScope = 'full_day', comment?: string): Observable<Vacation> {
     return this.http.post<ApiResponse<Vacation>>('/api/vacations', {
       start_date: startDate,
       end_date: endDate,
+      scope,
       comment: comment || null,
     }).pipe(map((response) => response.data));
   }

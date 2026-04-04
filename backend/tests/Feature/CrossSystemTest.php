@@ -129,6 +129,55 @@ class CrossSystemTest extends TestCase
         ]);
     }
 
+    public function test_approving_half_day_vacation_creates_50_percent_vacation_system_booking(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $employee = User::factory()->create();
+        $vacationCc = CostCenter::where('code', 'VACATION')->firstOrFail();
+
+        $vacation = Vacation::factory()->halfDay('morning')->create([
+            'user_id' => $employee->id,
+        ]);
+
+        $this->actingAs($admin)->patchJson("/api/admin/vacations/{$vacation->id}", [
+            'status' => 'approved',
+        ])->assertOk();
+
+        $this->assertDatabaseHas('time_bookings', [
+            'user_id' => $employee->id,
+            'date' => '2026-04-06 00:00:00',
+            'cost_center_id' => $vacationCc->id,
+            'percentage' => 50,
+        ]);
+    }
+
+    public function test_approving_half_day_vacation_keeps_existing_time_entry(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $employee = User::factory()->create();
+
+        TimeEntry::create([
+            'user_id' => $employee->id,
+            'date' => '2026-04-06',
+            'start_time' => '08:00',
+            'end_time' => '12:00',
+            'break_minutes' => 0,
+        ]);
+
+        $vacation = Vacation::factory()->halfDay('afternoon')->create([
+            'user_id' => $employee->id,
+        ]);
+
+        $this->actingAs($admin)->patchJson("/api/admin/vacations/{$vacation->id}", [
+            'status' => 'approved',
+        ])->assertOk();
+
+        $this->assertDatabaseHas('time_entries', [
+            'user_id' => $employee->id,
+            'date' => '2026-04-06 00:00:00',
+        ]);
+    }
+
     public function test_rejecting_vacation_does_not_remove_time_entries(): void
     {
         $admin = User::factory()->admin()->create();

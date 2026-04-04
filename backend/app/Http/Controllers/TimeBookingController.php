@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\VacationScope;
 use App\Http\Requests\StoreTimeBookingsRequest;
 use App\Http\Resources\TimeBookingResource;
 use App\Models\Absence;
@@ -56,12 +57,12 @@ class TimeBookingController extends Controller
             return response()->json(['message' => 'Cannot book time on a day with a full-day absence.'], 422);
         }
 
-        $hasVacation = Vacation::where('user_id', $user->id)
+        $vacation = Vacation::where('user_id', $user->id)
             ->where('status', 'approved')
             ->whereDate('start_date', '<=', $date)
             ->whereDate('end_date', '>=', $date)
-            ->exists();
-        if ($hasVacation) {
+            ->first();
+        if ($vacation !== null && $vacation->scope === VacationScope::FullDay) {
             return response()->json(['message' => 'Cannot book time on a vacation day.'], 422);
         }
 

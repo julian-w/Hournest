@@ -149,7 +149,7 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
 
   // POST /api/vacations
   if (method === 'POST' && url.endsWith('/api/vacations')) {
-    const body = parseBody<{ start_date: string; end_date: string; comment: string | null }>(req);
+    const body = parseBody<{ start_date: string; end_date: string; scope?: 'full_day' | 'morning' | 'afternoon'; comment: string | null }>(req);
     const vacYear = parseInt(body.start_date.substring(0, 4), 10);
 
     // Check if holidays are confirmed for the vacation year
@@ -167,7 +167,8 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
       user_name: user.display_name,
       start_date: body.start_date,
       end_date: body.end_date,
-      workdays: 5,
+      scope: body.scope ?? 'full_day',
+      workdays: (body.scope ?? 'full_day') === 'full_day' ? 5 : 0.5,
       status: 'pending',
       comment: body.comment,
       reviewed_by: null,

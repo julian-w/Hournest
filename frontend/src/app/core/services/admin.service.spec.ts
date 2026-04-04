@@ -21,6 +21,7 @@ describe('AdminService', () => {
     user_name: 'Ada Lovelace',
     start_date: '2026-04-06',
     end_date: '2026-04-08',
+    scope: 'full_day',
     workdays: 3,
     status: 'pending',
     comment: null,

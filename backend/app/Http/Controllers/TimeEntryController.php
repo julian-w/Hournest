@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use App\Models\Vacation;
 
 class TimeEntryController extends Controller
 {
@@ -55,6 +56,16 @@ class TimeEntryController extends Controller
             ->exists();
         if ($hasFullDayAbsence) {
             return response()->json(['message' => 'Cannot create time entry on a day with a full-day absence.'], 422);
+        }
+
+        $hasFullDayVacation = Vacation::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->where('scope', 'full_day')
+            ->whereDate('start_date', '<=', $date)
+            ->whereDate('end_date', '>=', $date)
+            ->exists();
+        if ($hasFullDayVacation) {
+            return response()->json(['message' => 'Cannot create time entry on a full-day vacation.'], 422);
         }
 
         $entry = TimeEntry::where('user_id', $user->id)

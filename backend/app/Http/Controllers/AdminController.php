@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\LedgerEntryType;
 use App\Enums\UserRole;
+use App\Enums\VacationScope;
 use App\Enums\VacationStatus;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\ReviewVacationRequest;
@@ -69,7 +70,8 @@ class AdminController extends Controller
                 'type' => LedgerEntryType::Taken,
                 'days' => -$workdays,
                 'comment' => sprintf(
-                    'Vacation %s to %s',
+                    '%s vacation %s to %s',
+                    $vacation->scope === VacationScope::FullDay ? 'Full-day' : 'Half-day',
                     $vacation->start_date->toDateString(),
                     $vacation->end_date->toDateString()
                 ),

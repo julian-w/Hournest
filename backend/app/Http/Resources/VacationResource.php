@@ -17,6 +17,7 @@ class VacationResource extends JsonResource
             'user_name' => $this->whenLoaded('user', fn () => $this->user->display_name),
             'start_date' => $this->start_date->toDateString(),
             'end_date' => $this->end_date->toDateString(),
+            'scope' => $this->scope->value,
             'workdays' => $this->countWorkdays(),
             'status' => $this->status->value,
             'comment' => $this->comment,

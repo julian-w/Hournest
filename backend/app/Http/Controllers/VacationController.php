@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\VacationStatus;
+use App\Enums\VacationScope;
 use App\Http\Requests\StoreVacationRequest;
 use App\Http\Resources\VacationResource;
 use App\Models\Vacation;
@@ -58,6 +59,8 @@ class VacationController extends Controller
         $vacation = $user->vacations()->create([
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
+            'scope' => $request->input('scope', VacationScope::FullDay->value),
+            'comment' => $request->comment,
             'status' => VacationStatus::Pending,
         ]);
 

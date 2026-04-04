@@ -308,7 +308,7 @@ A **running balance** of overtime and undertime across months.
 
 | Code | Name | Behavior |
 |------|------|----------|
-| `VACATION` | Vacation | Auto-booked when vacation is approved (currently full day; half-day vacation support is still planned) |
+| `VACATION` | Vacation | Auto-booked when vacation is approved (100% for full day, 50% for half-day vacation) |
 | `ILLNESS` | Illness | Booked via absence management (user reports or admin creates) |
 | `SPECIAL_LEAVE` | Special Leave | Booked via absence management (user requests or admin creates) |
 | `HOLIDAY` | Holiday | Auto-booked on holidays (except `holidays_exempt` employees) |
@@ -500,7 +500,7 @@ Time bookings become **locked** after a configurable period to ensure data integ
 #### Vacation System (Section 4)
 - When a vacation is **approved**, the affected days are automatically booked to the `VACATION` system cost center
 - Half-day vacations: 50% booked to `VACATION`, remaining 50% open for manual booking
-  - Current implementation note: half-day vacation support is still planned; current implementation handles full-day vacation auto-booking and holiday precedence
+- Current implementation note: half-day vacation support is implemented; holiday precedence still applies on overlapping holiday dates
 - If a vacation is **cancelled**, the auto-booking is removed and the day becomes editable again
 
 #### Holidays (Section 6)

@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\AbsenceStatus;
 use App\Enums\AbsenceType;
+use App\Enums\VacationScope;
 use App\Models\Absence;
 use App\Models\CostCenter;
 use App\Models\Holiday;
@@ -102,15 +103,17 @@ class SystemTimeBookingService
             ->first();
 
         if ($approvedVacation !== null && $user->isWorkDay($date)) {
-            TimeEntry::where('user_id', $user->id)
-                ->whereDate('date', $date->toDateString())
-                ->delete();
+            if ($approvedVacation->scope === VacationScope::FullDay) {
+                TimeEntry::where('user_id', $user->id)
+                    ->whereDate('date', $date->toDateString())
+                    ->delete();
+            }
 
             TimeBooking::create([
                 'user_id' => $user->id,
                 'date' => $date->toDateString(),
                 'cost_center_id' => $this->costCenterIdByCode('VACATION'),
-                'percentage' => 100,
+                'percentage' => $approvedVacation->scope === VacationScope::FullDay ? 100 : 50,
             ]);
 
             return;

@@ -94,7 +94,7 @@ Bestimmte Tage können nicht oder nur teilweise bearbeitet werden:
 
 | Grund | Wirkung |
 |-------|---------|
-| **Genehmigter Urlaub** | Tag wird automatisch auf `VACATION` gebucht |
+| **Genehmigter Urlaub** | Ganztags wird der Tag automatisch auf `VACATION` gebucht, halbtags nur 50 % |
 | **Krankheit** | Effektive Krankheitstage werden automatisch auf `ILLNESS` gebucht |
 | **Sonderurlaub** | Effektive Sonderurlaubstage werden automatisch auf `SPECIAL_LEAVE` gebucht |
 | **Feiertag** | Arbeitstage an Feiertagen werden automatisch auf `HOLIDAY` gebucht |
@@ -107,7 +107,7 @@ Bestimmte Tage können nicht oder nur teilweise bearbeitet werden:
 
 ## Halbtags-Abwesenheiten
 
-Halbtägige Krankheit oder halbtägiger Sonderurlaub sperren nur **50 %** des Tages:
+Halbtägige Krankheit, halbtägiger Sonderurlaub oder halbtägiger Urlaub sperren nur **50 %** des Tages:
 
 - Das System erstellt automatisch eine **50-%-Buchung** auf die passende System-Kostenstelle
 - Die übrigen **50 %** müssen manuell auf reguläre Kostenstellen verteilt werden

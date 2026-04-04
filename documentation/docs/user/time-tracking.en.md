@@ -94,7 +94,7 @@ Certain days cannot be edited or can only be edited partially:
 
 | Reason | Effect |
 |--------|--------|
-| **Approved Vacation** | The day is automatically booked to `VACATION` |
+| **Approved Vacation** | Full days are automatically booked to `VACATION`, half days only book 50% |
 | **Illness** | Effective illness days are automatically booked to `ILLNESS` |
 | **Special Leave** | Effective special leave days are automatically booked to `SPECIAL_LEAVE` |
 | **Holiday** | Working days on holidays are automatically booked to `HOLIDAY` |
@@ -107,7 +107,7 @@ Certain days cannot be edited or can only be edited partially:
 
 ## Half-Day Absences
 
-Half-day illness or half-day special leave only lock **50%** of the day:
+Half-day illness, half-day special leave, or half-day vacation only lock **50%** of the day:
 
 - The system creates an automatic **50% booking** on the matching system cost center
 - The remaining **50%** must be booked manually to regular cost centers

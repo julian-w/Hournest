@@ -49,6 +49,7 @@ class VacationTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.status', 'pending')
+            ->assertJsonPath('data.scope', 'full_day')
             ->assertJsonPath('message', 'Vacation request submitted.');
 
         $this->assertDatabaseHas('vacations', [
@@ -160,11 +161,62 @@ class VacationTest extends TestCase
         $response = $this->actingAs($user)->postJson('/api/vacations', [
             'start_date' => '2026-07-01',
             'end_date' => '2026-07-10',
+            'comment' => 'Family trip',
         ]);
 
-        // Comment field is accepted but not yet stored by the controller
         $response->assertStatus(201)
-            ->assertJsonPath('data.status', 'pending');
+            ->assertJsonPath('data.status', 'pending')
+            ->assertJsonPath('data.comment', 'Family trip');
+    }
+
+    public function test_user_can_request_half_day_vacation(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->postJson('/api/vacations', [
+            'start_date' => '2026-06-01',
+            'end_date' => '2026-06-01',
+            'scope' => 'morning',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.scope', 'morning')
+            ->assertJsonPath('data.workdays', 0.5);
+
+        $this->assertDatabaseHas('vacations', [
+            'user_id' => $user->id,
+            'start_date' => '2026-06-01 00:00:00',
+            'end_date' => '2026-06-01 00:00:00',
+            'scope' => 'morning',
+        ]);
+    }
+
+    public function test_half_day_vacation_must_be_single_day(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->postJson('/api/vacations', [
+            'start_date' => '2026-06-01',
+            'end_date' => '2026-06-02',
+            'scope' => 'afternoon',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['scope']);
+    }
+
+    public function test_half_day_vacation_reduces_remaining_days_by_half(): void
+    {
+        $user = User::factory()->create(['vacation_days_per_year' => 30]);
+
+        Vacation::factory()->approved()->halfDay('morning')->create([
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->actingAs($user)->getJson('/api/user');
+
+        $response->assertOk()
+            ->assertJsonPath('data.remaining_vacation_days', 29.5);
     }
 
     public function test_vacation_request_validates_required_dates(): void
@@ -250,7 +302,7 @@ class VacationTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonStructure([
-                'data' => ['id', 'start_date', 'end_date', 'status'],
+                'data' => ['id', 'start_date', 'end_date', 'scope', 'status'],
                 'message',
             ]);
     }
