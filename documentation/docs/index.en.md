@@ -1,9 +1,9 @@
 # Hournest -- Team Vacation Management
 
-Hournest is an internal web application for **team vacation management** designed for small companies (under 20 employees). The application provides a central dashboard, a team calendar, vacation requests with an approval workflow, and a complete vacation account with yearly ledger.
+Hournest is an internal web application for **vacation management** with an already expanded **time tracking and cost center booking** area. It is designed for small companies (under 20 employees).
 
 !!! info "Current Status"
-    Hournest is currently in **Phase 1** (vacation management). Additional features such as time tracking, shift planning, and reports are planned for Phase 2.
+    Vacation management is stable and broadly implemented. Parts of time tracking, absences, cost centers, and locking are also already implemented. Additional convenience features and reporting remain planned.
 
 ---
 
@@ -51,6 +51,7 @@ Hournest is an internal web application for **team vacation management** designe
 - Bilingual: German and English (switchable at runtime)
 - Auto-generated API documentation (OpenAPI/Scramble) at `/docs/api`
 - Mock mode for frontend development without backend
+- Backend test coverage with 330 tests / 897 assertions
 
 ---
 
@@ -74,7 +75,6 @@ hournest/
 │   ├── src/app/
 │   │   ├── core/          # Services, Guards, Interceptors, Models, Mock
 │   │   ├── features/      # Feature modules (Dashboard, Calendar, Vacation, Admin)
-│   │   └── shared/        # Shared components
 │   └── ...
 ├── backend/               # Laravel 11 API
 │   ├── app/
@@ -98,3 +98,9 @@ hournest/
 - **[Configuration](home/configuration.md)** -- All environment variables explained
 - **[End User Guide](user/index.md)** -- Guide for users and admins
 - **[Developer Documentation](dev/index.md)** -- Architecture, API, tests, deployment
+
+## Implementation Status Notes
+
+- **Already implemented:** vacations, vacation ledger, holidays, work schedules, roles, OIDC, local auth, core time tracking, cost centers, favorites, absences, locks
+- **Partially implemented:** blackouts/company holidays and additional convenience features
+- **Still planned:** booking templates, copy previous day, half-day vacation support, shift planning, reports, working time account

@@ -5,6 +5,9 @@ Alle API-Endpoints von Hournest sind unter `/api` erreichbar. Die Authentifizier
 !!! tip "OpenAPI-Dokumentation"
     Eine interaktive API-Dokumentation ist unter `http://localhost:8000/docs/api` verfügbar, wenn das Backend läuft. Die OpenAPI-JSON-Spec liegt unter `http://localhost:8000/docs/api.json`.
 
+!!! info "Aktueller Stand"
+    Diese Markdown-Referenz deckt die Kern-Endpoints ab, ist aber noch nicht vollständig auf alle neueren Zeitbuchungs-, Favoriten-, Abwesenheits- und Admin-Routen erweitert. Für den vollständigen Ist-Zustand sind `backend/routes/api.php` und die OpenAPI-Dokumentation maßgeblich.
+
 ---
 
 ## Authentifizierung (Sanctum SPA)
@@ -598,7 +601,7 @@ Erstellt einen neuen Benutzer (nur im lokalen Auth-Modus relevant).
 | `display_name` | string | Ja | Anzeigename |
 | `email` | string | Ja | E-Mail (eindeutig) |
 | `role` | string | Ja | `employee` oder `admin` |
-| `password` | string | Ja | Standard-Passwort (mind. 8 Zeichen) |
+| `password` | string | Im lokalen Auth-Modus ja, im OAuth-Modus optional | Standard-Passwort (mind. 8 Zeichen) |
 
 **Response:** `201 Created`
 

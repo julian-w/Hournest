@@ -8,12 +8,17 @@ use App\Http\Requests\StoreHolidayRequest;
 use App\Http\Requests\UpdateHolidayRequest;
 use App\Http\Resources\HolidayResource;
 use App\Models\Holiday;
+use App\Services\SystemTimeBookingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class HolidayController extends Controller
 {
+    public function __construct(private readonly SystemTimeBookingService $systemTimeBookingService)
+    {
+    }
+
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = Holiday::orderBy('date');
@@ -29,6 +34,7 @@ class HolidayController extends Controller
     public function store(StoreHolidayRequest $request): JsonResponse
     {
         $holiday = Holiday::create($request->validated());
+        $this->systemTimeBookingService->syncHoliday($holiday);
 
         return response()->json([
             'data' => new HolidayResource($holiday),
@@ -38,7 +44,9 @@ class HolidayController extends Controller
 
     public function update(UpdateHolidayRequest $request, Holiday $holiday): JsonResponse
     {
+        $previousDate = $holiday->date->copy();
         $holiday->update($request->validated());
+        $this->systemTimeBookingService->syncHoliday($holiday->fresh(), $previousDate);
 
         return response()->json([
             'data' => new HolidayResource($holiday),
@@ -48,7 +56,9 @@ class HolidayController extends Controller
 
     public function destroy(Holiday $holiday): JsonResponse
     {
+        $holidayDate = $holiday->date->copy();
         $holiday->delete();
+        $this->systemTimeBookingService->removeHolidayDate($holidayDate);
 
         return response()->json(['message' => 'Holiday deleted.']);
     }

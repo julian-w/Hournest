@@ -1,10 +1,15 @@
 # Tests
 
-The Hournest backend is tested with PHPUnit. The tests cover API endpoints and business logic.
+Hournest is currently tested on two levels:
+
+- **Backend:** PHPUnit/Laravel feature and unit tests for API endpoints, validation, calculations, and cross-system business rules
+- **Frontend:** Angular specs for core services and first feature components
 
 ---
 
 ## Running Tests
+
+Backend:
 
 ```bash
 cd backend
@@ -16,6 +21,20 @@ Or directly with PHPUnit:
 ```bash
 cd backend
 ./vendor/bin/phpunit
+```
+
+Type-check frontend specs:
+
+```bash
+cd frontend
+npx tsc -p tsconfig.spec.json --noEmit
+```
+
+Run frontend specs in a browser:
+
+```bash
+cd frontend
+npm test
 ```
 
 ### Filtering Test Output
@@ -38,15 +57,14 @@ php artisan test tests/Unit
 
 ## Database for Tests
 
-Tests use an **SQLite :memory: database**. It is automatically created before each test and discarded afterwards. No separate database configuration is needed.
+Backend tests use an **SQLite :memory: database**. It is created automatically before each test and discarded afterwards. No separate database configuration is required.
 
-Configuration is done via the `RefreshDatabase` trait, which is used in every feature test class:
+Configuration is handled with the `RefreshDatabase` trait:
 
 ```php
 class VacationTest extends TestCase
 {
     use RefreshDatabase;
-    // ...
 }
 ```
 
@@ -54,113 +72,109 @@ class VacationTest extends TestCase
 
 ## Test Structure
 
-```
+```text
 backend/tests/
-├── TestCase.php          # Base test class
+├── TestCase.php
 ├── Feature/
-│   ├── AuthTest.php      # Authentication tests
-│   ├── VacationTest.php  # Vacation request tests
-│   └── AdminTest.php     # Admin function tests
+│   ├── AbsenceAdminManagementTest.php
+│   ├── AbsenceTest.php
+│   ├── AdminTest.php
+│   ├── AuthOidcTest.php
+│   ├── AuthTest.php
+│   ├── CostCenterFavoriteTest.php
+│   ├── CostCenterTest.php
+│   ├── CrossSystemTest.php
+│   ├── HolidayTest.php
+│   ├── SecurityTest.php
+│   ├── SettingTest.php
+│   ├── TimeBookingAdminTest.php
+│   ├── TimeBookingTest.php
+│   ├── TimeEntryTest.php
+│   ├── TimeLockTest.php
+│   ├── UserGroupTest.php
+│   ├── VacationLedgerTest.php
+│   ├── VacationTest.php
+│   ├── WorkScheduleTest.php
+│   └── YearlyMaintenanceTest.php
 └── Unit/
-    └── VacationTest.php  # Unit tests for vacation calculation
+    └── VacationTest.php
+```
+
+```text
+frontend/src/app/
+├── app.component.spec.ts
+├── core/services/*.spec.ts
+└── features/
+    ├── login/login.component.spec.ts
+    └── vacation/my-vacations.component.spec.ts
 ```
 
 ---
 
-## Test Overview
+## Current Status
 
-### Feature/AuthTest (3 Tests)
+- Backend suite: **330 tests / 897 assertions**
+- Frontend: every service under `frontend/src/app/core/services` has a matching spec file
+- First feature components with specs: Login and My Vacations
 
-| Test                                         | Description                                            |
-|----------------------------------------------|--------------------------------------------------------|
-| `test_unauthenticated_user_cannot_access_api`| Unauthenticated users receive 401                      |
-| `test_authenticated_user_can_get_own_info`   | Authenticated users can retrieve their own info        |
-| `test_logout_invalidates_session`            | Logout correctly terminates the session                |
+---
 
-### Feature/VacationTest (10 Tests)
+## Coverage Focus
 
-| Test                                              | Description                                            |
-|---------------------------------------------------|--------------------------------------------------------|
-| `test_user_can_view_approved_team_vacations`      | Only approved vacations are shown                      |
-| `test_user_can_view_own_vacations`                | User sees only their own vacations                     |
-| `test_user_can_request_vacation`                  | Vacation request is correctly created (status: pending)|
-| `test_user_cannot_request_vacation_in_the_past`   | Past vacation dates are rejected (422)                 |
-| `test_user_cannot_request_vacation_with_end_before_start` | End before start is rejected (422)             |
-| `test_user_cannot_request_overlapping_vacation`   | Overlap with approved vacation is rejected             |
-| `test_user_can_cancel_pending_vacation`           | Pending requests can be cancelled (soft delete)        |
-| `test_user_cannot_cancel_approved_vacation`       | Approved requests cannot be cancelled                  |
-| `test_user_cannot_cancel_other_users_vacation`    | Other users' requests cannot be cancelled (403)        |
-| `test_remaining_vacation_days_are_calculated`     | Remaining vacation is correctly calculated             |
+### Authentication
 
-### Feature/AdminTest (10 Tests)
+| Test file | Description |
+|-----------|-------------|
+| `AuthTest` | Local login, logout, password changes, must-change-password flow |
+| `AuthOidcTest` | OIDC redirect/callback, pre-provisioning, role assignment, fallbacks |
 
-| Test                                                | Description                                            |
-|-----------------------------------------------------|--------------------------------------------------------|
-| `test_admin_can_view_pending_vacations`             | Admin sees all pending requests                        |
-| `test_admin_can_approve_vacation`                   | Admin can approve vacation                             |
-| `test_admin_can_reject_vacation_with_comment`       | Admin can reject vacation with comment                 |
-| `test_admin_cannot_review_already_reviewed_vacation` | Already reviewed requests cannot be reviewed again    |
-| `test_admin_can_view_all_users`                     | Admin sees all users                                   |
-| `test_admin_can_update_user_role`                   | Admin can change user role                             |
-| `test_admin_can_update_user_vacation_days`          | Admin can change vacation days per year                |
-| `test_employee_cannot_access_admin_routes`          | Employees receive 403 on admin routes                  |
-| `test_invalid_role_is_rejected`                     | Invalid roles are rejected with 422                    |
-| `test_invalid_vacation_days_rejected`               | Negative vacation days are rejected with 422           |
+### Vacation & Vacation Ledger
 
-### Unit/VacationTest (5 Tests)
+| Test file | Description |
+|-----------|-------------|
+| `VacationTest` | Requesting, validation, team/self views, cancellation |
+| `AdminTest` | Admin review of vacation requests and user management |
+| `VacationLedgerTest` | Vacation ledger, bonus, carryover, expired, and adjustment entries |
+| `YearlyMaintenanceTest` | Yearly entitlement, carryover, expiry, dry-run, idempotency |
+| `WorkScheduleTest` | Individual work days and their effect on calculations |
+| `HolidayTest` | Holiday management and filtering |
+| `SettingTest` | Global settings such as carryover expiry and default work days |
 
-| Test                                          | Description                                            |
-|-----------------------------------------------|--------------------------------------------------------|
-| `test_count_workdays_excludes_weekends`       | Mon-Fri = 5 work days                                  |
-| `test_count_workdays_full_two_weeks`          | 2 weeks Mon-Fri = 10 work days                         |
-| `test_count_workdays_single_day`              | One day (Monday) = 1 work day                          |
-| `test_count_workdays_weekend_only_returns_zero`| Sat-Sun = 0 work days                                 |
-| `test_count_workdays_filtered_by_year`        | Cross-year vacation: only days in specified year count  |
+### Time Tracking, Cost Centers, and Absences
 
-### Time Tracking & Cost Centers
-
-| Test File | Description |
+| Test file | Description |
 |-----------|-------------|
 | `CostCenterTest` | CRUD for cost centers, system cost center protection, permissions |
-| `UserGroupTest` | User group management, member and cost center assignment |
-| `TimeEntryTest` | Time recording, validation, locking |
-| `TimeBookingTest` | Percentage booking, 100% validation, system cost center protection |
-| `AbsenceTest` | Illness reporting, special leave, approval workflow |
+| `CostCenterFavoriteTest` | Adding, removing, reordering, and validating favorites |
+| `UserGroupTest` | Group management, member assignment, cost center assignment |
+| `AbsenceTest` | Illness, special leave, half-day rules, overlap validation |
+| `AbsenceAdminManagementTest` | Admin filters, review, and deletion of absences |
+| `TimeEntryTest` | Time recording, holidays, locking, auto-lock |
+| `TimeBookingTest` | Percentage booking, 100%/50% rules, system cost center protection, auto-lock |
+| `TimeBookingAdminTest` | Admin access to bookings and direct user cost center assignment |
 | `TimeLockTest` | Month closing, lock/unlock |
+| `CrossSystemTest` | Interactions between vacations, holidays, illness, special leave, time entries, and system bookings |
 
----
+### Unit Tests
 
-## Factories
+| Test file | Description |
+|-----------|-------------|
+| `Unit/VacationTest` | Workday calculation across weekends and year boundaries |
 
-Laravel factories are used for test data generation:
+### Frontend Specs
 
-### UserFactory
-
-Creates users with random data. Available states:
-
-- `admin()` -- Creates a user with the admin role
-
-```php
-$user = User::factory()->create();           // Employee
-$admin = User::factory()->admin()->create(); // Admin
-```
-
-### VacationFactory
-
-Creates vacation requests with random data. Available states:
-
-- `approved()` -- Creates an approved vacation
-
-```php
-$vacation = Vacation::factory()->create();             // Pending
-$approved = Vacation::factory()->approved()->create();  // Approved
-```
+| Spec file | Description |
+|-----------|-------------|
+| `app.component.spec.ts` | Language initialization and switching |
+| `core/services/*.spec.ts` | Request URLs, payloads, and response mapping for all core services |
+| `features/login/login.component.spec.ts` | Login flow, error states, forced password change |
+| `features/vacation/my-vacations.component.spec.ts` | Loading, cancelling, dialog refresh, ledger year switching |
 
 ---
 
 ## Writing New Tests
 
-### Feature Test (API Endpoint)
+### Feature Test
 
 ```php
 <?php
@@ -204,16 +218,15 @@ class NewUnitTest extends TestCase
 {
     public function test_example(): void
     {
-        $result = 1 + 1;
-
-        $this->assertEquals(2, $result);
+        $this->assertEquals(2, 1 + 1);
     }
 }
 ```
 
 ### Important Conventions
 
-- Test methods start with `test_` (snake_case)
+- Test methods start with `test_`
 - Feature tests use `actingAs()` for authenticated requests
-- Use `assertOk()`, `assertStatus()`, `assertJsonPath()`, `assertJsonStructure()` for response assertions
+- Use `assertOk()`, `assertStatus()`, `assertJsonPath()`, and `assertJsonStructure()` for responses
 - Use `assertDatabaseHas()` and `assertSoftDeleted()` for database assertions
+- Frontend specs should prefer request contracts, signal/state changes, and component workflows over brittle markup assertions

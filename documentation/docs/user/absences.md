@@ -1,96 +1,100 @@
 # Abwesenheiten
 
-Diese Seite erklärt, wie Krankheitsmeldungen und Sonderurlaub eingereicht, storniert und vom Admin bearbeitet werden.
+Diese Seite erklärt, wie Krankheitsmeldungen und Sonderurlaub eingereicht, storniert und in der Zeiterfassung wirksam werden.
 
 ---
 
-## Krankheit melden (Schritt für Schritt)
+## Krankheit melden
 
-1. Navigiere zu **"Abwesenheiten"** in der Seitennavigation
-2. Klicke auf den Button **"Abwesenheit melden"**
-3. Wähle den Typ **"Krankheit"**
-4. Fülle die folgenden Felder aus:
-    - **Startdatum** (Pflichtfeld) -- der erste Krankheitstag
-    - **Enddatum** (Pflichtfeld) -- der letzte Krankheitstag
-    - **Halber Tag** (optional) -- siehe Abschnitt [Halbe Tage](#halbe-tage)
-    - **Kommentar** (optional) -- z.B. "Erkältung"
-5. Klicke auf **"Meldung einreichen"**
-6. Die Meldung wird mit dem Status **Gemeldet** erstellt
+1. Navigiere zu **"Abwesenheiten"**
+2. Klicke auf **"Krankheit melden"**
+3. Wähle:
+   - **Startdatum**
+   - **Enddatum**
+   - **Umfang**: ganzer Tag, Vormittag oder Nachmittag
+   - **Kommentar** optional
+4. Reiche die Meldung ein
 
-!!! info "Kein Genehmigungsprozess"
-    Krankmeldungen durchlaufen keinen Genehmigungsprozess. Sie werden direkt eingetragen und der Admin wird benachrichtigt. Der Admin kann die Meldung anschließend **zur Kenntnis nehmen**.
+Die Meldung wird mit dem Status **Gemeldet** erstellt.
+
+!!! info "Workflow"
+    Krankmeldungen werden gemeldet und können anschließend vom Admin **zur Kenntnis genommen** werden.
 
 ---
 
 ## Sonderurlaub beantragen
 
-1. Navigiere zu **"Abwesenheiten"** in der Seitennavigation
-2. Klicke auf den Button **"Abwesenheit melden"**
-3. Wähle den Typ **"Sonderurlaub"**
-4. Fülle die folgenden Felder aus:
-    - **Startdatum** (Pflichtfeld) -- der erste Tag des Sonderurlaubs
-    - **Enddatum** (Pflichtfeld) -- der letzte Tag
-    - **Halber Tag** (optional) -- siehe Abschnitt [Halbe Tage](#halbe-tage)
-    - **Kommentar** (Pflichtfeld) -- Begründung, z.B. "Umzug" oder "Hochzeit"
-5. Klicke auf **"Antrag einreichen"**
-6. Der Antrag wird mit dem Status **Ausstehend** erstellt und wartet auf Admin-Genehmigung
+1. Navigiere zu **"Abwesenheiten"**
+2. Klicke auf **"Sonderurlaub beantragen"**
+3. Wähle:
+   - **Startdatum**
+   - **Enddatum**
+   - **Umfang**: ganzer Tag, Vormittag oder Nachmittag
+   - **Kommentar** optional
+4. Reiche den Antrag ein
 
-!!! warning "Kommentar erforderlich"
-    Bei Sonderurlaub ist ein Kommentar mit der Begründung Pflicht. Ohne Begründung kann der Antrag nicht eingereicht werden.
+Der Antrag wird mit dem Status **Ausstehend** erstellt und wartet auf Bearbeitung.
 
 ---
 
 ## Status-Bedeutungen
 
-| Status                 | Symbol/Farbe | Bedeutung                                                    |
-|------------------------|-------------|--------------------------------------------------------------|
-| **Gemeldet**           | Blau        | Krankmeldung wurde eingereicht und ist aktiv                 |
-| **Zur Kenntnis genommen** | Grün     | Admin hat die Krankmeldung gesehen und bestätigt             |
-| **Ausstehend**         | Gelb/Amber  | Sonderurlaub wurde beantragt und wartet auf Genehmigung     |
-| **Genehmigt**          | Grün        | Sonderurlaub wurde vom Admin genehmigt                       |
-| **Abgelehnt**          | Rot         | Sonderurlaub wurde abgelehnt -- ggf. mit Kommentar des Admins |
-| **Vom Admin erstellt** | Grau        | Abwesenheit wurde direkt vom Admin eingetragen               |
+| Status | Bedeutung |
+|--------|-----------|
+| **Gemeldet** | Krankheit wurde eingereicht |
+| **Zur Kenntnis genommen** | Krankheit wurde vom Admin bestätigt |
+| **Ausstehend** | Sonderurlaub wartet auf Entscheidung |
+| **Genehmigt** | Sonderurlaub wurde genehmigt |
+| **Abgelehnt** | Sonderurlaub wurde abgelehnt |
+| **Vom Admin erstellt** | Eintrag wurde direkt durch einen Admin angelegt |
 
 ---
 
 ## Halbe Tage
 
-Für Krankheit und Sonderurlaub kann ein **halber Tag** gewählt werden:
+Für Krankheit und Sonderurlaub kann ein halber Tag gewählt werden:
 
-- **Vormittag** -- Abwesenheit gilt nur für den Vormittag, der Nachmittag kann in der Zeiterfassung gebucht werden
-- **Nachmittag** -- Abwesenheit gilt nur für den Nachmittag, der Vormittag kann gebucht werden
+- **Vormittag**
+- **Nachmittag**
 
-!!! tip "Wann halbe Tage nutzen?"
-    Halbe Tage sind z.B. sinnvoll bei einem Arzttermin am Vormittag oder wenn du nachmittags erkrankst. Die Soll-Arbeitszeit wird entsprechend halbiert.
-
-!!! info "Nur bei eintägigen Abwesenheiten"
-    Halbe Tage können nur gewählt werden, wenn Start- und Enddatum identisch sind. Bei mehrtägigen Abwesenheiten ist diese Option nicht verfügbar.
+!!! info "Nur für eintägige Abwesenheiten"
+    Halbtage können nur genutzt werden, wenn Start- und Enddatum identisch sind.
 
 ---
 
-## Stornierung von offenen Meldungen
+## Wirkung in der Zeiterfassung
 
-Offene Abwesenheitsmeldungen können vom Mitarbeiter selbst storniert werden:
+Effektive Abwesenheiten wirken sich direkt auf die Zeiterfassung aus:
 
-1. Gehe zu **"Abwesenheiten"**
-2. Finde die gewünschte Meldung in der Liste
-3. Klicke auf den **Stornieren**-Button
-4. Bestätige die Stornierung
+- **Krankheit:** Status `acknowledged` oder `admin_created`
+- **Sonderurlaub:** Status `approved` oder `admin_created`
 
-!!! warning "Einschränkungen"
-    - **Krankmeldungen** mit dem Status **Gemeldet** können storniert werden
-    - **Sonderurlaub** mit dem Status **Ausstehend** kann storniert werden
-    - Bereits genehmigte, abgelehnte oder vom Admin bestätigte Einträge können nur durch einen Admin geändert werden
+Dann gilt:
+
+- **Ganzer Tag:** Der Tag wird gesperrt und automatisch auf die passende System-Kostenstelle gebucht
+- **Halber Tag:** 50 % werden automatisch gebucht, 50 % bleiben für reguläre Kostenstellen offen
+- Bereits vorhandene Zeiteinträge auf vollen effektiven Abwesenheitstagen werden entfernt
+
+---
+
+## Stornierung offener Meldungen
+
+Offene Meldungen können selbst storniert werden:
+
+- **Krankheit** mit Status **Gemeldet**
+- **Sonderurlaub** mit Status **Ausstehend**
+
+Bereits bearbeitete oder vom Admin erstellte Einträge können nicht selbst storniert werden.
 
 ---
 
 ## Abwesenheitsliste
 
-Die Seite **"Abwesenheiten"** zeigt eine Tabelle aller eigenen Abwesenheiten mit folgenden Spalten:
+Die Liste zeigt pro Eintrag:
 
-- **Zeitraum** -- Von- und Bis-Datum
-- **Typ** -- Krankheit oder Sonderurlaub
-- **Arbeitstage** -- Anzahl der betroffenen Arbeitstage
-- **Status** -- Aktueller Status der Meldung
-- **Kommentar** -- Eigener Kommentar oder Kommentar des Admins
-- **Aktionen** -- Stornieren-Button (nur für offene Meldungen)
+- **Typ**
+- **Zeitraum**
+- **Umfang**
+- **Status**
+- **Kommentar**
+- **Aktionen** zum Stornieren offener Einträge

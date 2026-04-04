@@ -1,6 +1,6 @@
 # Time Tracking
 
-This page explains how to record working hours in the weekly view, assign cost centers, and monitor actual vs. target hours.
+This page explains how to record working hours in the weekly view, distribute time by percentage across cost centers, and handle locked days.
 
 ---
 
@@ -8,9 +8,9 @@ This page explains how to record working hours in the weekly view, assign cost c
 
 1. Navigate to **"Time Tracking"** in the side navigation
 2. The current calendar week is loaded automatically
-3. Use the **arrow buttons** or the **calendar button** to switch between weeks
+3. Use the **arrow buttons** or the **Today button** to switch between weeks
 
-The weekly view displays all seven days of the week with the respective working hours and cost center allocations.
+The weekly view shows all seven days with working hours, cost center allocations, and a weekly summary.
 
 ---
 
@@ -18,14 +18,14 @@ The weekly view displays all seven days of the week with the respective working 
 
 For each working day, the following values can be entered:
 
-1. **Start time** -- beginning of the work day (e.g., 08:00)
-2. **End time** -- end of the work day (e.g., 17:00)
-3. **Break** -- break duration in minutes (e.g., 30 or 60)
+1. **Start time** -- beginning of the work day
+2. **End time** -- end of the work day
+3. **Break** -- break duration in minutes
 
-The net working time is calculated automatically: **End time − Start time − Break**.
+Net working time is calculated automatically: **End time − Start time − Break**.
 
-!!! tip "Quick Entry"
-    Use the Tab key to jump between fields. Entries are saved automatically when you leave the field.
+!!! tip "Direct Saving"
+    Changes to start time, end time, or break are saved directly when the field changes.
 
 ---
 
@@ -33,63 +33,81 @@ The net working time is calculated automatically: **End time − Start time − 
 
 A summary is shown at the bottom of the weekly view:
 
-| Value      | Meaning                                                      |
-|------------|--------------------------------------------------------------|
-| **Target** | Expected working time based on the individual work schedule   |
-| **Actual** | Actually recorded working time for the week                   |
-| **Delta**  | Difference between actual and target (positive = overtime, negative = shortfall) |
-
-!!! info "Work Schedule"
-    The target is calculated from the employee's stored work schedule. Holidays and approved absences automatically reduce the weekly target.
+| Value | Meaning |
+|-------|---------|
+| **Actual** | Recorded working time for the week |
+| **Target** | Expected working time based on the stored work schedule |
+| **Delta** | Difference between actual and target |
 
 ---
 
 ## Cost Center Allocation
 
-Below the working hours, the hours worked can be distributed across **cost centers**:
+Below the working hours, available cost centers are shown as rows. For each day, you enter a **percentage value** per cost center.
 
-1. Select a cost center from the dropdown
-2. Enter the **percentage** of working time
-3. Add additional cost centers if needed
+1. First record the working hours for the day
+2. Split the time across one or more cost centers
+3. Enter the distribution in **5% increments**
 
 !!! warning "100% Rule"
-    The sum of all cost center allocations for a day must equal exactly **100%**. As long as the sum does not reach 100%, a notice is displayed and the day is considered incomplete.
+    The total of all bookings for a day must equal exactly **100%** of the manually bookable part of the day.
 
 ---
 
 ## Favorites and Copy Previous Week
 
-Two features are available to speed up recurring allocations:
+Two features help with recurring allocations:
 
-- **Favorites** -- Save a frequently used cost center distribution as a favorite and apply it to individual days or the entire week with a single click
-- **Copy Previous Week** -- Copies the cost center distribution from the previous week to the current week
+- **Favorites** -- Favorite cost centers are shown first in the grid
+- **Copy Previous Week** -- Copies the previous week's percentage distribution into the current week
 
-!!! tip "Managing Favorites"
-    Click the **star icon** next to a cost center distribution to save it as a favorite. Saved favorites appear in the **"Apply Favorite"** dropdown.
+!!! tip "Favorites"
+    Favorites are managed outside the weekly grid. In time tracking they are shown at the top automatically.
 
 ---
 
 ## Locked Days
 
-Certain days cannot be edited:
+Certain days cannot be edited or can only be edited partially:
 
-| Reason                  | Display                  | Explanation                                     |
-|-------------------------|--------------------------|-------------------------------------------------|
-| **Approved Vacation**   | Green background         | Day is booked as vacation -- no manual entry needed |
-| **Sick Leave**          | Orange background        | Sick note is on file -- no entry possible        |
-| **Holiday**             | Blue background          | Public or company holiday                        |
-| **Special Leave**       | Purple background        | Approved special leave                           |
-| **Monthly Close**       | Lock icon                | The month has been closed by an admin -- retroactive changes are locked |
+| Reason | Effect |
+|--------|--------|
+| **Approved Vacation** | The day is automatically booked to `VACATION` |
+| **Illness** | Effective illness days are automatically booked to `ILLNESS` |
+| **Special Leave** | Effective special leave days are automatically booked to `SPECIAL_LEAVE` |
+| **Holiday** | Working days on holidays are automatically booked to `HOLIDAY` |
+| **Month Close / Auto-lock** | Changes are no longer allowed after manual or automatic locking |
 
-!!! info "Absences"
-    Days locked by absences are automatically booked to the corresponding system cost center (e.g., "Vacation" or "Sick Leave").
+!!! info "Automatic System Bookings"
+    Days locked by vacation, absences, and holidays are automatically booked to the matching system cost center.
+
+---
+
+## Half-Day Absences
+
+Half-day illness or half-day special leave only lock **50%** of the day:
+
+- The system creates an automatic **50% booking** on the matching system cost center
+- The remaining **50%** must be booked manually to regular cost centers
+- Manual bookings totaling **100%** are not allowed on such days
+
+---
+
+## Saving
+
+The weekly view uses two save modes:
+
+- **Direct saving** of working hours when values change
+- **"Save all"** for weekly percentage allocations
+
+Only days with valid totals are saved. Days without bookings or with invalid totals are skipped.
 
 ---
 
 ## Time Tracking Status
 
-| Status          | Meaning                                                       |
-|-----------------|---------------------------------------------------------------|
-| **Open**        | Day has not been fully recorded yet                            |
-| **Complete**    | Working time and cost centers are correctly recorded (100%)    |
-| **Locked**      | Day is locked due to absence or monthly close                  |
+| Status | Meaning |
+|--------|---------|
+| **Open** | The day has not been fully recorded yet |
+| **Complete** | Working time and cost centers are recorded correctly |
+| **Locked** | The day is locked due to absence, holiday, or month close |

@@ -250,3 +250,9 @@ When approving a request (`AdminController::reviewVacation()`):
 ## Seeder
 
 The database seeder creates test data for local development. It can be run with `php artisan db:seed`.
+
+---
+
+## Current Note
+
+Some frontend areas are already prepared further than the stable backend features documented here. This especially affects **blackouts/company holidays** and additional convenience features in the time-booking area. If a feature is described as planned in `CONCEPT.md`, the current implementation status should still be verified against actual Laravel routes and controllers in `backend/routes/api.php` and `backend/app/Http/Controllers`.

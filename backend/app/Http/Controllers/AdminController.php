@@ -17,6 +17,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use App\Models\Vacation;
 use App\Models\VacationLedgerEntry;
+use App\Services\SystemTimeBookingService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,6 +26,10 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
+    public function __construct(private readonly SystemTimeBookingService $systemTimeBookingService)
+    {
+    }
+
     public function pendingVacations(): AnonymousResourceCollection
     {
         $vacations = Vacation::with('user')
@@ -71,19 +76,7 @@ class AdminController extends Controller
                 'vacation_id' => $vacation->id,
             ]);
 
-            // Clean up any existing time entries and bookings for vacation days
-            $start = $vacation->start_date;
-            $end = $vacation->end_date;
-
-            TimeBooking::where('user_id', $vacation->user_id)
-                ->whereDate('date', '>=', $start)
-                ->whereDate('date', '<=', $end)
-                ->delete();
-
-            TimeEntry::where('user_id', $vacation->user_id)
-                ->whereDate('date', '>=', $start)
-                ->whereDate('date', '<=', $end)
-                ->delete();
+            $this->systemTimeBookingService->syncVacation($vacation);
         }
 
         $vacation->load(['user', 'reviewer']);

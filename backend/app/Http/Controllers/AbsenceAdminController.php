@@ -10,12 +10,17 @@ use App\Http\Requests\AdminStoreAbsenceRequest;
 use App\Http\Requests\ReviewAbsenceRequest;
 use App\Http\Resources\AbsenceResource;
 use App\Models\Absence;
+use App\Services\SystemTimeBookingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AbsenceAdminController extends Controller
 {
+    public function __construct(private readonly SystemTimeBookingService $systemTimeBookingService)
+    {
+    }
+
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = Absence::with(['user', 'reviewer'])
@@ -60,6 +65,8 @@ class AbsenceAdminController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        $this->systemTimeBookingService->syncAbsence($absence);
+
         $absence->load(['user', 'reviewer']);
 
         return response()->json([
@@ -83,6 +90,8 @@ class AbsenceAdminController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        $this->systemTimeBookingService->syncAbsence($absence);
+
         $absence->load('user');
 
         return response()->json([
@@ -94,6 +103,7 @@ class AbsenceAdminController extends Controller
     public function destroy(Absence $absence): JsonResponse
     {
         $absence->delete();
+        $this->systemTimeBookingService->removeAbsence($absence);
 
         return response()->json(['message' => 'Absence removed.']);
     }

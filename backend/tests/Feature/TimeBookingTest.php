@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\Absence;
 use App\Models\CostCenter;
+use App\Models\Setting;
 use App\Models\TimeBooking;
 use App\Models\TimeEntry;
 use App\Models\TimeLock;
@@ -310,6 +311,75 @@ class TimeBookingTest extends TestCase
             ->assertJsonPath('message', 'Cannot book time on a day with a full-day absence.');
     }
 
+    public function test_can_book_50_percent_on_half_day_absence(): void
+    {
+        $employee = User::factory()->create();
+        $cc = CostCenter::factory()->create();
+        $employee->costCenters()->attach($cc->id);
+
+        Absence::factory()->for($employee, 'user')->create([
+            'start_date' => '2026-04-06',
+            'end_date' => '2026-04-06',
+            'scope' => 'morning',
+            'status' => 'acknowledged',
+        ]);
+
+        TimeEntry::create([
+            'user_id' => $employee->id,
+            'date' => '2026-04-06',
+            'start_time' => '13:00',
+            'end_time' => '17:00',
+            'break_minutes' => 0,
+        ]);
+
+        $response = $this->actingAs($employee)->putJson('/api/time-bookings/2026-04-06', [
+            'bookings' => [
+                ['cost_center_id' => $cc->id, 'percentage' => 50],
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.0.percentage', 50);
+
+        $this->assertDatabaseHas('time_bookings', [
+            'user_id' => $employee->id,
+            'date' => '2026-04-06 00:00:00',
+            'cost_center_id' => $cc->id,
+            'percentage' => 50,
+        ]);
+    }
+
+    public function test_half_day_absence_rejects_100_percent_manual_booking(): void
+    {
+        $employee = User::factory()->create();
+        $cc = CostCenter::factory()->create();
+        $employee->costCenters()->attach($cc->id);
+
+        Absence::factory()->for($employee, 'user')->create([
+            'start_date' => '2026-04-06',
+            'end_date' => '2026-04-06',
+            'scope' => 'afternoon',
+            'status' => 'approved',
+        ]);
+
+        TimeEntry::create([
+            'user_id' => $employee->id,
+            'date' => '2026-04-06',
+            'start_time' => '08:00',
+            'end_time' => '12:00',
+            'break_minutes' => 0,
+        ]);
+
+        $response = $this->actingAs($employee)->putJson('/api/time-bookings/2026-04-06', [
+            'bookings' => [
+                ['cost_center_id' => $cc->id, 'percentage' => 100],
+            ],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['bookings']);
+    }
+
     public function test_cannot_book_on_vacation_day(): void
     {
         $employee = User::factory()->create();
@@ -384,5 +454,57 @@ class TimeBookingTest extends TestCase
             ],
         ]);
         $response->assertStatus(422);
+    }
+
+    public function test_auto_locked_old_date_cannot_be_booked(): void
+    {
+        Setting::set('time_booking_auto_lock_days', 30);
+
+        $employee = User::factory()->create();
+        $cc = CostCenter::factory()->create();
+        $employee->costCenters()->attach($cc->id);
+
+        TimeEntry::create([
+            'user_id' => $employee->id,
+            'date' => '2026-02-01',
+            'start_time' => '08:00',
+            'end_time' => '17:00',
+            'break_minutes' => 30,
+        ]);
+
+        $response = $this->actingAs($employee)->putJson('/api/time-bookings/2026-02-01', [
+            'bookings' => [
+                ['cost_center_id' => $cc->id, 'percentage' => 100],
+            ],
+        ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('message', 'This date is locked and cannot be edited.');
+    }
+
+    public function test_old_date_can_be_booked_when_auto_lock_disabled(): void
+    {
+        Setting::set('time_booking_auto_lock_days', 0);
+
+        $employee = User::factory()->create();
+        $cc = CostCenter::factory()->create();
+        $employee->costCenters()->attach($cc->id);
+
+        TimeEntry::create([
+            'user_id' => $employee->id,
+            'date' => '2026-02-02',
+            'start_time' => '08:00',
+            'end_time' => '17:00',
+            'break_minutes' => 30,
+        ]);
+
+        $response = $this->actingAs($employee)->putJson('/api/time-bookings/2026-02-02', [
+            'bookings' => [
+                ['cost_center_id' => $cc->id, 'percentage' => 100],
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.0.date', '2026-02-02');
     }
 }

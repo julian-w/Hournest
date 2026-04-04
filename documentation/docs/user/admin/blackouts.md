@@ -35,7 +35,7 @@ Eine Urlaubssperre bedeutet, dass in dem definierten Zeitraum **kein Urlaub geno
 
 ### Betriebsferien (Company Holiday)
 
-Betriebsferien bedeuten, dass in dem definierten Zeitraum **alle Mitarbeiter Urlaub haben**. Die Urlaubstage werden automatisch vom Urlaubskonto abgezogen.
+Betriebsferien bedeuten, dass in dem definierten Zeitraum ein firmenweiter Hinweis für die Urlaubsplanung gilt. Im Urlaubsdialog wird dafür eine Warnung angezeigt, der Antrag bleibt jedoch möglich.
 
 **Typische Anwendungsfälle:**
 
@@ -44,7 +44,7 @@ Betriebsferien bedeuten, dass in dem definierten Zeitraum **alle Mitarbeiter Url
 - Brückentage
 
 !!! info "Urlaubstage"
-    Bei Betriebsferien werden die Urlaubstage automatisch von jedem Mitarbeiter abgezogen. Im Urlaubsantrag-Dialog wird eine Warnung angezeigt, aber der Antrag ist nicht blockiert.
+    Aktuell werden bei Betriebsferien **keine Urlaubstage automatisch abgezogen**. Der Zeitraum wird im Urlaubsdialog als Warnung angezeigt, blockiert den Antrag aber nicht.
 
 ---
 
@@ -53,7 +53,7 @@ Betriebsferien bedeuten, dass in dem definierten Zeitraum **alle Mitarbeiter Url
 1. Klicke auf den Button **"Eintrag hinzufügen"**
 2. Wähle die **Art**:
     - **Urlaubssperre** -- Kein Urlaub erlaubt, keine Tage abgezogen
-    - **Betriebsferien** -- Zwangsurlaub, Tage werden automatisch abgezogen
+    - **Betriebsferien** -- Warnhinweis für die Urlaubsplanung, Antrag bleibt möglich
 3. Setze das **Von-Datum** und **Bis-Datum**
 4. Gib einen **Grund** ein (z.B. "Inventur" oder "Betriebsferien Weihnachten")
 5. Klicke auf **"Speichern"**

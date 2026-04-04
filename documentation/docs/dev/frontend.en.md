@@ -53,7 +53,6 @@ frontend/src/app/
 │       │   └── holiday-dialog.component.ts
 │       └── settings/
 │           └── admin-settings.component.ts
-├── shared/                         # Shared components
 ├── app.component.ts                # Root component (toolbar, sidenav)
 ├── app.config.ts                   # App configuration (providers)
 └── app.routes.ts                   # Route definitions
@@ -70,10 +69,12 @@ Hournest exclusively uses **Standalone Components** (no NgModules). Each compone
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, MatCardModule, MatButtonModule, TranslateModule],
-  templateUrl: './dashboard.component.html',
+  template: `<h2>{{ 'dashboard.title' | translate }}</h2>`,
 })
 export class DashboardComponent { }
 ```
+
+Current note: the application mostly uses **inline templates** and **inline styles** in its standalone components.
 
 ---
 
@@ -145,11 +146,15 @@ export const routes: Routes = [
 
 Admin routes are double-protected: both `authGuard` and `adminGuard` must pass.
 
+Current note: besides the core routes shown here, the app now also includes additional feature routes such as **Absences**, **Time Tracking**, **Cost Centers**, **User Groups**, and **Blackouts**.
+
 ---
 
 ## Angular Signals
 
 Hournest uses Angular Signals for reactive state management where appropriate. Signals partially replace the use of BehaviorSubjects and RxJS streams for local component state.
+
+Current note: the frontend now also includes spec files for all services under `core/services/` plus first feature component tests.
 
 ---
 

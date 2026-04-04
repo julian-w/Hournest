@@ -35,7 +35,7 @@ A vacation freeze means that **no vacation may be taken** during the defined per
 
 ### Company Holiday
 
-Company holidays mean that **all employees are on vacation** during the defined period. Vacation days are automatically deducted from the vacation account.
+Company holidays define a company-wide planning period. In the vacation dialog, they show up as a warning, but the request remains possible.
 
 **Typical use cases:**
 
@@ -44,7 +44,7 @@ Company holidays mean that **all employees are on vacation** during the defined 
 - Bridge days
 
 !!! info "Vacation Days"
-    During company holidays, vacation days are automatically deducted from each employee. A warning is shown in the vacation request dialog, but the request is not blocked.
+    At the moment, company holidays do **not** automatically deduct vacation days. They appear as a warning in the vacation dialog, but do not block submission.
 
 ---
 
@@ -53,7 +53,7 @@ Company holidays mean that **all employees are on vacation** during the defined 
 1. Click the **"Add Entry"** button
 2. Select the **Type**:
     - **Vacation Freeze** -- No vacation allowed, no days deducted
-    - **Company Holiday** -- Forced vacation, days are automatically deducted
+    - **Company Holiday** -- Planning warning, request remains possible
 3. Set the **From date** and **To date**
 4. Enter a **Reason** (e.g., "Inventory" or "Christmas shutdown")
 5. Click **"Save"**

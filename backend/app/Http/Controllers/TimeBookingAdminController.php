@@ -53,8 +53,10 @@ class TimeBookingAdminController extends Controller
             'break_minutes' => ['required', 'integer', 'min:0', 'max:480'],
         ]);
 
+        $user = User::findOrFail($userId);
+
         $entry = TimeEntry::updateOrCreate(
-            ['user_id' => $userId, 'date' => $date],
+            ['user_id' => $user->id, 'date' => $date],
             $request->only(['start_time', 'end_time', 'break_minutes'])
         );
 
@@ -72,6 +74,8 @@ class TimeBookingAdminController extends Controller
             'bookings.*.percentage' => ['required', 'integer', 'min:5', 'max:100'],
             'bookings.*.comment' => ['nullable', 'string', 'max:500'],
         ]);
+
+        $user = User::findOrFail($userId);
 
         $bookings = $request->input('bookings', []);
         $total = array_sum(array_column($bookings, 'percentage'));
@@ -91,12 +95,12 @@ class TimeBookingAdminController extends Controller
         }
 
         // Admin can book to any cost center including system ones
-        TimeBooking::where('user_id', $userId)->whereDate('date', $date)->delete();
+        TimeBooking::where('user_id', $user->id)->whereDate('date', $date)->delete();
 
         $created = [];
         foreach ($request->bookings as $booking) {
             $created[] = TimeBooking::create([
-                'user_id' => $userId,
+                'user_id' => $user->id,
                 'date' => $date,
                 'cost_center_id' => $booking['cost_center_id'],
                 'percentage' => $booking['percentage'],

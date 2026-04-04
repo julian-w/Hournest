@@ -56,8 +56,21 @@ class CostCenterFavoriteController extends Controller
         ]);
 
         $user = $request->user();
+        $existingFavoriteIds = $user->costCenterFavorites()->pluck('cost_centers.id')->all();
+        $requestedIds = $request->cost_center_ids;
+
+        sort($existingFavoriteIds);
+        $sortedRequestedIds = $requestedIds;
+        sort($sortedRequestedIds);
+
+        if ($sortedRequestedIds !== $existingFavoriteIds) {
+            return response()->json([
+                'message' => 'Favorites reorder payload must match your existing favorites.',
+            ], 422);
+        }
+
         $syncData = [];
-        foreach ($request->cost_center_ids as $index => $id) {
+        foreach ($requestedIds as $index => $id) {
             $syncData[$id] = ['sort_order' => $index];
         }
 

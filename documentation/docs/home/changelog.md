@@ -4,57 +4,37 @@ Alle nennenswerten Änderungen an Hournest werden auf dieser Seite dokumentiert.
 
 ---
 
+## v0.1.1 (2026-04-05)
+
+### Tests & Qualitätssicherung
+
+- Backend-Testabdeckung deutlich ausgebaut auf **330 Tests / 897 Assertions**
+- Neue Feature-Tests für OIDC-Login, Favoriten, Admin-Abwesenheitsverwaltung, Admin-Zeitbuchungen, Jahreswartung und systemübergreifende Regeln
+- Frontend-Specs für alle Core-Services ergänzt
+- Erste Feature-Komponenten mit Tests abgesichert: Login und Mein Urlaub
+
+### Zeiterfassung & System-Buchungen
+
+- Automatische System-Buchungen für `VACATION`, `ILLNESS`, `SPECIAL_LEAVE` und `HOLIDAY` ergänzt
+- Volle effektive Abwesenheiten entfernen vorhandene Zeiteinträge und sperren den Tag
+- Halbtägige Abwesenheiten erzeugen automatische **50-%-Buchungen**, die übrigen 50 % bleiben manuell buchbar
+- Feiertage haben Vorrang vor Urlaub auf demselben Tag; bei Feiertags-Ausnahme bleibt Urlaub regulär buchbar
+- Re-Kalkulation beim Löschen oder Verschieben von Feiertagen und beim Entfernen von Abwesenheiten verbessert
+
+### Admin & Validierung
+
+- Favoriten-Reihenfolge wird strenger validiert
+- Admin-Zeitbuchungen liefern für unbekannte Benutzer jetzt sauber `404`
+- Zusätzliche Negativpfade und Sperrregeln für Auto-Lock und Überschneidungen abgesichert
+
+---
+
 ## v0.1.0 (2026-03-26)
 
 ### Erstveröffentlichung
 
-**Dashboard**
-
 - Dashboard mit Resturlaub, offenen Anfragen und nächstem geplantem Urlaub
-- Admin-Sicht mit zu bearbeitenden Anfragen und Team-Status
-
-**Kalender**
-
-- Monatskalender mit Navigation (vor/zurück, Heute-Button)
-- Farbliche Hervorhebung von Feiertagen und Urlauben nach Status
-- Wochenenden grau hinterlegt
-
-**Urlaubsanträge**
-
-- Urlaubsanträge stellen mit Von-/Bis-Datum und optionalem Kommentar
-- Stornierung offener Anträge durch Mitarbeiter
-- Genehmigung und Ablehnung durch Admins mit Kommentar
-- Validierung: keine Vergangenheitsdaten, keine Überlappung
-
-**Urlaubskonto**
-
-- Jahreslog mit Anspruch, Übertrag, Sonderurlaub, genommenen Tagen und Verfall
-- Automatischer Resturlaub-Übertrag mit konfigurierbarem Verfallsdatum
-- Sonderurlaub- und Anpassungsbuchungen durch Admin
-
-**Feiertage**
-
-- Verwaltung fixer und variabler Feiertage
-- Feiertage werden bei der Urlaubstage-Berechnung berücksichtigt
-- Feiertage-Ausnahme-Flag pro Mitarbeiter
-
-**Arbeitszeitmodelle**
-
-- Individuelle Arbeitszeitmodelle pro Mitarbeiter mit Zeiträumen
-- Globale Standard-Arbeitstage (konfigurierbar)
-- Wochenend-Arbeiter-Flag
-
-**Authentifizierung und Rollen**
-
-- OpenID Connect Login (beliebiger OIDC-Provider)
-- Superadmin-Notfallzugang mit lokalen Credentials
-- Drei Rollen: Employee, Admin, Superadmin
-- Automatische Rollenzuweisung basierend auf Admin-Email-Liste
-
-**Sonstiges**
-
-- Zweisprachig: Deutsch und Englisch (umschaltbar zur Laufzeit)
-- Auto-generierte API-Dokumentation (OpenAPI/Scramble)
-- Mock-Modus für Frontend-Entwicklung ohne Backend
-- 28 Backend-Tests (PHPUnit)
-- Responsive Design (Desktop, Tablet, Mobile)
+- Monatskalender mit Navigation und Statusfarben
+- Urlaubsanträge, Urlaubskonto und Feiertagsverwaltung
+- Arbeitszeitmodelle, Rollen, OIDC und Superadmin-Zugang
+- Zweisprachigkeit, API-Dokumentation, Mock-Modus und Responsive Design

@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\Absence;
 use App\Models\Holiday;
+use App\Models\Setting;
 use App\Models\TimeEntry;
 use App\Models\TimeLock;
 use App\Models\User;
@@ -298,5 +299,37 @@ class TimeEntryTest extends TestCase
         ]);
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['break_minutes']);
+    }
+
+    public function test_auto_locked_old_date_cannot_be_edited(): void
+    {
+        Setting::set('time_booking_auto_lock_days', 30);
+
+        $employee = User::factory()->create();
+
+        $response = $this->actingAs($employee)->putJson('/api/time-entries/2026-02-01', [
+            'start_time' => '08:00',
+            'end_time' => '17:00',
+            'break_minutes' => 30,
+        ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('message', 'This date is locked and cannot be edited.');
+    }
+
+    public function test_old_date_can_be_edited_when_auto_lock_disabled(): void
+    {
+        Setting::set('time_booking_auto_lock_days', 0);
+
+        $employee = User::factory()->create();
+
+        $response = $this->actingAs($employee)->putJson('/api/time-entries/2026-02-02', [
+            'start_time' => '08:00',
+            'end_time' => '17:00',
+            'break_minutes' => 30,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.date', '2026-02-02');
     }
 }

@@ -29,7 +29,7 @@ Die Tage im Kalender sind farblich gekennzeichnet:
 | Rot                 | Urlaub mit Status **Rejected** (abgelehnt) |
 
 !!! info "Feiertage und Urlaubsberechnung"
-    Feiertage werden nicht als Urlaubstage gezählt. Wenn ein Urlaub über einen Feiertag hinweg geht, wird dieser Tag automatisch abgezogen.
+    Feiertage werden nicht als Urlaubstage gezählt. Wenn ein Urlaub über einen Feiertag hinweg geht, zählt dieser Feiertag nicht als Urlaubstag.
 
 ---
 

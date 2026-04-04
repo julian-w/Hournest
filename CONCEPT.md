@@ -149,6 +149,7 @@ Per employee and year, a complete list of all bookings:
 ### Editable
 - Role (Employee/Admin)
 - Vacation days per year, **adjustable per year** (e.g. 2026: 30, 2027: 28)
+  - Current implementation note: the current codebase stores a base `vacation_days_per_year` value on the user and supports year-specific corrections via vacation ledger entries; a dedicated per-year entitlement model is still planned
 - Individual work schedules (periods)
 - Holidays exempt (checkbox)
 - Weekend exception
@@ -307,7 +308,7 @@ A **running balance** of overtime and undertime across months.
 
 | Code | Name | Behavior |
 |------|------|----------|
-| `VACATION` | Vacation | Auto-booked when vacation is approved (full or half day) |
+| `VACATION` | Vacation | Auto-booked when vacation is approved (currently full day; half-day vacation support is still planned) |
 | `ILLNESS` | Illness | Booked via absence management (user reports or admin creates) |
 | `SPECIAL_LEAVE` | Special Leave | Booked via absence management (user requests or admin creates) |
 | `HOLIDAY` | Holiday | Auto-booked on holidays (except `holidays_exempt` employees) |
@@ -358,6 +359,8 @@ In the booking UI, favorites appear at the top, remaining cost centers below.
 
 #### Booking Templates
 Employees can save a percentage distribution as a reusable template.
+
+Current implementation note: favorites are implemented, but booking templates and their API endpoints are still planned.
 
 | Field | Type |
 |-------|------|
@@ -487,8 +490,11 @@ Time bookings become **locked** after a configurable period to ensure data integ
 
 **Convenience features:**
 - **Copy previous day:** Copies percentage distribution from the last booked day
+  - Current implementation note: not implemented yet
 - **Copy previous week:** Copies entire week's distribution
+  - Current implementation note: implemented
 - **Apply template:** Fills in a saved distribution pattern
+  - Current implementation note: not implemented yet
 - **Quick entry:** If only one cost center is used, auto-fill 100%
 
 ### 13.10 Interaction with Existing Systems
@@ -496,6 +502,7 @@ Time bookings become **locked** after a configurable period to ensure data integ
 #### Vacation System (Section 4)
 - When a vacation is **approved**, the affected days are automatically booked to the `VACATION` system cost center
 - Half-day vacations: 50% booked to `VACATION`, remaining 50% open for manual booking
+  - Current implementation note: half-day vacation support is still planned; current implementation handles full-day vacation auto-booking and holiday precedence
 - If a vacation is **cancelled**, the auto-booking is removed and the day becomes editable again
 
 #### Holidays (Section 6)
@@ -561,6 +568,7 @@ GET    /api/time-booking-templates
 POST   /api/time-booking-templates
 PATCH  /api/time-booking-templates/{id}
 DELETE /api/time-booking-templates/{id}
+       Current implementation note: these endpoints are planned, not implemented yet
 
 # Absences (Employee)
 POST   /api/absences                            Report illness or request special leave
@@ -621,6 +629,7 @@ GET    /api/admin/reports/export?format=csv&from=&to=
 - Booking templates
 - Copy previous day/week
 - Reports & CSV export
+  - Current implementation note: favorites and copy previous week are implemented; templates and copy previous day remain planned
 
 #### Phase 2c (Future)
 - Working time account (Arbeitszeitkonto) with running balance

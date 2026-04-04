@@ -46,12 +46,18 @@ Die Seitennavigation zeigt die verfügbaren Bereiche:
 - Dashboard
 - Kalender
 - Meine Urlaube
+- Abwesenheiten
+- Zeiterfassung
 
 **Zusätzlich für Admins:**
 
 - Urlaubsanfragen (offene Anträge zur Genehmigung)
 - Benutzerverwaltung
 - Feiertage verwalten
+- Abwesenheiten verwalten
+- Kostenstellen
+- Benutzergruppen
+- Urlaubsplanung
 - Einstellungen
 
 ### Inhaltsbereich (Mitte)
@@ -67,6 +73,8 @@ Der Hauptbereich zeigt den Inhalt der aktuell gewählten Seite.
 - **Dashboard:** Eigener Resturlaub, offene Anträge, nächster Urlaub
 - **Kalender:** Eigene Urlaube im Monatskalender
 - **Meine Urlaube:** Liste aller eigenen Urlaubsanträge mit Status
+- **Abwesenheiten:** Krankheit und Sonderurlaub melden oder stornieren
+- **Zeiterfassung:** Arbeitszeiten und Kostenstellen-Buchungen pro Woche
 - **Urlaubskonto:** Eigenes Jahreslog (nur lesen)
 
 ### Admin (Administrator)
@@ -78,6 +86,9 @@ Alles, was der Employee sieht, plus:
 - **Urlaubsanfragen:** Liste aller offenen Anträge mit Genehmigungs-/Ablehnungsfunktion
 - **Benutzerverwaltung:** Rollen, Urlaubstage, Arbeitszeitmodelle, Urlaubskonto verwalten
 - **Feiertage:** Feiertage anlegen, bearbeiten, löschen
+- **Abwesenheiten:** Meldungen prüfen, genehmigen, bestätigen, selbst anlegen
+- **Kostenstellen & Gruppen:** Kostenstellen, Gruppen und direkte Zuweisungen verwalten
+- **Urlaubsplanung:** Urlaubssperren und Planungszeiträume verwalten
 - **Einstellungen:** Globale Einstellungen (Arbeitstage, Übertrag, Verfall)
 
 ### Superadmin
@@ -97,4 +108,6 @@ Die Anwendung unterstützt Deutsch und Englisch. Der Sprach-Umschalter befindet 
 - [Dashboard](dashboard.md) -- Übersicht über die Startseite
 - [Kalender](calendar.md) -- Monatskalender verstehen und nutzen
 - [Urlaubsanträge](vacations.md) -- Urlaub beantragen, stornieren, genehmigen
+- [Abwesenheiten](absences.md) -- Krankheit und Sonderurlaub verwalten
+- [Zeiterfassung](time-tracking.md) -- Arbeitszeiten und Kostenstellen buchen
 - [Urlaubskonto](ledger.md) -- Jahresübersicht und Buchungstypen

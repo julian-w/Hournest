@@ -46,12 +46,18 @@ The side navigation shows the available sections:
 - Dashboard
 - Calendar
 - My Vacations
+- Absences
+- Time Tracking
 
 **Additionally for admins:**
 
 - Vacation Requests (pending requests for approval)
 - User Management
 - Manage Holidays
+- Manage Absences
+- Cost Centers
+- User Groups
+- Vacation Planning
 - Settings
 
 ### Content Area (center)
@@ -67,6 +73,8 @@ The main area displays the content of the currently selected page.
 - **Dashboard:** Own remaining vacation, open requests, next vacation
 - **Calendar:** Own vacations in the monthly calendar
 - **My Vacations:** List of all own vacation requests with status
+- **Absences:** Report or cancel illness and special leave
+- **Time Tracking:** Weekly working hours and cost center bookings
 - **Vacation Account:** Own yearly ledger (read-only)
 
 ### Admin (Administrator)
@@ -78,6 +86,9 @@ Everything the employee sees, plus:
 - **Vacation Requests:** List of all pending requests with approve/reject functionality
 - **User Management:** Manage roles, vacation days, work schedules, vacation accounts
 - **Holidays:** Create, edit, delete holidays
+- **Absences:** Review, approve, acknowledge, or create entries directly
+- **Cost Centers & Groups:** Manage cost centers, groups, and direct assignments
+- **Vacation Planning:** Manage freezes and planning periods
 - **Settings:** Global settings (work days, carryover, expiry)
 
 ### Superadmin
@@ -97,4 +108,6 @@ The application supports German and English. The language switcher is located in
 - [Dashboard](dashboard.md) -- Overview of the start page
 - [Calendar](calendar.md) -- Understanding and using the monthly calendar
 - [Vacation Requests](vacations.md) -- Requesting, cancelling, approving vacations
+- [Absences](absences.md) -- Managing illness and special leave
+- [Time Tracking](time-tracking.md) -- Recording working hours and booking cost centers
 - [Vacation Account](ledger.md) -- Yearly overview and booking types

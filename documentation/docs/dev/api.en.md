@@ -5,6 +5,9 @@ All Hournest API endpoints are accessible under `/api`. Authentication uses Lara
 !!! tip "OpenAPI Documentation"
     An interactive API documentation is available at `http://localhost:8000/docs/api` when the backend is running. The OpenAPI JSON spec is at `http://localhost:8000/docs/api.json`.
 
+!!! info "Current Status"
+    This Markdown reference covers the core endpoints, but it is not yet fully expanded to all newer time-booking, favorites, absence, and admin routes. For the full current implementation, `backend/routes/api.php` and the OpenAPI documentation are authoritative.
+
 ---
 
 ## Authentication (Sanctum SPA)
@@ -588,7 +591,7 @@ Creates a new user (only relevant in local auth mode).
 | `display_name` | string | Yes | Display name |
 | `email` | string | Yes | Email (must be unique) |
 | `role` | string | Yes | `employee` or `admin` |
-| `password` | string | Yes | Default password (min. 8 characters) |
+| `password` | string | Required in local auth mode, optional in OAuth mode | Default password (min. 8 characters) |
 
 **Response:** `201 Created`
 

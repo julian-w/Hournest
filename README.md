@@ -1,6 +1,12 @@
 # Hournest
 
-> Team vacation management, time tracking & shift planning -- simple and clear.
+> Team vacation management with growing time tracking support -- simple and clear.
+
+## Current Product Status
+
+- **Stable and broadly implemented:** vacation management, vacation ledger, holidays, work schedules, user/admin management, local auth and OIDC
+- **Implemented in a first substantial version:** time tracking, cost centers, favorites, absences, locks, and core cross-system auto-booking
+- **Still planned / not fully implemented yet:** booking templates, copy previous day, half-day vacation support, shift planning, reports and analytics, working time account
 
 ## Features (Phase 1 -- Vacation Management)
 
@@ -9,7 +15,7 @@
 - **Vacation Requests:** Employees request vacation (from/to/comment), admins approve or reject
 - **Vacation Account:** Annual ledger with entitlement, carryover, bonus days, taken days; admin can add and delete entries
 - **Holidays:** Admin manages fixed and variable holidays with start/end year; fixed holidays are carried over automatically, variable holidays need yearly confirmation; vacation booking only possible when all holidays for a year are confirmed
-- **Vacation Planning:** Two modes -- vacation freeze (no vacation allowed, no days deducted) and company holiday (forced vacation, days automatically deducted); entries can be created, edited and deleted
+- **Vacation Planning:** Vacation freeze is implemented; company holiday currently acts as a planning warning and is not yet a full forced-vacation automation
 - **Work Schedules:** Individual work schedule models per employee (e.g. part-time bridge schedules)
 - **Remaining Vacation:** Automatic calculation, automatic carryover, configurable expiry
 - **Maintenance:** `php artisan hournest:yearly-maintenance` -- books annual entitlements, carryover and expiry for all users (idempotent, schedulable)
@@ -23,27 +29,38 @@
 - **i18n:** German + English, switchable at runtime
 - **API Documentation:** Auto-generated OpenAPI spec at `/docs/api`
 
-## Planned Features (Phase 2)
+## Planned Features (Phase 2 / Remaining Work)
 
 - Group visibility in calendar
 - Additional notification channels (WhatsApp, etc.)
-- **Time tracking & cost center booking** (Phase 2a -- implemented)
 - Shift planning
 - Reports & analytics
 - Working time account (Arbeitszeitkonto)
+- Booking templates
+- Copy previous day
+- Half-day vacation support
 
-## Features (Phase 2a -- Time Tracking)
+## Features (Implemented Time Tracking Slice)
 
 - **Time Recording:** Daily time entries with start, end, break; net working time calculated automatically
 - **Cost Centers:** Admin-managed cost centers with code, name, description; 4 system cost centers (Vacation, Illness, Special Leave, Holiday)
 - **Percentage Booking:** Employees distribute working time across cost centers by percentage (must total 100%)
 - **User Groups:** Group users for bulk cost center assignment; direct assignment also supported
 - **Favorites:** Employees can mark frequently used cost centers as favorites
+- **Copy Previous Week:** Weekly percentage distributions can be copied forward
 - **Absence Management:** Report illness (employee → admin acknowledges), request special leave (employee → admin approves/rejects), admin can create directly
 - **Half-day Absences:** Support for full day, morning, or afternoon absences
+- **System Bookings:** Vacation, illness, special leave, and holidays create automatic system cost center bookings
 - **Weekly Target Hours:** Configurable per work schedule; actual vs. target comparison with weekly delta
 - **Locking:** Auto-lock after configurable days (default 30), manual month lock by admin
 - **10-Year Retention:** All data soft-deleted only, compliant with German retention requirements
+
+### Important Implementation Notes
+
+- Vacation auto-booking is currently implemented for **full-day vacation**
+- Half-day **absence** handling is implemented; half-day **vacation** is still planned
+- Booking templates are still planned
+- `Company Holiday` / `Betriebsferien` is not yet a full automatic vacation-deduction workflow
 
 ## Tech Stack
 
@@ -208,6 +225,10 @@ cd backend && php artisan test     # PHPUnit, SQLite :memory:
 # Full CI pipeline locally
 ./scripts/ci.sh
 ```
+
+Current verified status:
+- Backend suite: **330 tests / 897 assertions**
+- Frontend: spec coverage for all core services plus first feature components
 
 ## API Documentation
 

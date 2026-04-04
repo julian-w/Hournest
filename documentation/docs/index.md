@@ -1,9 +1,9 @@
 # Hournest -- Team-Urlaubsverwaltung
 
-Hournest ist eine interne Webanwendung zur **Team-Urlaubsverwaltung** für kleine Unternehmen (unter 20 Mitarbeiter). Die Anwendung bietet ein zentrales Dashboard, einen Teamkalender, Urlaubsanträge mit Genehmigungsworkflow sowie ein vollständiges Urlaubskonto mit Jahreslog.
+Hournest ist eine interne Webanwendung für **Urlaubsverwaltung** mit bereits ausgebautem Bereich für **Zeiterfassung und Kostenstellenbuchung**. Die Anwendung richtet sich an kleine Unternehmen (unter 20 Mitarbeiter).
 
 !!! info "Aktueller Stand"
-    Hournest befindet sich in **Phase 1** (Urlaubsverwaltung). Weitere Funktionen wie Zeiterfassung, Einsatzplanung und Reports sind für Phase 2 geplant.
+    Die Urlaubsverwaltung ist stabil umgesetzt. Teile der Zeiterfassung, Abwesenheiten, Kostenstellen und Sperrlogik sind ebenfalls bereits implementiert. Weitere Komfortfunktionen und Auswertungen bleiben geplant.
 
 ---
 
@@ -51,6 +51,7 @@ Hournest ist eine interne Webanwendung zur **Team-Urlaubsverwaltung** für klein
 - Zweisprachig: Deutsch und Englisch (umschaltbar zur Laufzeit)
 - Auto-generierte API-Dokumentation (OpenAPI/Scramble) unter `/docs/api`
 - Mock-Modus für Frontend-Entwicklung ohne Backend
+- Backend-Testabdeckung mit 330 Tests / 897 Assertions
 
 ---
 
@@ -74,7 +75,6 @@ hournest/
 │   ├── src/app/
 │   │   ├── core/          # Services, Guards, Interceptors, Models, Mock
 │   │   ├── features/      # Feature-Module (Dashboard, Kalender, Urlaub, Admin)
-│   │   └── shared/        # Gemeinsame Komponenten
 │   └── ...
 ├── backend/               # Laravel 11 API
 │   ├── app/
@@ -98,3 +98,9 @@ hournest/
 - **[Konfiguration](home/configuration.md)** -- Alle Umgebungsvariablen erklärt
 - **[Endanwender-Handbuch](user/index.md)** -- Anleitung für Benutzer und Admins
 - **[Entwickler-Dokumentation](dev/index.md)** -- Architektur, API, Tests, Deployment
+
+## Hinweise zum Funktionsstand
+
+- **Bereits umgesetzt:** Urlaub, Urlaubskonto, Feiertage, Arbeitszeitmodelle, Rollen, OIDC, lokale Anmeldung, Zeiterfassung-Kernfunktionen, Kostenstellen, Favoriten, Abwesenheiten, Locks
+- **Teilweise umgesetzt:** Blackouts/Betriebsferien und weiterführende Komfortfunktionen
+- **Noch geplant:** Buchungsvorlagen, Copy previous day, Halbtags-Urlaub, Schichtplanung, Reports, Arbeitszeitkonto

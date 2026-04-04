@@ -29,7 +29,7 @@ The days in the calendar are color-coded:
 | Red                 | Vacation with status **Rejected** |
 
 !!! info "Holidays and Vacation Calculation"
-    Holidays are not counted as vacation days. If a vacation spans a holiday, that day is automatically deducted.
+    Holidays are not counted as vacation days. If a vacation spans a holiday, that holiday does not count as a vacation day.
 
 ---
 
