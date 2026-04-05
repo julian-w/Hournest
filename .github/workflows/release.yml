@@ -101,28 +101,27 @@ jobs:
 
           # Backend (without dev files)
           rsync -a --exclude='node_modules' --exclude='.env' --exclude='tests' \
+            --exclude='.phpunit.result.cache' \
             --exclude='phpunit.xml' --exclude='storage/logs/*' \
             --exclude='storage/framework/cache/data/*' \
             --exclude='storage/framework/sessions/*' \
             --exclude='storage/framework/views/*' \
             --exclude='.git' --exclude='database/database.sqlite' \
-            backend/ "$PACKAGE_DIR/backend/"
+            backend/ "$PACKAGE_DIR/"
 
           # Storage directories
-          mkdir -p "$PACKAGE_DIR/backend/bootstrap/cache"
-          mkdir -p "$PACKAGE_DIR/backend/storage/logs"
-          mkdir -p "$PACKAGE_DIR/backend/storage/framework/"{cache,sessions,views}
+          mkdir -p "$PACKAGE_DIR/bootstrap/cache"
+          mkdir -p "$PACKAGE_DIR/storage/logs"
+          mkdir -p "$PACKAGE_DIR/storage/framework/"{cache,sessions,views}
 
           # Env template
-          cp .env.example "$PACKAGE_DIR/backend/.env.example"
+          cp .env.example "$PACKAGE_DIR/.env.example"
 
           # Frontend bundled directly into Laravel public/
-          cp -r frontend/dist/frontend/browser/* "$PACKAGE_DIR/backend/public/"
+          cp -r frontend/dist/frontend/browser/* "$PACKAGE_DIR/public/"
 
-          # Install scripts
-          mkdir -p "$PACKAGE_DIR/scripts"
-          cp scripts/install.sh "$PACKAGE_DIR/scripts/install.sh"
-          cp scripts/common.sh "$PACKAGE_DIR/scripts/common.sh"
+          # PHP installer
+          cp scripts/install.php "$PACKAGE_DIR/install.php"
 
           # Documentation
           cp -r documentation/site "$PACKAGE_DIR/docs"
@@ -132,11 +131,12 @@ jobs:
           # Hournest Deployment
 
           1. Unpack the ZIP on your server.
-          2. Point your web root to `backend/public/`.
-          3. Copy `backend/.env.example` to `backend/.env`.
-          4. Optionally open `superadmin-password-helper.php` once to generate a bcrypt hash.
-          5. Run `./scripts/install.sh`.
-          6. Delete `backend/public/superadmin-password-helper.php` after setup.
+          2. Upload the entire extracted directory.
+          3. Point your web root to `public/`.
+          4. Copy `.env.example` to `.env`.
+          5. Optionally open `public/superadmin-password-helper.php` once to generate a bcrypt hash.
+          6. Run `php install.php`.
+          7. Delete `public/superadmin-password-helper.php` after setup.
           EOF
 
           # Create archives

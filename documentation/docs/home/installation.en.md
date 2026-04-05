@@ -138,7 +138,7 @@ http://localhost:4200?mock=true
 
 1. Set superadmin credentials in `.env` (`SUPERADMIN_USERNAME`, `SUPERADMIN_PASSWORD`)
 2. `SUPERADMIN_PASSWORD` must be a bcrypt hash, not plaintext
-3. Optionally open `backend/public/superadmin-password-helper.php` once in the browser, copy the generated hash, and delete the file afterwards
+3. Optionally open `public/superadmin-password-helper.php` once in the browser, copy the generated hash, and delete the file afterwards
 4. Open `http://localhost:4200` in the browser
 5. Click "Admin Login" below the SSO button
 6. Enter username and the plaintext password you generated

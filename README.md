@@ -174,11 +174,12 @@ All scripts are in `scripts/` and work on Windows (Git Bash) and Linux.
 
 | Script | Description |
 |--------|-------------|
-| `./scripts/install.sh` | Initial installation on target server (interactive) |
-| `./scripts/install.sh --seed` | Same as above, with test data |
+| `php install.php` | Installer for the release package on the target server |
+| `php install.php --seed` | Same as above, with test data |
+| `./scripts/install.sh` | Shell-based installer for repo-based/manual setups |
 
-The installation script checks PHP extensions, creates `.env`, runs migrations, sets caches and outputs web server configuration (Apache/Nginx).
-The release package also includes `backend/public/superadmin-password-helper.php` as a temporary setup helper for generating a bcrypt hash for `SUPERADMIN_PASSWORD`.
+The release package includes a root-level `install.php` so deployment does not depend on Bash being available on the target server.
+The release package also includes `public/superadmin-password-helper.php` as a temporary setup helper for generating a bcrypt hash for `SUPERADMIN_PASSWORD`.
 
 ## Mock Mode (Frontend without Backend)
 
@@ -291,7 +292,7 @@ Before relying on the GitHub runners, check:
 What you get after pushing a tag like `v0.1.0`:
 - a successful Actions run with downloadable workflow artifacts
 - a GitHub Release containing the ZIP and TAR.GZ package
-- a deployment package that can be unpacked on a PHP webspace with `backend/public/` as document root
+- a deployment package that can be unpacked on a PHP webspace with `public/` as document root
 
 What you get after pushing to `main`:
 - updated MkDocs documentation on GitHub Pages
@@ -315,10 +316,10 @@ act push --tag v0.1.0
 
 ```bash
 # Unpack release archive on server, then:
-./scripts/install.sh
+php install.php
 
 # Or with test data:
-./scripts/install.sh --seed
+php install.php --seed
 ```
 
 The script automatically:
@@ -327,22 +328,22 @@ The script automatically:
 - Points you to `superadmin-password-helper.php` if you need a bcrypt hash for the emergency account
 - Runs migrations
 - Builds caches
-- Outputs web server configuration for **Apache** and **Nginx**
+- Leaves the extracted folder ready so you can point the web root to `public/`
 
 ### Manual
 
 1. Unpack release archive or build locally with `./scripts/package.sh`
-2. Place `backend/` on server, set `backend/public/` as document root
-3. The frontend is already bundled into `backend/public/`
-4. Configure `.env`, optionally generate a bcrypt hash via `backend/public/superadmin-password-helper.php`, then run `php artisan migrate --force`
-5. Delete `backend/public/superadmin-password-helper.php` after setup
+2. Upload the full extracted release directory to the server
+3. Set `public/` as document root
+4. Configure `.env`, optionally generate a bcrypt hash via `public/superadmin-password-helper.php`, then run `php install.php`
+5. Delete `public/superadmin-password-helper.php` after setup
 6. If using OAuth: configure OIDC provider, register app, set redirect URL
 
 ### Web Server
 
-**Apache:** `.htaccess` is included in `backend/public/` -- `mod_rewrite` must be enabled.
+**Apache:** `.htaccess` is included in `public/` -- `mod_rewrite` must be enabled.
 
-**Nginx:** Configure SPA routing for frontend + PHP-FPM for backend. Details are output by `./scripts/install.sh`.
+**Nginx:** Configure SPA routing for frontend + PHP-FPM for backend. Use the deployment documentation for an example setup.
 
 See the documentation under "Deployment" for detailed instructions.
 

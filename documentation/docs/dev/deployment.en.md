@@ -21,7 +21,7 @@ This page describes deploying Hournest on a Synology NAS (primary use case) as w
 1. Open **Web Station** in DSM
 2. Go to **Script Language Settings** > **PHP**
 3. Create a new PHP profile or edit the existing one:
-    - PHP version: **8.2**
+    - PHP version: **8.5**
     - Enable extensions: `sqlite3`, `mbstring`, `openssl`, `tokenizer`, `xml`, `curl`, `fileinfo`, `zip`, `pdo_sqlite`
 4. Save the profile
 
@@ -29,12 +29,12 @@ This page describes deploying Hournest on a Synology NAS (primary use case) as w
 
 ### Step 2: Deploy the Backend
 
-1. Copy the entire `backend/` folder to the NAS (e.g., to `/volume1/web/hournest/backend/`)
+1. Copy the entire extracted release folder to the NAS (for example to `/volume1/web/hournest/`)
 2. Create the `.env` file:
 
 ```bash
-cd /volume1/web/hournest/backend
-cp /path/to/.env.example .env
+cd /volume1/web/hournest
+cp .env.example .env
 ```
 
 3. Configure `.env` for production:
@@ -46,7 +46,7 @@ APP_URL=https://your-nas-domain.com
 FRONTEND_URL=https://your-nas-domain.com
 
 DB_CONNECTION=sqlite
-DB_DATABASE=/volume1/web/hournest/backend/database/database.sqlite
+DB_DATABASE=/volume1/web/hournest/database/database.sqlite
 
 OIDC_CLIENT_ID=your-actual-client-id
 OIDC_CLIENT_SECRET=your-actual-client-secret
@@ -64,20 +64,16 @@ ADMIN_EMAILS=admin1@company.com,admin2@company.com
 !!! danger "Security"
     Set `APP_DEBUG=false` and change the superadmin password!
 
-4. Install dependencies and initialize:
+4. Initialize the application:
 
 ```bash
-cd /volume1/web/hournest/backend
-composer install --no-dev --optimize-autoloader
-php artisan key:generate
-php artisan migrate --force
-php artisan config:cache
-php artisan route:cache
+cd /volume1/web/hournest
+php install.php
 ```
 
 5. Configure Web Station:
     - Create a new virtual host or service
-    - **Document Root:** `/volume1/web/hournest/backend/public`
+    - **Document Root:** `/volume1/web/hournest/public`
     - **PHP profile:** The profile created in Step 1
     - Ensure URL rewriting works (`.htaccess` or nginx configuration)
 
@@ -100,7 +96,7 @@ php artisan route:cache
 
 ### Step 4: Provide the Frontend
 
-In the release package, the frontend is already bundled into `backend/public/`.
+In the release package, the frontend is already bundled into `public/`.
 
 If you package locally yourself or want to deploy it separately:
 
@@ -117,7 +113,7 @@ ng build --configuration production
 
 **Option A: Same host as the backend**
 
-Copy the frontend files to the backend's `public/` folder or set up a separate document root.
+Copy the frontend files to the package root's `public/` folder or set up a separate document root.
 
 **Option B: Separate virtual host**
 
@@ -130,7 +126,7 @@ Create a separate virtual host in Web Station for the frontend with the build ou
 After each update:
 
 ```bash
-cd /volume1/web/hournest/backend
+cd /volume1/web/hournest
 php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
@@ -152,12 +148,11 @@ Hournest can also be operated on classic PHP hosting (shared hosting, VPS, etc.)
 
 ### Backend Deployment
 
-1. Upload the `backend/` folder via SSH/SFTP
-2. Set the **Document Root** to `backend/public/`
+1. Upload the entire extracted release folder via SSH/SFTP
+2. Set the **Document Root** to `public/`
 3. Create and configure the `.env` file
-4. Run `composer install --no-dev --optimize-autoloader`
-5. Run `php artisan key:generate`, `php artisan migrate --force`
-6. Create caches: `php artisan config:cache && php artisan route:cache`
+4. Run `php install.php`
+5. Delete `public/superadmin-password-helper.php` afterwards if you used it
 
 ### Frontend Deployment
 
@@ -223,7 +218,7 @@ The action automatically:
 1. Runs backend tests (PHPUnit)
 2. Runs frontend unit tests and builds the frontend (Angular production)
 3. Builds documentation (MkDocs)
-4. Creates a release archive (ZIP + TAR.GZ) with the frontend bundled into `backend/public/`
+4. Creates a release archive (ZIP + TAR.GZ) with the frontend bundled into `public/`
 5. Uploads workflow artifacts
 6. Creates GitHub Release
 

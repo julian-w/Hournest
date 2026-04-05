@@ -21,7 +21,7 @@ Diese Seite beschreibt das Deployment von Hournest auf einer Synology NAS (prim�
 1. Öffne **Web Station** im DSM
 2. Gehe zu **Skriptsprache-Einstellungen** > **PHP**
 3. Erstelle ein neues PHP-Profil oder bearbeite das bestehende:
-    - PHP-Version: **8.2**
+    - PHP-Version: **8.5**
     - Extensions aktivieren: `sqlite3`, `mbstring`, `openssl`, `tokenizer`, `xml`, `curl`, `fileinfo`, `zip`, `pdo_sqlite`
 4. Speichere das Profil
 
@@ -29,12 +29,12 @@ Diese Seite beschreibt das Deployment von Hournest auf einer Synology NAS (prim�
 
 ### Schritt 2: Backend deployen
 
-1. Kopiere den gesamten `backend/`-Ordner auf die NAS (z.B. nach `/volume1/web/hournest/backend/`)
+1. Kopiere den gesamten entpackten Release-Ordner auf die NAS (z.B. nach `/volume1/web/hournest/`)
 2. Erstelle die `.env`-Datei:
 
 ```bash
-cd /volume1/web/hournest/backend
-cp /pfad/zu/.env.example .env
+cd /volume1/web/hournest
+cp .env.example .env
 ```
 
 3. Konfiguriere die `.env` für Produktion:
@@ -46,7 +46,7 @@ APP_URL=https://your-nas-domain.com
 FRONTEND_URL=https://your-nas-domain.com
 
 DB_CONNECTION=sqlite
-DB_DATABASE=/volume1/web/hournest/backend/database/database.sqlite
+DB_DATABASE=/volume1/web/hournest/database/database.sqlite
 
 OIDC_CLIENT_ID=your-actual-client-id
 OIDC_CLIENT_SECRET=your-actual-client-secret
@@ -64,20 +64,16 @@ ADMIN_EMAILS=admin1@firma.de,admin2@firma.de
 !!! danger "Sicherheit"
     Setze `APP_DEBUG=false` und ändere das Superadmin-Passwort!
 
-4. Installiere Abhängigkeiten und initialisiere:
+4. Initialisiere die Anwendung:
 
 ```bash
-cd /volume1/web/hournest/backend
-composer install --no-dev --optimize-autoloader
-php artisan key:generate
-php artisan migrate --force
-php artisan config:cache
-php artisan route:cache
+cd /volume1/web/hournest
+php install.php
 ```
 
 5. Konfiguriere Web Station:
     - Erstelle einen neuen virtuellen Host oder Dienst
-    - **Document Root:** `/volume1/web/hournest/backend/public`
+    - **Document Root:** `/volume1/web/hournest/public`
     - **PHP-Profil:** Das in Schritt 1 erstellte Profil
     - Stelle sicher, dass URL-Rewriting funktioniert (`.htaccess` oder nginx-Konfiguration)
 
@@ -100,7 +96,7 @@ php artisan route:cache
 
 ### Schritt 4: Frontend bereitstellen
 
-Im Release-Paket ist das Frontend bereits in `backend/public/` eingebunden.
+Im Release-Paket ist das Frontend bereits in `public/` eingebunden.
 
 Wenn du lokal selbst paketierst oder getrennt deployen willst:
 
@@ -117,7 +113,7 @@ ng build --configuration production
 
 **Option A: Gleicher Host wie das Backend**
 
-Kopiere die Frontend-Dateien in den `public/`-Ordner des Backends oder richte einen separaten Document Root ein.
+Kopiere die Frontend-Dateien in den `public/`-Ordner der Paketwurzel oder richte einen separaten Document Root ein.
 
 **Option B: Separater virtueller Host**
 
@@ -130,7 +126,7 @@ Erstelle in Web Station einen separaten virtuellen Host für das Frontend mit de
 Nach jedem Update:
 
 ```bash
-cd /volume1/web/hournest/backend
+cd /volume1/web/hournest
 php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
@@ -152,12 +148,11 @@ Hournest kann auch auf klassischem PHP-Hosting (Shared Hosting, VPS, etc.) betri
 
 ### Backend-Deployment
 
-1. Lade den `backend/`-Ordner per SSH/SFTP hoch
-2. Setze den **Document Root** auf `backend/public/`
+1. Lade den gesamten entpackten Release-Ordner per SSH/SFTP hoch
+2. Setze den **Document Root** auf `public/`
 3. Erstelle und konfiguriere die `.env`-Datei
-4. Führe `composer install --no-dev --optimize-autoloader` aus
-5. Führe `php artisan key:generate`, `php artisan migrate --force` aus
-6. Cache erstellen: `php artisan config:cache && php artisan route:cache`
+4. Führe `php install.php` aus
+5. Lösche danach bei Bedarf `public/superadmin-password-helper.php`
 
 ### Frontend-Deployment
 
@@ -223,7 +218,7 @@ Die Action führt automatisch aus:
 1. Backend-Tests (PHPUnit)
 2. Frontend-Unit-Tests und Production Build (Angular)
 3. Dokumentation Build (MkDocs)
-4. Release-Archiv erstellen (ZIP + TAR.GZ) mit gebündeltem Frontend in `backend/public/`
+4. Release-Archiv erstellen (ZIP + TAR.GZ) mit gebündeltem Frontend in `public/`
 5. Workflow-Artefakte hochladen
 6. GitHub Release erstellen
 
