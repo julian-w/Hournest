@@ -283,7 +283,9 @@ Creates a new vacation request.
 ```json
 {
   "start_date": "2026-06-01",
-  "end_date": "2026-06-05"
+  "end_date": "2026-06-05",
+  "scope": "full_day",
+  "comment": null
 }
 ```
 
@@ -966,3 +968,41 @@ Creates a new vacation account booking.
   "message": "Ledger entry created."
 }
 ```
+
+---
+
+### GET /api/admin/reports/time-bookings
+
+Returns an aggregated time-booking report for the selected period.
+
+**Auth:** Sanctum + Admin
+
+**Query Parameters:**
+
+- `from` -- start date
+- `to` -- end date
+- `group_by` -- `user` or `cost_center`
+
+### GET /api/admin/reports/missing-entries
+
+Returns workdays with missing time entries or incomplete manual percentage booking.
+
+**Auth:** Sanctum + Admin
+
+**Query Parameters:**
+
+- `from` -- start date
+- `to` -- end date
+- `user_id` (optional) -- limit the report to one user
+
+### GET /api/admin/reports/export?format=csv
+
+Exports time bookings for the selected period as a CSV download.
+
+**Auth:** Sanctum + Admin
+
+**Query Parameters:**
+
+- `format=csv`
+- `from` -- start date
+- `to` -- end date

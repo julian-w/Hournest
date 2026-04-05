@@ -527,6 +527,7 @@ Time bookings become **locked** after a configurable period to ensure data integ
 - **Missing entries:** List of employees with incomplete days (no time entry or percentage ≠ 100%)
 - **Absence overview:** Illness and special leave per employee, per period
 - **CSV export:** For accounting / payroll systems
+- Current implementation note: aggregated time-booking reports by employee or cost center, missing-entry reports, and CSV export are implemented; a dedicated absence report and broader analytics remain planned
 
 ### 13.13 Dashboard Integration
 
@@ -626,7 +627,7 @@ GET    /api/admin/reports/export?format=csv&from=&to=
 - Booking templates
 - Copy previous day/week
 - Reports & CSV export
-  - Current implementation note: favorites, booking templates, copy previous day, and copy previous week are implemented
+  - Current implementation note: favorites, booking templates, copy previous day, copy previous week, first admin reports, and CSV export are implemented
 
 #### Phase 2c (Future)
 - Working time account (Arbeitszeitkonto) with running balance

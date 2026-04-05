@@ -93,6 +93,10 @@ import { ChangePasswordDialogComponent } from './features/auth/change-password-d
                 <mat-icon matListItemIcon>event_busy</mat-icon>
                 <span matListItemTitle>{{ 'nav.absences' | translate }}</span>
               </a>
+              <a mat-list-item routerLink="/admin/reports" routerLinkActive="active" (click)="closeSidenav()">
+                <mat-icon matListItemIcon>assessment</mat-icon>
+                <span matListItemTitle>{{ 'nav.reports' | translate }}</span>
+              </a>
               <a mat-list-item routerLink="/admin/settings" routerLinkActive="active" (click)="closeSidenav()">
                 <mat-icon matListItemIcon>settings</mat-icon>
                 <span matListItemTitle>{{ 'nav.settings' | translate }}</span>

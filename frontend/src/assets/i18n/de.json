@@ -17,7 +17,8 @@
     "blackouts": "Urlaubsplanung",
     "cost_centers": "Kostenstellen",
     "user_groups": "Benutzergruppen",
-    "absences": "Abwesenheiten"
+    "absences": "Abwesenheiten",
+    "reports": "Reports"
   },
   "login": {
     "title": "Hournest",
@@ -362,6 +363,32 @@
     "reviewed": "Abwesenheit bearbeitet.",
     "deleted": "Abwesenheit entfernt.",
     "no_pending": "Keine ausstehenden Abwesenheiten. Alles erledigt!"
+  },
+  "admin_reports": {
+    "title": "Reports",
+    "from": "Von",
+    "to": "Bis",
+    "group_by": "Gruppieren nach",
+    "group_user": "Mitarbeiter",
+    "group_cost_center": "Kostenstelle",
+    "load": "Laden",
+    "export_csv": "CSV exportieren",
+    "export_started": "CSV-Export gestartet.",
+    "time_booking_summary": "Zeitbuchungs-Zusammenfassung",
+    "missing_entries": "Fehlende Einträge",
+    "employee": "Mitarbeiter",
+    "cost_center": "Kostenstelle",
+    "code": "Code",
+    "percentage_points": "Prozentpunkte",
+    "booked_minutes": "Gebuchte Minuten",
+    "date": "Datum",
+    "reason": "Grund",
+    "expected": "Erwartet",
+    "actual": "Ist",
+    "reason_missing_time_entry": "Fehlender Zeiteintrag",
+    "reason_incomplete_booking": "Unvollständige Buchung",
+    "no_summary": "Keine Report-Daten für den Zeitraum vorhanden.",
+    "no_missing_entries": "Keine fehlenden Einträge im Zeitraum gefunden."
   },
   "language": {
     "en": "English",

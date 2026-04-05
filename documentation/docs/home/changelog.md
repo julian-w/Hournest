@@ -8,7 +8,7 @@ Alle nennenswerten Änderungen an Hournest werden auf dieser Seite dokumentiert.
 
 ### Tests & Qualitätssicherung
 
-- Backend-Testabdeckung deutlich ausgebaut auf **350 Tests / 960 Assertions**
+- Backend-Testabdeckung deutlich ausgebaut auf **357 Tests / 996 Assertions**
 - Neue Feature-Tests für OIDC-Login, Favoriten, Admin-Abwesenheitsverwaltung, Admin-Zeitbuchungen, Jahreswartung und systemübergreifende Regeln
 - Frontend-Specs für alle Core-Services ergänzt
 - Feature-Komponenten mit Tests abgesichert: Login, Mein Urlaub und Zeiterfassung
@@ -28,6 +28,7 @@ Alle nennenswerten Änderungen an Hournest werden auf dieser Seite dokumentiert.
 
 - Favoriten-Reihenfolge wird strenger validiert
 - Admin-Zeitbuchungen liefern für unbekannte Benutzer jetzt sauber `404`
+- Neue Admin-Reports für aggregierte Zeitbuchungen, fehlende Einträge und CSV-Export
 - Zusätzliche Negativpfade und Sperrregeln für Auto-Lock und Überschneidungen abgesichert
 
 ---

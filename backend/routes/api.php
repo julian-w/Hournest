@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\AbsenceAdminController;
 use App\Http\Controllers\AbsenceController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CostCenterAdminController;
 use App\Http\Controllers\CostCenterController;
@@ -150,6 +151,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // Time locks
         Route::get('/time-locks', [TimeBookingAdminController::class, 'locks']);
         Route::post('/time-locks', [TimeBookingAdminController::class, 'toggleLock']);
+
+        // Reports
+        Route::get('/reports/time-bookings', [AdminReportController::class, 'timeBookings']);
+        Route::get('/reports/missing-entries', [AdminReportController::class, 'missingEntries']);
+        Route::get('/reports/export', [AdminReportController::class, 'export']);
     });
 
     }); // end EnsurePasswordChanged group

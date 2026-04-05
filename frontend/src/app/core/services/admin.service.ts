@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { MissingEntryReportRow, TimeBookingReportRow } from '../models/admin-report.model';
 import { Absence, AbsenceType, AbsenceScope } from '../models/absence.model';
 import { CostCenter } from '../models/cost-center.model';
 import { TimeLock } from '../models/time-lock.model';
@@ -207,5 +208,29 @@ export class AdminService {
 
   toggleTimeLock(year: number, month: number): Observable<void> {
     return this.http.post<void>('/api/admin/time-locks', { year, month });
+  }
+
+  getTimeBookingReport(from: string, to: string, groupBy: 'user' | 'cost_center'): Observable<TimeBookingReportRow[]> {
+    return this.http.get<ApiResponse<TimeBookingReportRow[]>>('/api/admin/reports/time-bookings', {
+      params: { from, to, group_by: groupBy },
+    }).pipe(map((response) => response.data));
+  }
+
+  getMissingEntriesReport(from: string, to: string, userId?: number): Observable<MissingEntryReportRow[]> {
+    const params: Record<string, string> = { from, to };
+    if (userId !== undefined) {
+      params['user_id'] = userId.toString();
+    }
+
+    return this.http.get<ApiResponse<MissingEntryReportRow[]>>('/api/admin/reports/missing-entries', {
+      params,
+    }).pipe(map((response) => response.data));
+  }
+
+  exportTimeBookingsCsv(from: string, to: string): Observable<Blob> {
+    return this.http.get('/api/admin/reports/export', {
+      params: { format: 'csv', from, to },
+      responseType: 'blob',
+    });
   }
 }

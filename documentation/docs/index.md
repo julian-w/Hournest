@@ -3,7 +3,7 @@
 Hournest ist eine interne Webanwendung für **Urlaubsverwaltung** mit bereits ausgebautem Bereich für **Zeiterfassung und Kostenstellenbuchung**. Die Anwendung richtet sich an kleine Unternehmen (unter 20 Mitarbeiter).
 
 !!! info "Aktueller Stand"
-    Die Urlaubsverwaltung ist stabil umgesetzt. Teile der Zeiterfassung, Abwesenheiten, Kostenstellen und Sperrlogik sind ebenfalls bereits implementiert. Weitere Komfortfunktionen und Auswertungen bleiben geplant.
+    Die Urlaubsverwaltung ist stabil umgesetzt. Große Teile der Zeiterfassung, Abwesenheiten, Kostenstellen, Sperrlogik und erste Admin-Reports sind ebenfalls bereits implementiert. Weitere Auswertungen und spätere Ausbaustufen bleiben geplant.
 
 ---
 
@@ -51,7 +51,7 @@ Hournest ist eine interne Webanwendung für **Urlaubsverwaltung** mit bereits au
 - Zweisprachig: Deutsch und Englisch (umschaltbar zur Laufzeit)
 - Auto-generierte API-Dokumentation (OpenAPI/Scramble) unter `/docs/api`
 - Mock-Modus für Frontend-Entwicklung ohne Backend
-- Backend-Testabdeckung mit 330 Tests / 897 Assertions
+- Backend-Testabdeckung mit 357 Tests / 996 Assertions
 
 ---
 
@@ -103,4 +103,4 @@ hournest/
 
 - **Bereits umgesetzt:** Urlaub, Urlaubskonto, Feiertage, Arbeitszeitmodelle, Rollen, OIDC, lokale Anmeldung, Zeiterfassung-Kernfunktionen, Kostenstellen, Favoriten, Abwesenheiten, Locks
 - **Teilweise umgesetzt:** Blackouts/Betriebsferien und weiterführende Komfortfunktionen
-- **Noch geplant:** Buchungsvorlagen, Copy previous day, Halbtags-Urlaub, Schichtplanung, Reports, Arbeitszeitkonto
+- **Noch geplant:** Schichtplanung, weiterführende Reports/Analytics und Arbeitszeitkonto

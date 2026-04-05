@@ -10,6 +10,7 @@ import { WorkSchedule } from '../models/work-schedule.model';
 import { TimeEntry } from '../models/time-entry.model';
 import { TimeBooking } from '../models/time-booking.model';
 import { TimeLock } from '../models/time-lock.model';
+import { MissingEntryReportRow, TimeBookingReportRow } from '../models/admin-report.model';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -102,6 +103,25 @@ describe('AdminService', () => {
     locked_by: 1,
     locked_by_name: 'Admin User',
     locked_at: '2026-04-30T10:00:00Z',
+  };
+
+  const timeBookingReportRow: TimeBookingReportRow = {
+    group_by: 'user',
+    group_key: 9,
+    label: 'Ada Lovelace',
+    code: null,
+    percentage_points: 100,
+    booked_minutes: 510,
+  };
+
+  const missingEntryReportRow: MissingEntryReportRow = {
+    user_id: 9,
+    user_name: 'Ada Lovelace',
+    date: '2026-04-07',
+    reason: 'incomplete_booking',
+    expected_percentage: 100,
+    actual_percentage: 60,
+    has_time_entry: true,
   };
 
   beforeEach(() => {
@@ -349,5 +369,61 @@ describe('AdminService', () => {
     req.flush({ data: [timeLock] });
 
     expect(result).toEqual([timeLock]);
+  });
+
+  it('should fetch time booking reports and missing entry reports with query params', () => {
+    let summary: TimeBookingReportRow[] | undefined;
+    let missing: MissingEntryReportRow[] | undefined;
+
+    service.getTimeBookingReport('2026-04-01', '2026-04-30', 'user').subscribe(data => {
+      summary = data;
+    });
+
+    service.getMissingEntriesReport('2026-04-01', '2026-04-30', 9).subscribe(data => {
+      missing = data;
+    });
+
+    const summaryReq = httpMock.expectOne(r =>
+      r.url === '/api/admin/reports/time-bookings'
+      && r.params.get('from') === '2026-04-01'
+      && r.params.get('to') === '2026-04-30'
+      && r.params.get('group_by') === 'user'
+    );
+    expect(summaryReq.request.method).toBe('GET');
+    summaryReq.flush({ data: [timeBookingReportRow] });
+
+    const missingReq = httpMock.expectOne(r =>
+      r.url === '/api/admin/reports/missing-entries'
+      && r.params.get('from') === '2026-04-01'
+      && r.params.get('to') === '2026-04-30'
+      && r.params.get('user_id') === '9'
+    );
+    expect(missingReq.request.method).toBe('GET');
+    missingReq.flush({ data: [missingEntryReportRow] });
+
+    expect(summary).toEqual([timeBookingReportRow]);
+    expect(missing).toEqual([missingEntryReportRow]);
+  });
+
+  it('should request a csv export as blob', () => {
+    let result: Blob | undefined;
+
+    service.exportTimeBookingsCsv('2026-04-01', '2026-04-30').subscribe(data => {
+      result = data;
+    });
+
+    const req = httpMock.expectOne(r =>
+      r.url === '/api/admin/reports/export'
+      && r.params.get('format') === 'csv'
+      && r.params.get('from') === '2026-04-01'
+      && r.params.get('to') === '2026-04-30'
+    );
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+
+    const blob = new Blob(['csv'], { type: 'text/csv' });
+    req.flush(blob);
+
+    expect(result).toEqual(blob);
   });
 });

@@ -70,5 +70,10 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard],
     loadComponent: () => import('./features/admin/absences/admin-absences.component').then(m => m.AdminAbsencesComponent),
   },
+  {
+    path: 'admin/reports',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () => import('./features/admin/reports/admin-reports.component').then(m => m.AdminReportsComponent),
+  },
   { path: '**', redirectTo: 'dashboard' },
 ];

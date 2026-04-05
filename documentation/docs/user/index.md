@@ -57,6 +57,7 @@ Die Seitennavigation zeigt die verfügbaren Bereiche:
 - Abwesenheiten verwalten
 - Kostenstellen
 - Benutzergruppen
+- Reports
 - Urlaubsplanung
 - Einstellungen
 
@@ -88,6 +89,7 @@ Alles, was der Employee sieht, plus:
 - **Feiertage:** Feiertage anlegen, bearbeiten, löschen
 - **Abwesenheiten:** Meldungen prüfen, genehmigen, bestätigen, selbst anlegen
 - **Kostenstellen & Gruppen:** Kostenstellen, Gruppen und direkte Zuweisungen verwalten
+- **Reports:** Auswertungen zu Zeitbuchungen, fehlenden Einträgen und CSV-Export
 - **Urlaubsplanung:** Urlaubssperren und Planungszeiträume verwalten
 - **Einstellungen:** Globale Einstellungen (Arbeitstage, Übertrag, Verfall)
 

@@ -307,6 +307,70 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
     return of(jsonResponse({ data: users })).pipe(delay(MOCK_DELAY));
   }
 
+  // GET /api/admin/reports/time-bookings
+  if (method === 'GET' && url.includes('/api/admin/reports/time-bookings')) {
+    const params = new URL(url, 'http://localhost').searchParams;
+    const groupBy = params.get('group_by') || 'user';
+    const data = groupBy === 'cost_center'
+      ? [
+          {
+            group_by: 'cost_center',
+            group_key: 201,
+            label: 'Projekt Alpha',
+            code: 'PRJ-ALPHA',
+            percentage_points: 320,
+            booked_minutes: 1536,
+          },
+          {
+            group_by: 'cost_center',
+            group_key: 202,
+            label: 'Intern',
+            code: 'INT',
+            percentage_points: 180,
+            booked_minutes: 864,
+          },
+        ]
+      : [
+          {
+            group_by: 'user',
+            group_key: 2,
+            label: 'Max Mustermann',
+            code: null,
+            percentage_points: 500,
+            booked_minutes: 2400,
+          },
+        ];
+    return of(jsonResponse({ data })).pipe(delay(MOCK_DELAY));
+  }
+
+  // GET /api/admin/reports/missing-entries
+  if (method === 'GET' && url.includes('/api/admin/reports/missing-entries')) {
+    return of(jsonResponse({
+      data: [
+        {
+          user_id: 2,
+          user_name: 'Max Mustermann',
+          date: '2026-04-08',
+          reason: 'incomplete_booking',
+          expected_percentage: 100,
+          actual_percentage: 60,
+          has_time_entry: true,
+        },
+      ],
+    })).pipe(delay(MOCK_DELAY));
+  }
+
+  // GET /api/admin/reports/export
+  if (method === 'GET' && url.includes('/api/admin/reports/export')) {
+    const csv = 'date,user_name,user_email,cost_center_code,cost_center_name,percentage,booked_minutes,comment\n'
+      + '2026-04-08,Max Mustermann,max@example.com,PRJ-ALPHA,Projekt Alpha,60,288,Mock export\n';
+
+    return of(new HttpResponse({
+      status: 200,
+      body: new Blob([csv], { type: 'text/csv;charset=utf-8' }),
+    })).pipe(delay(MOCK_DELAY));
+  }
+
   // PATCH /api/admin/users/:id
   const patchUserId = extractIdFromUrl(url, /\/api\/admin\/users\/(\d+)$/);
   if (method === 'PATCH' && patchUserId !== null && !url.includes('work-schedules') && !url.includes('vacation-ledger')) {

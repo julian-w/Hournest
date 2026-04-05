@@ -6,7 +6,7 @@
 
 - **Stable and broadly implemented:** vacation management, vacation ledger, holidays, work schedules, user/admin management, local auth and OIDC
 - **Implemented in a first substantial version:** time tracking, cost centers, favorites, absences, locks, and core cross-system auto-booking
-- **Still planned / not fully implemented yet:** booking templates, copy previous day, half-day vacation support, shift planning, reports and analytics, working time account
+- **Still planned / not fully implemented yet:** shift planning, advanced reports and analytics, working time account
 
 ## Features (Phase 1 -- Vacation Management)
 
@@ -34,7 +34,7 @@
 - Group visibility in calendar
 - Additional notification channels (WhatsApp, etc.)
 - Shift planning
-- Reports & analytics
+- Advanced reports & analytics
 - Working time account (Arbeitszeitkonto)
 - Booking templates
 - Copy previous day
@@ -47,9 +47,10 @@
 - **Percentage Booking:** Employees distribute working time across cost centers by percentage (must total 100%)
 - **User Groups:** Group users for bulk cost center assignment; direct assignment also supported
 - **Favorites:** Employees can mark frequently used cost centers as favorites
-- **Copy Previous Week:** Weekly percentage distributions can be copied forward
+- **Copy Previous Day/Week:** Earlier percentage distributions can be copied into the current week
 - **Absence Management:** Report illness (employee → admin acknowledges), request special leave (employee → admin approves/rejects), admin can create directly
-- **Half-day Absences:** Support for full day, morning, or afternoon absences
+- **Half-day Absences & Vacation:** Support for full day, morning, or afternoon handling
+- **Admin Reports:** Time booking summaries, missing-entry reports, and CSV export
 - **System Bookings:** Vacation, illness, special leave, and holidays create automatic system cost center bookings
 - **Weekly Target Hours:** Configurable per work schedule; actual vs. target comparison with weekly delta
 - **Locking:** Auto-lock after configurable days (default 30), manual month lock by admin
@@ -57,9 +58,8 @@
 
 ### Important Implementation Notes
 
-- Vacation auto-booking is currently implemented for **full-day vacation**
-- Half-day **absence** handling is implemented; half-day **vacation** is still planned
-- Booking templates are still planned
+- Vacation auto-booking is implemented for **full-day and half-day vacation**
+- Half-day absences and half-day vacation are both implemented
 - `Company Holiday` / `Betriebsferien` is not yet a full automatic vacation-deduction workflow
 
 ## Tech Stack
@@ -227,7 +227,7 @@ cd backend && php artisan test     # PHPUnit, SQLite :memory:
 ```
 
 Current verified status:
-- Backend suite: **330 tests / 897 assertions**
+- Backend suite: **357 tests / 996 assertions**
 - Frontend: spec coverage for all core services plus first feature components
 
 ## API Documentation

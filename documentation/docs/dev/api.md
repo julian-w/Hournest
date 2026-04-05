@@ -283,7 +283,9 @@ Erstellt einen neuen Urlaubsantrag.
 ```json
 {
   "start_date": "2026-06-01",
-  "end_date": "2026-06-05"
+  "end_date": "2026-06-05",
+  "scope": "full_day",
+  "comment": null
 }
 ```
 
@@ -996,3 +998,41 @@ Erstellt eine neue Urlaubskonto-Buchung.
   "message": "Ledger entry created."
 }
 ```
+
+---
+
+### GET /api/admin/reports/time-bookings
+
+Liefert eine aggregierte Auswertung von Zeitbuchungen im Zeitraum.
+
+**Auth:** Sanctum + Admin
+
+**Query-Parameter:**
+
+- `from` -- Startdatum
+- `to` -- Enddatum
+- `group_by` -- `user` oder `cost_center`
+
+### GET /api/admin/reports/missing-entries
+
+Liefert Arbeitstage mit fehlendem Zeiteintrag oder unvollständiger manueller Prozentverteilung.
+
+**Auth:** Sanctum + Admin
+
+**Query-Parameter:**
+
+- `from` -- Startdatum
+- `to` -- Enddatum
+- `user_id` (optional) -- nur einen Benutzer auswerten
+
+### GET /api/admin/reports/export?format=csv
+
+Exportiert Zeitbuchungen im Zeitraum als CSV-Download.
+
+**Auth:** Sanctum + Admin
+
+**Query-Parameter:**
+
+- `format=csv`
+- `from` -- Startdatum
+- `to` -- Enddatum

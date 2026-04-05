@@ -57,6 +57,7 @@ The side navigation shows the available sections:
 - Manage Absences
 - Cost Centers
 - User Groups
+- Reports
 - Vacation Planning
 - Settings
 
@@ -88,6 +89,7 @@ Everything the employee sees, plus:
 - **Holidays:** Create, edit, delete holidays
 - **Absences:** Review, approve, acknowledge, or create entries directly
 - **Cost Centers & Groups:** Manage cost centers, groups, and direct assignments
+- **Reports:** Reporting for time bookings, missing entries, and CSV export
 - **Vacation Planning:** Manage freezes and planning periods
 - **Settings:** Global settings (work days, carryover, expiry)
 

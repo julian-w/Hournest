@@ -17,7 +17,8 @@
     "blackouts": "Vacation Planning",
     "cost_centers": "Cost Centers",
     "user_groups": "User Groups",
-    "absences": "Absences"
+    "absences": "Absences",
+    "reports": "Reports"
   },
   "login": {
     "title": "Hournest",
@@ -362,6 +363,32 @@
     "reviewed": "Absence reviewed.",
     "deleted": "Absence removed.",
     "no_pending": "No pending absences. All caught up!"
+  },
+  "admin_reports": {
+    "title": "Reports",
+    "from": "From",
+    "to": "To",
+    "group_by": "Group by",
+    "group_user": "Employee",
+    "group_cost_center": "Cost Center",
+    "load": "Load",
+    "export_csv": "Export CSV",
+    "export_started": "CSV export started.",
+    "time_booking_summary": "Time Booking Summary",
+    "missing_entries": "Missing Entries",
+    "employee": "Employee",
+    "cost_center": "Cost Center",
+    "code": "Code",
+    "percentage_points": "Percentage points",
+    "booked_minutes": "Booked minutes",
+    "date": "Date",
+    "reason": "Reason",
+    "expected": "Expected",
+    "actual": "Actual",
+    "reason_missing_time_entry": "Missing time entry",
+    "reason_incomplete_booking": "Incomplete booking",
+    "no_summary": "No report data found for the selected period.",
+    "no_missing_entries": "No missing entries found for the selected period."
   },
   "language": {
     "en": "English",
