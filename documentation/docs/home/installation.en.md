@@ -137,9 +137,11 @@ http://localhost:4200?mock=true
 ### With Superadmin (without SSO)
 
 1. Set superadmin credentials in `.env` (`SUPERADMIN_USERNAME`, `SUPERADMIN_PASSWORD`)
-2. Open `http://localhost:4200` in the browser
-3. Click "Admin Login" below the SSO button
-4. Enter username and password
+2. `SUPERADMIN_PASSWORD` must be a bcrypt hash, not plaintext
+3. Optionally open `backend/public/superadmin-password-helper.php` once in the browser, copy the generated hash, and delete the file afterwards
+4. Open `http://localhost:4200` in the browser
+5. Click "Admin Login" below the SSO button
+6. Enter username and the plaintext password you generated
 
 !!! note "Role Assignment"
     - New users automatically receive the **Employee** role
@@ -173,7 +175,7 @@ Pre-built scripts are available in the `scripts/` folder. They work on Windows (
 
 | Script | Description |
 |--------|-------------|
-| `./scripts/test.sh` | Backend tests + frontend build check |
+| `./scripts/test.sh` | Backend tests + frontend unit tests + frontend build check |
 | `./scripts/ci.sh` | Full CI pipeline locally (tests + all builds + artifact check) |
 | `./scripts/package.sh [version]` | Builds everything and creates a release archive (ZIP/TAR) |
 
@@ -194,11 +196,14 @@ Pre-built scripts are available in the `scripts/` folder. They work on Windows (
 cd backend
 php artisan test
 
-# Backend tests + frontend build check
+# Backend tests + frontend unit tests + frontend build check
 ./scripts/test.sh
 
 # Full CI pipeline (same as GitHub Actions)
 ./scripts/ci.sh
+
+# Full CI pipeline including Playwright smoke test
+RUN_E2E_SMOKE=true ./scripts/ci.sh
 ```
 
 The tests use an SQLite `:memory:` database and do not require separate configuration.

@@ -96,6 +96,7 @@ plugins:
             Kostenstellen verwalten: Manage Cost Centers
             Benutzergruppen: User Groups
             Abwesenheitsverwaltung: Absence Management
+            Berichte: Reports
 
 nav:
   - Startseite:
@@ -120,6 +121,7 @@ nav:
           - Kostenstellen verwalten: user/admin/cost-centers.md
           - Benutzergruppen: user/admin/user-groups.md
           - Abwesenheitsverwaltung: user/admin/absences.md
+          - Berichte: user/admin/reports.md
   - Entwickler:
       - Architektur: dev/index.md
       - Backend: dev/backend.md

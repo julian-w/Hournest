@@ -87,10 +87,14 @@ warn "    - APP_URL"
 warn "    - FRONTEND_URL"
 warn "    - DB_CONNECTION / DB_DATABASE"
 warn "    - OIDC_* (for SSO login)"
-warn "    - SUPERADMIN_PASSWORD (change from default!)"
+warn "    - SUPERADMIN_PASSWORD (bcrypt hash, not plaintext)"
 warn "    - ADMIN_EMAILS"
 warn "    - SANCTUM_STATEFUL_DOMAINS"
 warn "==========================================="
+echo ""
+warn "If you need a quick bcrypt hash, open:"
+warn "  /superadmin-password-helper.php"
+warn "Copy the generated hash into backend/.env and delete the helper afterwards."
 echo ""
 read -p "Press Enter when .env is configured (or Ctrl+C to abort)..."
 echo ""
@@ -134,10 +138,10 @@ echo ""
 
 # --- Frontend check ---
 info "Checking frontend..."
-if [ -d "$PROJECT_ROOT/frontend/dist" ] || [ -d "$PROJECT_ROOT/frontend" ]; then
-    ok "Frontend found"
+if [ -f "$PROJECT_ROOT/backend/public/index.html" ]; then
+    ok "Bundled frontend found in backend/public/"
 else
-    warn "Frontend not found. Build it with: ./scripts/build-frontend.sh"
+    warn "Bundled frontend not found in backend/public/"
 fi
 
 echo ""

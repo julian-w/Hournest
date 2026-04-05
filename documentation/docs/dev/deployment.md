@@ -56,7 +56,7 @@ OIDC_REDIRECT_URI=${APP_URL}/api/auth/callback
 SANCTUM_STATEFUL_DOMAINS=your-nas-domain.com
 
 SUPERADMIN_USERNAME=superadmin
-SUPERADMIN_PASSWORD=ein-sicheres-passwort
+SUPERADMIN_PASSWORD=$2y$12$replace-with-bcrypt-hash
 
 ADMIN_EMAILS=admin1@firma.de,admin2@firma.de
 ```
@@ -98,7 +98,11 @@ php artisan route:cache
 
 ---
 
-### Schritt 4: Frontend bauen und deployen
+### Schritt 4: Frontend bereitstellen
+
+Im Release-Paket ist das Frontend bereits in `backend/public/` eingebunden.
+
+Wenn du lokal selbst paketierst oder getrennt deployen willst:
 
 1. Baue das Frontend auf deinem Entwicklungsrechner:
 
@@ -188,7 +192,7 @@ Alle Skripte liegen in `scripts/` und funktionieren unter Windows (Git Bash) und
 | `./scripts/build-frontend.sh` | Baut nur Angular (Production) |
 | `./scripts/build-backend.sh` | Baut nur Laravel (Production, cached) |
 | `./scripts/build-docs.sh` | Baut nur MkDocs-Dokumentation |
-| `./scripts/test.sh` | Backend-Tests + Frontend-Build-Check |
+| `./scripts/test.sh` | Backend-Tests + Frontend-Unit-Tests + Frontend-Build-Check |
 | `./scripts/ci.sh` | Vollständige CI-Pipeline lokal |
 | `./scripts/package.sh [version]` | Baut alles und erstellt Release-Archiv |
 
@@ -217,10 +221,36 @@ git push origin v0.1.0
 Die Action führt automatisch aus:
 
 1. Backend-Tests (PHPUnit)
-2. Frontend Production Build (Angular)
+2. Frontend-Unit-Tests und Production Build (Angular)
 3. Dokumentation Build (MkDocs)
-4. Release-Archiv erstellen (ZIP + TAR.GZ)
-5. GitHub Release erstellen
+4. Release-Archiv erstellen (ZIP + TAR.GZ) mit gebündeltem Frontend in `backend/public/`
+5. Workflow-Artefakte hochladen
+6. GitHub Release erstellen
+
+Zusätzlich deployt `.github/workflows/docs.yml` die Dokumentation bei Pushes auf `main` nach GitHub Pages.
+
+Repository-Einstellung:
+- GitHub Pages muss auf `GitHub Actions` als Quelle gestellt sein
+
+### GitHub-Runner-Checkliste
+
+Vor dem produktiven Einsatz der Workflows:
+
+- GitHub-hosted Runner müssen für das Repository aktiviert sein
+- GitHub Pages muss auf `GitHub Actions` als Quelle gestellt sein
+- Releases müssen im Repository erlaubt sein
+- Zusätzliche Secrets sind für den aktuellen Stand nicht nötig
+
+Ergebnis bei `git push origin v0.1.0`:
+
+- Backend, Frontend und Dokumentation werden gebaut
+- ZIP und TAR.GZ werden als Workflow-Artefakte abgelegt
+- dieselben Archive werden an den GitHub Release gehängt
+- das Release-Paket kann direkt auf klassischen PHP-Webspace oder eine NAS hochgeladen werden
+
+Ergebnis bei Push auf `main`:
+
+- die MkDocs-Dokumentation wird nach GitHub Pages veröffentlicht
 
 Tags mit `-rc`, `-beta` oder `-alpha` werden als Pre-Release markiert.
 

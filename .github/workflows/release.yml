@@ -61,6 +61,11 @@ jobs:
           cd frontend
           npm ci
 
+      - name: Run Angular frontend unit tests
+        run: |
+          cd frontend
+          npm run test:coverage:ci
+
       - name: Build Angular frontend
         run: |
           cd frontend
@@ -102,17 +107,41 @@ jobs:
           # Env template
           cp .env.example "$PACKAGE_DIR/backend/.env.example"
 
-          # Frontend build (Angular application builder outputs to browser/)
-          mkdir -p "$PACKAGE_DIR/frontend"
-          cp -r frontend/dist/frontend/browser/* "$PACKAGE_DIR/frontend/"
+          # Frontend bundled directly into Laravel public/
+          cp -r frontend/dist/frontend/browser/* "$PACKAGE_DIR/backend/public/"
+
+          # Install scripts
+          mkdir -p "$PACKAGE_DIR/scripts"
+          cp scripts/install.sh "$PACKAGE_DIR/scripts/install.sh"
+          cp scripts/common.sh "$PACKAGE_DIR/scripts/common.sh"
 
           # Documentation
           cp -r documentation/site "$PACKAGE_DIR/docs"
+
+          # Deployment readme
+          cat > "$PACKAGE_DIR/DEPLOY.md" <<'EOF'
+          # Hournest Deployment
+
+          1. Unpack the ZIP on your server.
+          2. Point your web root to `backend/public/`.
+          3. Copy `backend/.env.example` to `backend/.env`.
+          4. Optionally open `superadmin-password-helper.php` once to generate a bcrypt hash.
+          5. Run `./scripts/install.sh`.
+          6. Delete `backend/public/superadmin-password-helper.php` after setup.
+          EOF
 
           # Create archives
           cd dist
           zip -r "hournest-${VERSION}.zip" "hournest-${VERSION}/"
           tar -czf "hournest-${VERSION}.tar.gz" "hournest-${VERSION}/"
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hournest-${{ steps.version.outputs.VERSION }}
+          path: |
+            dist/hournest-${{ steps.version.outputs.VERSION }}.zip
+            dist/hournest-${{ steps.version.outputs.VERSION }}.tar.gz
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

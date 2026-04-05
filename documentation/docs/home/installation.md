@@ -137,9 +137,11 @@ http://localhost:4200?mock=true
 ### Mit Superadmin (ohne SSO)
 
 1. Superadmin-Credentials in der `.env` setzen (`SUPERADMIN_USERNAME`, `SUPERADMIN_PASSWORD`)
-2. Im Browser `http://localhost:4200` öffnen
-3. Unter dem SSO-Button auf "Admin Login" klicken
-4. Benutzername und Passwort eingeben
+2. `SUPERADMIN_PASSWORD` muss ein bcrypt-Hash sein, nicht das Klartext-Passwort
+3. Optional einmal `backend/public/superadmin-password-helper.php` im Browser öffnen, Hash erzeugen und danach die Datei wieder löschen
+4. Im Browser `http://localhost:4200` öffnen
+5. Unter dem SSO-Button auf "Admin Login" klicken
+6. Benutzername und Klartext-Passwort eingeben
 
 !!! note "Rollenzuweisung"
     - Neue Benutzer erhalten automatisch die Rolle **Employee**
@@ -173,7 +175,7 @@ Im Ordner `scripts/` liegen vorgefertigte Skripte, die unter Windows (Git Bash) 
 
 | Skript | Beschreibung |
 |--------|-------------|
-| `./scripts/test.sh` | Backend-Tests + Frontend-Build-Check |
+| `./scripts/test.sh` | Backend-Tests + Frontend-Unit-Tests + Frontend-Build-Check |
 | `./scripts/ci.sh` | Vollständige CI-Pipeline lokal (Tests + alle Builds + Artefakt-Check) |
 | `./scripts/package.sh [version]` | Baut alles und erstellt ein Release-Archiv (ZIP/TAR) |
 
@@ -194,11 +196,14 @@ Im Ordner `scripts/` liegen vorgefertigte Skripte, die unter Windows (Git Bash) 
 cd backend
 php artisan test
 
-# Backend-Tests + Frontend-Build-Check
+# Backend-Tests + Frontend-Unit-Tests + Frontend-Build-Check
 ./scripts/test.sh
 
 # Vollständige CI-Pipeline (wie GitHub Actions)
 ./scripts/ci.sh
+
+# Vollständige CI-Pipeline inkl. Playwright-Smoke-Test
+RUN_E2E_SMOKE=true ./scripts/ci.sh
 ```
 
 Die Tests verwenden eine SQLite `:memory:`-Datenbank und benötigen keine separate Konfiguration.

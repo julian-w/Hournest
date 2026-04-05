@@ -50,10 +50,15 @@ mkdir -p "$PACKAGE_DIR/backend/storage/framework/views"
 # Copy .env.example as template
 cp "$PROJECT_ROOT/.env.example" "$PACKAGE_DIR/backend/.env.example"
 
-# Copy frontend build output (Angular application builder outputs to browser/)
-info "Copying frontend build..."
-mkdir -p "$PACKAGE_DIR/frontend"
-cp -r "$PROJECT_ROOT/frontend/dist/frontend/browser/"* "$PACKAGE_DIR/frontend/"
+# Bundle frontend directly into Laravel public/ for single-webroot hosting
+info "Bundling frontend into backend/public/..."
+cp -r "$PROJECT_ROOT/frontend/dist/frontend/browser/"* "$PACKAGE_DIR/backend/public/"
+
+# Copy install scripts
+info "Copying install scripts..."
+mkdir -p "$PACKAGE_DIR/scripts"
+cp "$PROJECT_ROOT/scripts/install.sh" "$PACKAGE_DIR/scripts/install.sh"
+cp "$PROJECT_ROOT/scripts/common.sh" "$PACKAGE_DIR/scripts/common.sh"
 
 # Copy documentation build (if exists)
 if [ -d "$PROJECT_ROOT/documentation/site" ]; then
@@ -68,9 +73,10 @@ cat > "$PACKAGE_DIR/DEPLOY.md" << 'DEPLOYEOF'
 ## Quick Start
 
 1. Upload `backend/` to your PHP web server (document root = `backend/public/`)
-2. Upload `frontend/` contents to your frontend web server or serve as static files
+2. The frontend is already bundled into `backend/public/`
 3. Copy `backend/.env.example` to `backend/.env` and configure
-4. Run: `cd backend && php artisan migrate --seed`
+4. Optionally open `backend/public/superadmin-password-helper.php` once to generate a bcrypt hash
+5. Run: `./scripts/install.sh`
 
 ## Detailed Instructions
 
@@ -90,6 +96,12 @@ elif command -v tar &>/dev/null; then
 else
     warn "Neither zip nor tar found. Package directory created at dist/${PACKAGE_NAME}/"
 fi
+
+echo ""
+info "Restoring backend development dependencies..."
+cd "$PROJECT_ROOT/backend"
+setup_php_tooling || { err "PHP tooling not found"; exit 1; }
+run_composer install --no-interaction --quiet
 
 echo ""
 ok "=== Packaging complete ==="

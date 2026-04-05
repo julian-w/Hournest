@@ -12,27 +12,28 @@ info "============================================"
 echo ""
 
 # --- 1. Backend Tests ---
-info "[1/5] Running backend tests..."
+info "[1/6] Running backend tests..."
 cd "$PROJECT_ROOT/backend"
 
-check_command php || { err "PHP not found"; exit 1; }
+setup_php_tooling || { err "PHP tooling not found"; exit 1; }
 
 if [ ! -d "vendor" ]; then
     info "Installing Composer dependencies..."
-    composer install --no-interaction --quiet
+    run_composer install --no-interaction --quiet
 fi
 
 if [ ! -f ".env" ]; then
     warn ".env not found, copying from template..."
     cp "$PROJECT_ROOT/.env.example" .env
-    php artisan key:generate --quiet
+    run_php artisan key:generate --quiet
 fi
 
 if [ ! -f "database/database.sqlite" ]; then
     touch database/database.sqlite
 fi
 
-if php artisan test; then
+run_php artisan config:clear --quiet
+if run_php artisan test; then
     ok "Backend tests passed"
 else
     err "Backend tests FAILED"
@@ -41,27 +42,54 @@ fi
 echo ""
 
 # --- 2. Backend Build ---
-info "[2/5] Building backend (production)..."
+info "[2/6] Building backend (production)..."
 cd "$PROJECT_ROOT/backend"
 
-composer install --no-dev --optimize-autoloader --no-interaction --quiet
-php artisan config:cache --quiet 2>/dev/null
-php artisan route:cache --quiet 2>/dev/null
-php artisan view:cache --quiet 2>/dev/null
+run_composer install --no-dev --optimize-autoloader --no-interaction --quiet
+run_php artisan config:cache --quiet 2>/dev/null
+run_php artisan route:cache --quiet 2>/dev/null
+run_php artisan view:cache --quiet 2>/dev/null
 ok "Backend build passed"
 
 # Restore dev dependencies for future test runs
-composer install --no-interaction --quiet
+run_composer install --no-interaction --quiet
 echo ""
 
 # --- 3. Frontend Build ---
-info "[3/5] Building Angular frontend (production)..."
+info "[3/6] Running Angular frontend unit tests..."
 cd "$PROJECT_ROOT/frontend"
 
 if [ ! -d "node_modules" ]; then
     info "Installing npm dependencies..."
     npm ci --quiet
 fi
+
+CHROME_BIN="${CHROME_BIN:-}"
+if [ -z "$CHROME_BIN" ]; then
+    for candidate in \
+        "/c/Program Files/Google/Chrome/Application/chrome.exe" \
+        "/c/Program Files (x86)/Google/Chrome/Application/chrome.exe" \
+        "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe" \
+        "/mnt/c/Program Files (x86)/Google/Chrome/Application/chrome.exe"; do
+        if [ -f "$candidate" ]; then
+            CHROME_BIN="$candidate"
+            export CHROME_BIN
+            break
+        fi
+    done
+fi
+
+if npx ng test --watch=false --browsers=ChromeHeadless --no-progress; then
+    ok "Frontend unit tests passed"
+else
+    err "Frontend unit tests FAILED"
+    FAILED=1
+fi
+echo ""
+
+# --- 4. Frontend Build ---
+info "[4/6] Building Angular frontend (production)..."
+cd "$PROJECT_ROOT/frontend"
 
 if npx ng build --configuration=production 2>&1 | tail -3; then
     ok "Frontend build passed"
@@ -71,19 +99,18 @@ else
 fi
 echo ""
 
-# --- 4. Documentation Build ---
-info "[4/5] Building MkDocs documentation..."
+# --- 5. Documentation Build ---
+info "[5/6] Building MkDocs documentation..."
 cd "$PROJECT_ROOT/documentation"
 
-PYTHON_CMD="python3"
-command -v python3 &>/dev/null || PYTHON_CMD="python"
+setup_python_tooling || { err "Python not found"; exit 1; }
 
-if ! $PYTHON_CMD -m mkdocs --version &>/dev/null 2>&1; then
+if ! run_python -m mkdocs --version &>/dev/null 2>&1; then
     info "Installing MkDocs dependencies..."
-    $PYTHON_CMD -m pip install -r requirements.txt --quiet
+    run_python -m pip install -r requirements.txt --quiet
 fi
 
-if $PYTHON_CMD -m mkdocs build --clean --quiet 2>&1; then
+if run_python -m mkdocs build --clean --quiet 2>&1; then
     ok "Documentation build passed"
 else
     err "Documentation build FAILED"
@@ -91,8 +118,25 @@ else
 fi
 echo ""
 
-# --- 5. Verify artifacts ---
-info "[5/5] Verifying build artifacts..."
+# --- Optional E2E smoke ---
+if [ "${RUN_E2E_SMOKE:-false}" = "true" ]; then
+    info "[6/6] Running Playwright smoke test..."
+    cd "$PROJECT_ROOT/frontend"
+
+    if npx playwright test e2e/unauthenticated.spec.ts; then
+        ok "Playwright smoke test passed"
+    else
+        err "Playwright smoke test FAILED"
+        FAILED=1
+    fi
+    echo ""
+else
+    info "[6/6] Skipping Playwright smoke test (set RUN_E2E_SMOKE=true to enable)"
+    echo ""
+fi
+
+# --- Verify artifacts ---
+info "Verifying build artifacts..."
 cd "$PROJECT_ROOT"
 
 DIRS_OK=true

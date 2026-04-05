@@ -111,7 +111,7 @@ Der Superadmin-Zugang funktioniert ohne SSO und wird direkt über Benutzername u
 | Variable              | Standardwert  | Beschreibung                          |
 |-----------------------|---------------|---------------------------------------|
 | `SUPERADMIN_USERNAME` | `superadmin`  | Benutzername für den Superadmin-Login |
-| `SUPERADMIN_PASSWORD` | `changeme`    | Passwort für den Superadmin-Login    |
+| `SUPERADMIN_PASSWORD` | bcrypt-Hash   | bcrypt-Hash für den Superadmin-Login, nicht das Klartext-Passwort |
 
 !!! danger "Passwort ändern"
     Das Standard-Passwort `changeme` muss vor dem Produktiveinsatz **unbedingt** geändert werden.
@@ -208,7 +208,7 @@ DEFAULT_VACATION_DAYS_PER_YEAR=30
 
 # --- Superadmin (Emergency Access) ---
 SUPERADMIN_USERNAME=superadmin
-SUPERADMIN_PASSWORD=changeme
+SUPERADMIN_PASSWORD=$2y$12$replace-with-bcrypt-hash
 
 # --- Admin Emails (comma-separated) ---
 ADMIN_EMAILS=admin@hournest.local

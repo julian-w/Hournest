@@ -1,9 +1,10 @@
 # Tests
 
-Hournest wird derzeit auf zwei Ebenen getestet:
+Hournest wird derzeit auf drei Ebenen getestet:
 
 - **Backend:** PHPUnit/Laravel Feature- und Unit-Tests für API-Endpunkte, Validierung, Berechnungen und systemübergreifende Geschäftslogik
 - **Frontend:** Angular-Specs für Core-Services und erste Feature-Komponenten
+- **E2E:** Playwright-Szenarien für ausgewählte End-to-End-Flows über Frontend und Backend
 
 ---
 
@@ -51,6 +52,26 @@ cd frontend
 npm run test:coverage:ci
 ```
 
+Playwright-E2E:
+
+```bash
+cd frontend
+npm run e2e
+```
+
+Lokaler Sammeltest:
+
+```bash
+./scripts/test.sh
+```
+
+Lokale CI inkl. optionalem E2E-Smoke-Test:
+
+```bash
+./scripts/ci.sh
+RUN_E2E_SMOKE=true ./scripts/ci.sh
+```
+
 Backend-Coverage-Report:
 
 ```bash
@@ -70,6 +91,8 @@ Hinweis:
 - Frontend-Coverage nutzt Karma/Istanbul
 - Backend-Coverage benötigt in der Regel `Xdebug` oder `PCOV`
 - Backend-Coverage-Skripte liegen jetzt direkt in `composer.json`
+- `./scripts/test.sh` führt standardmäßig Backend-Tests, Angular-Unit-Tests und den Frontend-Produktionsbuild aus
+- `./scripts/ci.sh` kann zusätzlich optional einen Playwright-Smoketest (`unauthenticated.spec.ts`) ausführen
 - Prozentwerte sind ein guter technischer Hinweis, sollten aber zusammen mit [Feature-Inventar](feature-inventory.md) und [Test-Matrix](test-matrix.md) gelesen werden
 
 ### Test-Ausgabe filtern

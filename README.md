@@ -82,7 +82,7 @@ hournest/
 ├── backend/           # Laravel API
 ├── documentation/     # MkDocs Material (DE + EN)
 ├── scripts/           # Build, dev and CI scripts
-├── .github/workflows/ # GitHub Actions (release on tag)
+├── .github/workflows/ # GitHub Actions (release + docs deploy)
 ├── CLAUDE.md          # Conventions for Claude Code
 ├── CONCEPT.md         # Full concept & domain logic
 ├── .env.example       # Environment variable template
@@ -166,7 +166,7 @@ All scripts are in `scripts/` and work on Windows (Git Bash) and Linux.
 
 | Script | Description |
 |--------|-------------|
-| `./scripts/test.sh` | Run backend tests + frontend build check |
+| `./scripts/test.sh` | Run backend tests + frontend unit tests + frontend build check |
 | `./scripts/ci.sh` | Full CI pipeline locally (tests + all builds + artifact check) |
 | `./scripts/package.sh [version]` | Build everything and create a release archive (ZIP/TAR) |
 
@@ -178,6 +178,7 @@ All scripts are in `scripts/` and work on Windows (Git Bash) and Linux.
 | `./scripts/install.sh --seed` | Same as above, with test data |
 
 The installation script checks PHP extensions, creates `.env`, runs migrations, sets caches and outputs web server configuration (Apache/Nginx).
+The release package also includes `backend/public/superadmin-password-helper.php` as a temporary setup helper for generating a bcrypt hash for `SUPERADMIN_PASSWORD`.
 
 ## Mock Mode (Frontend without Backend)
 
@@ -220,16 +221,19 @@ Built documentation is in `documentation/site/` (covered by .gitignore).
 # Backend tests only
 cd backend && php artisan test     # PHPUnit, SQLite :memory:
 
-# Test everything (backend + frontend build)
+# Test everything (backend + frontend unit tests + frontend build)
 ./scripts/test.sh
 
 # Full CI pipeline locally
 ./scripts/ci.sh
+
+# Full CI pipeline plus Playwright smoke test
+RUN_E2E_SMOKE=true ./scripts/ci.sh
 ```
 
 Current verified status:
-- Backend suite: **400 tests / 1166 assertions**
-- Frontend: spec coverage for all core services plus feature specs for login, vacations, time tracking, and admin reports
+- Backend suite plus Angular unit tests are part of the default local test script
+- Playwright E2E tests are available separately and can be added as an optional smoke step in local CI
 
 ## API Documentation
 
@@ -262,11 +266,35 @@ git push origin v0.1.0
 
 This automatically creates:
 - Backend tests + production build
-- Frontend production build
+- Frontend unit tests + production build
 - MkDocs build
-- Release archive (ZIP + TAR.GZ) as GitHub Release
+- Workflow artifact (ZIP + TAR.GZ) on the Actions run
+- GitHub Release with ZIP + TAR.GZ assets
 
 Tags with `-rc`, `-beta` or `-alpha` are marked as pre-release.
+
+### Deploy Documentation
+
+The documentation workflow (`.github/workflows/docs.yml`) deploys MkDocs to GitHub Pages on pushes to `main`.
+
+Required repository setting:
+- GitHub Pages source: `GitHub Actions`
+
+### GitHub Setup Checklist
+
+Before relying on the GitHub runners, check:
+- GitHub-hosted runners are enabled for the repository
+- GitHub Pages source is set to `GitHub Actions`
+- Releases are allowed for the repository
+- No extra secrets are required for the current workflows
+
+What you get after pushing a tag like `v0.1.0`:
+- a successful Actions run with downloadable workflow artifacts
+- a GitHub Release containing the ZIP and TAR.GZ package
+- a deployment package that can be unpacked on a PHP webspace with `backend/public/` as document root
+
+What you get after pushing to `main`:
+- updated MkDocs documentation on GitHub Pages
 
 ### Test GitHub Action Locally (optional)
 
@@ -296,6 +324,7 @@ act push --tag v0.1.0
 The script automatically:
 - Checks PHP version and extensions
 - Creates `.env` (interactive)
+- Points you to `superadmin-password-helper.php` if you need a bcrypt hash for the emergency account
 - Runs migrations
 - Builds caches
 - Outputs web server configuration for **Apache** and **Nginx**
@@ -304,9 +333,10 @@ The script automatically:
 
 1. Unpack release archive or build locally with `./scripts/package.sh`
 2. Place `backend/` on server, set `backend/public/` as document root
-3. Serve `frontend/` as static files
-4. Configure `.env`, run `php artisan migrate --force`
-5. If using OAuth: configure OIDC provider, register app, set redirect URL
+3. The frontend is already bundled into `backend/public/`
+4. Configure `.env`, optionally generate a bcrypt hash via `backend/public/superadmin-password-helper.php`, then run `php artisan migrate --force`
+5. Delete `backend/public/superadmin-password-helper.php` after setup
+6. If using OAuth: configure OIDC provider, register app, set redirect URL
 
 ### Web Server
 

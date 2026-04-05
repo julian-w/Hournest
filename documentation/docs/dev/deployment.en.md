@@ -56,7 +56,7 @@ OIDC_REDIRECT_URI=${APP_URL}/api/auth/callback
 SANCTUM_STATEFUL_DOMAINS=your-nas-domain.com
 
 SUPERADMIN_USERNAME=superadmin
-SUPERADMIN_PASSWORD=a-secure-password
+SUPERADMIN_PASSWORD=$2y$12$replace-with-bcrypt-hash
 
 ADMIN_EMAILS=admin1@company.com,admin2@company.com
 ```
@@ -98,7 +98,11 @@ php artisan route:cache
 
 ---
 
-### Step 4: Build and Deploy the Frontend
+### Step 4: Provide the Frontend
+
+In the release package, the frontend is already bundled into `backend/public/`.
+
+If you package locally yourself or want to deploy it separately:
 
 1. Build the frontend on your development machine:
 
@@ -188,7 +192,7 @@ All scripts are in `scripts/` and work on Windows (Git Bash) and Linux:
 | `./scripts/build-frontend.sh` | Builds Angular only (production) |
 | `./scripts/build-backend.sh` | Builds Laravel only (production, cached) |
 | `./scripts/build-docs.sh` | Builds MkDocs documentation only |
-| `./scripts/test.sh` | Backend tests + frontend build check |
+| `./scripts/test.sh` | Backend tests + frontend unit tests + frontend build check |
 | `./scripts/ci.sh` | Full CI pipeline locally |
 | `./scripts/package.sh [version]` | Builds everything and creates release archive |
 
@@ -217,10 +221,36 @@ git push origin v0.1.0
 The action automatically:
 
 1. Runs backend tests (PHPUnit)
-2. Builds frontend (Angular production)
+2. Runs frontend unit tests and builds the frontend (Angular production)
 3. Builds documentation (MkDocs)
-4. Creates release archive (ZIP + TAR.GZ)
-5. Creates GitHub Release
+4. Creates a release archive (ZIP + TAR.GZ) with the frontend bundled into `backend/public/`
+5. Uploads workflow artifacts
+6. Creates GitHub Release
+
+Additionally, `.github/workflows/docs.yml` deploys the documentation to GitHub Pages on pushes to `main`.
+
+Required repository setting:
+- GitHub Pages source must be set to `GitHub Actions`
+
+### GitHub Runner Checklist
+
+Before relying on the workflows in production:
+
+- GitHub-hosted runners must be enabled for the repository
+- GitHub Pages must use `GitHub Actions` as its source
+- Releases must be allowed for the repository
+- No additional secrets are required for the current setup
+
+Result of `git push origin v0.1.0`:
+
+- backend, frontend, and documentation are built
+- ZIP and TAR.GZ are uploaded as workflow artifacts
+- the same archives are attached to the GitHub Release
+- the release package can be uploaded directly to classic PHP hosting or a NAS
+
+Result of a push to `main`:
+
+- the MkDocs documentation is published to GitHub Pages
 
 Tags with `-rc`, `-beta`, or `-alpha` are marked as pre-release.
 

@@ -111,7 +111,7 @@ The superadmin access works without SSO and is authenticated directly via userna
 | Variable              | Default       | Description                           |
 |-----------------------|---------------|---------------------------------------|
 | `SUPERADMIN_USERNAME` | `superadmin`  | Username for superadmin login         |
-| `SUPERADMIN_PASSWORD` | `changeme`    | Password for superadmin login         |
+| `SUPERADMIN_PASSWORD` | bcrypt hash   | bcrypt hash for superadmin login, not the plaintext password |
 
 !!! danger "Change Password"
     The default password `changeme` must be changed **before** going to production.
@@ -208,7 +208,7 @@ DEFAULT_VACATION_DAYS_PER_YEAR=30
 
 # --- Superadmin (Emergency Access) ---
 SUPERADMIN_USERNAME=superadmin
-SUPERADMIN_PASSWORD=changeme
+SUPERADMIN_PASSWORD=$2y$12$replace-with-bcrypt-hash
 
 # --- Admin Emails (comma-separated) ---
 ADMIN_EMAILS=admin@hournest.local
