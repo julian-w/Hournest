@@ -75,7 +75,7 @@ The main area displays the content of the currently selected page.
 - **Calendar:** Own vacations in the monthly calendar
 - **My Vacations:** List of all own vacation requests with status
 - **Absences:** Report or cancel illness and special leave
-- **Time Tracking:** Weekly working hours and cost center bookings
+- **Time Tracking:** Weekly working hours, cost center bookings, and working time account
 - **Vacation Account:** Own yearly ledger (read-only)
 
 ### Admin (Administrator)
@@ -85,7 +85,7 @@ Everything the employee sees, plus:
 - **Dashboard:** Pending requests from all employees, team status
 - **Calendar:** Vacations of all employees visible
 - **Vacation Requests:** List of all pending requests with approve/reject functionality
-- **User Management:** Manage roles, vacation days, work schedules, vacation accounts
+- **User Management:** Manage roles, vacation days, work schedules, vacation accounts, and working time accounts
 - **Holidays:** Create, edit, delete holidays
 - **Absences:** Review, approve, acknowledge, or create entries directly
 - **Cost Centers & Groups:** Manage cost centers, groups, and direct assignments

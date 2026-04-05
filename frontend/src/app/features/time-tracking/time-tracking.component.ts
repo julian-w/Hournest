@@ -11,6 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Absence } from '../../core/models/absence.model';
 import { BlackoutPeriod } from '../../core/models/blackout-period.model';
@@ -19,6 +20,7 @@ import { TimeBookingTemplate } from '../../core/models/time-booking-template.mod
 import { TimeBooking } from '../../core/models/time-booking.model';
 import { TimeEntry } from '../../core/models/time-entry.model';
 import { Vacation } from '../../core/models/vacation.model';
+import { WorkTimeAccountEntry } from '../../core/models/work-time-account-entry.model';
 import { AbsenceService } from '../../core/services/absence.service';
 import { BlackoutService } from '../../core/services/blackout.service';
 import { CostCenterService } from '../../core/services/cost-center.service';
@@ -27,6 +29,7 @@ import { TimeTrackingService } from '../../core/services/time-tracking.service';
 import { VacationService } from '../../core/services/vacation.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { WorkScheduleService } from '../../core/services/work-schedule.service';
+import { WorkTimeAccountService } from '../../core/services/work-time-account.service';
 import { TimeBookingTemplateDialogComponent } from './time-booking-template-dialog.component';
 
 interface DayData {
@@ -65,6 +68,7 @@ interface BookingRow {
     MatSelectModule,
     MatSnackBarModule,
     MatTooltipModule,
+    MatExpansionModule,
     TranslateModule,
   ],
   template: `
@@ -246,6 +250,69 @@ interface BookingRow {
         </div>
       </div>
     </mat-card>
+
+    <mat-expansion-panel class="ledger-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>query_stats</mat-icon>
+          {{ 'time_tracking.account.title' | translate }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="ledger-toolbar">
+        <mat-form-field appearance="outline" class="ledger-year-field">
+          <mat-label>{{ 'time_tracking.account.year' | translate }}</mat-label>
+          <mat-select [ngModel]="selectedLedgerYear()" (ngModelChange)="onLedgerYearChange($event)">
+            @for (year of ledgerYears; track year) {
+              <mat-option [value]="year">{{ year }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <div class="ledger-balance">
+          <strong>{{ 'time_tracking.account.balance' | translate }}:</strong>
+          <span [class.positive]="currentLedgerBalance() > 0" [class.negative]="currentLedgerBalance() < 0">
+            {{ formatSignedMinutes(currentLedgerBalance()) }}
+          </span>
+        </div>
+      </div>
+
+      <table mat-table [dataSource]="workTimeLedger()" class="ledger-table">
+        <ng-container matColumnDef="effective_date">
+          <th mat-header-cell *matHeaderCellDef>{{ 'time_tracking.account.date' | translate }}</th>
+          <td mat-cell *matCellDef="let entry">{{ entry.effective_date | date:'mediumDate' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>{{ 'time_tracking.account.type' | translate }}</th>
+          <td mat-cell *matCellDef="let entry">{{ 'time_tracking.account.type_' + entry.type | translate }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="minutes_delta">
+          <th mat-header-cell *matHeaderCellDef>{{ 'time_tracking.account.change' | translate }}</th>
+          <td mat-cell *matCellDef="let entry" [class.positive]="entry.minutes_delta > 0" [class.negative]="entry.minutes_delta < 0">
+            {{ formatSignedMinutes(entry.minutes_delta) }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="balance_after">
+          <th mat-header-cell *matHeaderCellDef>{{ 'time_tracking.account.balance_after' | translate }}</th>
+          <td mat-cell *matCellDef="let entry">{{ formatSignedMinutes(entry.balance_after) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="comment">
+          <th mat-header-cell *matHeaderCellDef>{{ 'time_tracking.account.comment' | translate }}</th>
+          <td mat-cell *matCellDef="let entry">{{ entry.comment || '—' }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="ledgerColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: ledgerColumns;"></tr>
+      </table>
+
+      @if (workTimeLedger().length === 0) {
+        <div class="empty-state">{{ 'time_tracking.account.empty' | translate }}</div>
+      }
+    </mat-expansion-panel>
   `,
   styles: [`
     .page-header {
@@ -433,6 +500,33 @@ interface BookingRow {
       width: 190px;
       margin-bottom: -1.25em;
     }
+    .ledger-panel {
+      margin-top: 24px;
+    }
+    .ledger-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .ledger-year-field {
+      width: 140px;
+      margin-bottom: -1.25em;
+    }
+    .ledger-balance {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .ledger-table {
+      width: 100%;
+    }
+    .empty-state {
+      padding: 16px 0 4px;
+      color: rgba(0, 0, 0, 0.54);
+    }
   `],
 })
 export class TimeTrackingComponent implements OnInit {
@@ -444,6 +538,7 @@ export class TimeTrackingComponent implements OnInit {
   private vacationService = inject(VacationService);
   private settingsService = inject(SettingsService);
   private workScheduleService = inject(WorkScheduleService);
+  private workTimeAccountService = inject(WorkTimeAccountService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
@@ -462,8 +557,12 @@ export class TimeTrackingComponent implements OnInit {
   vacations = signal<Vacation[]>([]);
   templates = signal<TimeBookingTemplate[]>([]);
   bookingRows = signal<BookingRow[]>([]);
+  workTimeLedger = signal<WorkTimeAccountEntry[]>([]);
   selectedTemplateDate = signal('');
   selectedTemplateId = signal<number | null>(null);
+  selectedLedgerYear = signal(new Date().getFullYear());
+  ledgerColumns = ['effective_date', 'type', 'minutes_delta', 'balance_after', 'comment'];
+  ledgerYears: number[] = [];
 
   weekLabel = computed(() => {
     const weekDays = this.days();
@@ -497,6 +596,17 @@ export class TimeTrackingComponent implements OnInit {
   });
 
   templateDays = computed(() => this.days().filter(day => this.canEditBookingsForDay(day)));
+  currentLedgerBalance = computed(() => {
+    const entries = this.workTimeLedger();
+    return entries.length > 0 ? entries[entries.length - 1].balance_after : 0;
+  });
+
+  constructor() {
+    const currentYear = new Date().getFullYear();
+    for (let year = currentYear - 2; year <= currentYear + 1; year++) {
+      this.ledgerYears.push(year);
+    }
+  }
 
   ngOnInit(): void {
     this.loadWeek();
@@ -510,6 +620,11 @@ export class TimeTrackingComponent implements OnInit {
   goToToday(): void {
     this.weekOffset.set(0);
     this.loadWeek();
+  }
+
+  onLedgerYearChange(year: number): void {
+    this.selectedLedgerYear.set(year);
+    this.loadWorkTimeLedger();
   }
 
   onPercentageChange(row: BookingRow, date: string, value: number | null): void {
@@ -545,6 +660,7 @@ export class TimeTrackingComponent implements OnInit {
       this.days.update(days => days.map(item =>
         item.date === day.date ? { ...item, timeEntry: entry } : item
       ));
+      this.loadWorkTimeLedger();
     });
   }
 
@@ -818,6 +934,11 @@ export class TimeTrackingComponent implements OnInit {
     return `${hours}:${remainder.toString().padStart(2, '0')}`;
   }
 
+  formatSignedMinutes(minutes: number): string {
+    const sign = minutes > 0 ? '+' : minutes < 0 ? '-' : '';
+    return sign + this.formatMinutes(minutes);
+  }
+
   private loadWeek(): void {
     const { from, to, days } = this.getWeekDates();
     this.days.set(days);
@@ -871,12 +992,19 @@ export class TimeTrackingComponent implements OnInit {
     });
 
     this.loadTemplates();
+    this.loadWorkTimeLedger();
   }
 
   private loadTemplates(): void {
     this.templateService.getTemplates().subscribe(templates => {
       this.templates.set(templates);
       this.syncTemplateSelection();
+    });
+  }
+
+  private loadWorkTimeLedger(): void {
+    this.workTimeAccountService.getMyLedger(this.selectedLedgerYear()).subscribe(entries => {
+      this.workTimeLedger.set(entries);
     });
   }
 

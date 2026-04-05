@@ -150,6 +150,7 @@
     "holidays_exempt": "Holidays exempt",
     "weekend_worker": "Weekend worker",
     "adjust_ledger": "Adjust vacation account",
+    "adjust_time_account": "Adjust work time account",
     "ledger_updated": "Vacation account updated.",
     "create_user": "Create User",
     "default_password": "Default Password",
@@ -237,7 +238,8 @@
     "no": "No",
     "ok": "OK",
     "loading": "Loading...",
-    "no_data": "No data available"
+    "no_data": "No data available",
+    "add": "Add"
   },
   "time_tracking": {
     "title": "Time Tracking",
@@ -278,7 +280,30 @@
     "absence_illness": "Illness",
     "absence_special_leave": "Special Leave",
     "absence_vacation": "Vacation",
-    "absence_company_holiday": "Company Holiday"
+    "absence_company_holiday": "Company Holiday",
+    "account": {
+      "title": "Work Time Account",
+      "admin_title": "Adjust Work Time Account",
+      "year": "Year",
+      "date": "Date",
+      "type": "Type",
+      "change": "Change",
+      "balance": "Balance",
+      "balance_after": "Balance after",
+      "comment": "Comment",
+      "empty": "No entries found for the selected year.",
+      "updated": "Work time account updated.",
+      "type_opening_balance": "Opening balance",
+      "type_worked": "Worked vs target",
+      "type_manual_adjustment": "Manual adjustment",
+      "type_carryover": "Carryover",
+      "type_holiday_credit": "Holiday credited",
+      "type_company_holiday_credit": "Company holiday credited",
+      "type_vacation_credit": "Vacation credited",
+      "type_absence_credit": "Absence credited",
+      "type_half_day_vacation_credit": "Half-day vacation applied",
+      "type_half_day_absence_credit": "Half-day absence applied"
+    }
   },
   "my_absences": {
     "title": "My Absences",

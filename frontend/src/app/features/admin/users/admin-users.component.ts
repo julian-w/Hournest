@@ -18,6 +18,7 @@ import { User } from '../../../core/models/user.model';
 import { LedgerAdjustmentDialogComponent } from './ledger-adjustment-dialog.component';
 import { CreateUserDialogComponent } from './create-user-dialog.component';
 import { ResetPasswordDialogComponent } from './reset-password-dialog.component';
+import { TimeAccountAdjustmentDialogComponent } from './time-account-adjustment-dialog.component';
 
 @Component({
   selector: 'app-admin-users',
@@ -95,6 +96,11 @@ import { ResetPasswordDialogComponent } from './reset-password-dialog.component'
                     [matTooltip]="'admin_users.adjust_ledger' | translate"
                     (click)="openLedgerDialog(u)">
               <mat-icon>account_balance_wallet</mat-icon>
+            </button>
+            <button mat-icon-button color="primary"
+                    [matTooltip]="'admin_users.adjust_time_account' | translate"
+                    (click)="openTimeAccountDialog(u)">
+              <mat-icon>schedule</mat-icon>
             </button>
             @if (!configService.isOAuthEnabled()) {
               <button mat-icon-button color="warn"
@@ -177,6 +183,16 @@ export class AdminUsersComponent implements OnInit {
   openLedgerDialog(user: User): void {
     const ref = this.dialog.open(LedgerAdjustmentDialogComponent, {
       width: '700px',
+      data: { userName: user.display_name, userId: user.id },
+    });
+    ref.afterClosed().subscribe((changed: boolean) => {
+      if (changed) this.loadUsers();
+    });
+  }
+
+  openTimeAccountDialog(user: User): void {
+    const ref = this.dialog.open(TimeAccountAdjustmentDialogComponent, {
+      width: '900px',
       data: { userName: user.display_name, userId: user.id },
     });
     ref.afterClosed().subscribe((changed: boolean) => {

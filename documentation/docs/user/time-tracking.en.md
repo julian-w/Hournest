@@ -36,8 +36,10 @@ A summary is shown at the bottom of the weekly view:
 | Value | Meaning |
 |-------|---------|
 | **Actual** | Recorded working time for the week |
-| **Target** | Expected working time based on the stored work schedule |
+| **Target** | Expected working time based on the stored work schedule and effective day rules |
 | **Delta** | Difference between actual and target |
+
+Target time takes individual work schedules, holidays, approved vacation, effective absences, and company holidays into account. Fully covered days reduce the target to `0`, half-day cases to `50%`.
 
 ---
 
@@ -123,6 +125,26 @@ The weekly view uses two save modes:
 - **"Save all"** for weekly percentage allocations
 
 Only days with valid totals are saved. Days without bookings or with invalid totals are skipped.
+
+---
+
+## Working Time Account
+
+Below the weekly view there is a collapsible **working time account** for the selected year.
+
+The table shows each relevant change with a running balance:
+
+| Column | Meaning |
+|--------|---------|
+| **Date** | Effective date of the entry |
+| **Type** | For example opening balance, daily delta, correction, or carryover |
+| **Change** | Minute delta, positive or negative |
+| **Balance** | Account balance after this entry |
+| **Comment** | Additional reason or note |
+
+Fully or partially credited days such as **holidays**, **company holidays**, **approved vacation**, or **effective absences** now also appear as their own rows. This makes it easier to understand why no negative balance was created for a day or why the target time was reduced.
+
+The working time account is **read-only** for employees. Admins can manage manual corrections and carryover entries in user management.
 
 ---
 

@@ -95,6 +95,7 @@ backend/tests/
 │   ├── UserGroupTest.php
 │   ├── VacationLedgerTest.php
 │   ├── VacationTest.php
+│   ├── WorkTimeAccountTest.php
 │   ├── WorkScheduleTest.php
 │   └── YearlyMaintenanceTest.php
 └── Unit/
@@ -115,7 +116,7 @@ frontend/src/app/
 
 ## Aktueller Stand
 
-- Backend-Suite: **376 Tests / 1062 Assertions**
+- Backend-Suite: **400 Tests / 1166 Assertions**
 - Frontend: alle Services unter `frontend/src/app/core/services` haben Spec-Dateien
 - Feature-Komponenten mit Specs: Login, Mein Urlaub und Zeiterfassung
 
@@ -137,6 +138,7 @@ frontend/src/app/
 | `VacationTest` | Antragstellung, Validierung, Team-/Eigenansichten, Stornierung und Halbtags-Urlaub |
 | `AdminTest` | Admin-Review von Urlaubsanträgen und Benutzerverwaltung |
 | `VacationLedgerTest` | Urlaubskonto, Bonus-, Carryover-, Expired- und Adjustment-Einträge |
+| `WorkTimeAccountTest` | Arbeitszeitkonto, Eröffnungssaldo, Tagesdeltas, Feiertage, Betriebsferien, Urlaub, Krankheit, Teilzeit-Modelle, Prioritäten und manuelle Korrekturen |
 | `YearlyMaintenanceTest` | Jahresanspruch, Übertrag, Verfall, Dry-Run und Idempotenz |
 | `WorkScheduleTest` | Individuelle Arbeitstage und Auswirkungen auf Berechnungen |
 | `HolidayTest` | Feiertagsverwaltung und Filter |
@@ -173,7 +175,7 @@ frontend/src/app/
 | `app.component.spec.ts` | Sprachinitialisierung und Sprachwechsel |
 | `core/services/*.spec.ts` | Request-URLs, Payloads und Response-Mapping aller Core-Services |
 | `features/login/login.component.spec.ts` | Login-Flow, Fehlerzustände, erzwungener Passwortwechsel |
-| `features/time-tracking/time-tracking.component.spec.ts` | Vorlagen anwenden, speichern, aktualisieren, löschen sowie Halbtags-Urlaub, Betriebsferien und persönliche Wochenziele im Wochengrid |
+| `features/time-tracking/time-tracking.component.spec.ts` | Vorlagen anwenden, speichern, aktualisieren, löschen sowie Halbtags-Urlaub, Betriebsferien, persönliche Wochenziele und Arbeitszeitkonto im Wochengrid |
 | `features/admin/reports/admin-reports.component.spec.ts` | Laden von Reports, Gruppierungswechsel und CSV-Export |
 | `features/vacation/my-vacations.component.spec.ts` | Laden, Stornieren, Dialog-Refresh und Ledger-Jahreswechsel |
 

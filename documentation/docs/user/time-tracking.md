@@ -36,8 +36,10 @@ Am unteren Rand der Wochenansicht wird eine Zusammenfassung angezeigt:
 | Wert      | Bedeutung |
 |-----------|-----------|
 | **Ist**   | Tatsächlich erfasste Arbeitszeit der Woche |
-| **Soll**  | Erwartete Arbeitszeit auf Basis des hinterlegten Arbeitszeitmodells |
+| **Soll**  | Erwartete Arbeitszeit auf Basis des hinterlegten Arbeitszeitmodells und der effektiven Tagesregeln |
 | **Delta** | Differenz zwischen Ist und Soll |
+
+Zur Sollzeit zählen individuelle Arbeitszeitmodelle, Feiertage, genehmigter Urlaub, effektive Abwesenheiten und Betriebsferien. Ganztägig abgedeckte Tage reduzieren das Soll auf `0`, halbtägige Fälle auf `50 %`.
 
 ---
 
@@ -123,6 +125,26 @@ Die Wochenansicht bietet zwei Speicherarten:
 - **"Alles speichern"** für Prozentbuchungen der Woche
 
 Nur Tage mit gültiger Gesamtverteilung werden gespeichert. Tage ohne Buchungen oder mit ungültiger Summe werden übersprungen.
+
+---
+
+## Arbeitszeitkonto
+
+Unterhalb der Wochenansicht gibt es ein aufklappbares **Arbeitszeitkonto** für das ausgewählte Jahr.
+
+Die Tabelle zeigt jede relevante Änderung mit laufendem Saldo:
+
+| Spalte | Bedeutung |
+|--------|-----------|
+| **Datum** | Wirksamkeitsdatum der Buchung |
+| **Typ** | z. B. Eröffnungssaldo, Tagesdelta, Korrektur oder Carryover |
+| **Änderung** | Minuten-Differenz positiv oder negativ |
+| **Saldo** | Kontostand nach dieser Buchung |
+| **Kommentar** | Zusätzlicher Grund oder Hinweis |
+
+Auch vollständig oder teilweise gutgeschriebene Tage wie **Feiertage**, **Betriebsferien**, **genehmigter Urlaub** oder **effektive Abwesenheiten** erscheinen jetzt als eigene Zeilen. Dadurch ist besser nachvollziehbar, warum an einem Tag kein negativer Saldo entstanden ist oder warum sich die Sollzeit reduziert hat.
+
+Das Arbeitszeitkonto ist für Mitarbeiter **nur lesbar**. Admins können in der Benutzerverwaltung manuelle Korrekturen und Carryover-Einträge pflegen.
 
 ---
 

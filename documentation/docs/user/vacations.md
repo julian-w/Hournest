@@ -68,7 +68,7 @@ Die Seite **"Mein Urlaub"** zeigt:
 - den aktuellen Resturlaub
 - das Urlaubskonto für das ausgewählte Jahr
 
-Im Urlaubskonto werden u.a. Anspruch, Übertrag, Verfall, Korrekturen und genommene Tage angezeigt.
+Im Urlaubskonto werden u.a. Anspruch, Übertrag, Verfall, Korrekturen und genommene Tage angezeigt. Die Tabelle enthält außerdem einen **laufenden Saldo**, damit jede Änderung nachvollziehbar bleibt.
 
 ---
 

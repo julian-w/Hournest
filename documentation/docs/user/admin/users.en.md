@@ -104,6 +104,28 @@ Admins can create bookings in the vacation account for each user:
 - **Book annual entitlement:** Type = Entitlement, Days = +30, Comment = "Annual entitlement 2026"
 - **Book carryover:** Type = Carryover, Days = +3, Comment = "Remaining from 2025"
 
+Automatically created vacation-account entries, for example from approved vacation or company holidays, stay read-only. Only manual entries can be deleted.
+
+---
+
+## Managing the Working Time Account
+
+Admins can also open the **working time account** for each user.
+
+The table shows:
+
+- opening balance from previous years
+- daily delta bookings from recorded time versus target time
+- manual corrections
+- carryover entries
+
+### Typical Use Cases
+
+- **Correction after review:** Type = `manual_adjustment`, Minutes = `+60`, Comment = "Late project meeting added"
+- **Carry over from previous period:** Type = `carryover`, Minutes = `-120`, Comment = "December balance transferred"
+
+Only manual working-time-account entries can be deleted again in the dialog.
+
 ---
 
 ## Creating a User

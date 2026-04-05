@@ -20,6 +20,7 @@ import { AppSetting } from '../models/setting.model';
 import { User } from '../models/user.model';
 import { BlackoutPeriod } from '../models/blackout-period.model';
 import { TimeBookingTemplate } from '../models/time-booking-template.model';
+import { WorkTimeAccountEntry } from '../models/work-time-account-entry.model';
 
 const MOCK_DELAY = 200;
 
@@ -37,6 +38,7 @@ let nextWorkScheduleId = 100;
 let nextLedgerId = 10000;
 let nextBlackoutId = 100;
 let nextTemplateId = 100;
+let nextWorkTimeEntryId = 20000;
 let blackouts: BlackoutPeriod[] = [
   { id: 1, type: 'company_holiday', start_date: '2026-12-21', end_date: '2026-12-31', reason: 'Betriebsferien', created_at: '2026-01-15T00:00:00+00:00' },
   { id: 2, type: 'freeze', start_date: '2026-11-15', end_date: '2026-11-30', reason: 'Inventur', created_at: '2026-01-15T00:00:00+00:00' },
@@ -52,6 +54,7 @@ let timeBookingTemplates: TimeBookingTemplate[] = [
     ],
   },
 ];
+let workTimeEntries: WorkTimeAccountEntry[] = [];
 
 function jsonResponse<T>(body: T, status = 200): HttpResponse<T> {
   return new HttpResponse<T>({ status, body });
@@ -530,6 +533,61 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
   if (method === 'DELETE' && deleteLedgerMatch) {
     const entryId = parseInt(deleteLedgerMatch[2], 10);
     ledgerEntries = ledgerEntries.filter(e => e.id !== entryId);
+    return of(jsonResponse(null, 200)).pipe(delay(MOCK_DELAY));
+  }
+
+  // GET /api/work-time-account
+  if (method === 'GET' && url.includes('/api/work-time-account') && !url.includes('/admin/')) {
+    const userId = mockService.currentUser().id;
+    const yearParam = new URL(url, 'http://localhost').searchParams.get('year');
+    const year = yearParam ? parseInt(yearParam, 10) : new Date().getFullYear();
+    const data = workTimeEntries.filter(entry =>
+      entry.user_id === userId && entry.effective_date.startsWith(`${year}`)
+    );
+    return of(jsonResponse({ data })).pipe(delay(MOCK_DELAY));
+  }
+
+  // GET /api/admin/users/:id/work-time-account
+  const workTimeUserId = extractIdFromUrl(url, /\/api\/admin\/users\/(\d+)\/work-time-account$/);
+  if (method === 'GET' && workTimeUserId !== null) {
+    const yearParam = new URL(url, 'http://localhost').searchParams.get('year');
+    const year = yearParam ? parseInt(yearParam, 10) : new Date().getFullYear();
+    const data = workTimeEntries.filter(entry =>
+      entry.user_id === workTimeUserId && entry.effective_date.startsWith(`${year}`)
+    );
+    return of(jsonResponse({ data })).pipe(delay(MOCK_DELAY));
+  }
+
+  // POST /api/admin/users/:id/work-time-account
+  if (method === 'POST' && workTimeUserId !== null) {
+    const body = parseBody<{ effective_date: string; type: 'manual_adjustment' | 'carryover'; minutes_delta: number; comment: string }>(req);
+    const existing = workTimeEntries
+      .filter(entry => entry.user_id === workTimeUserId && entry.effective_date.startsWith(body.effective_date.substring(0, 4)))
+      .sort((left, right) => left.effective_date.localeCompare(right.effective_date));
+    const lastBalance = existing.length > 0 ? existing[existing.length - 1].balance_after : 0;
+    const newEntry: WorkTimeAccountEntry = {
+      id: nextWorkTimeEntryId++,
+      user_id: workTimeUserId,
+      effective_date: body.effective_date,
+      type: body.type,
+      minutes_delta: body.minutes_delta,
+      balance_after: lastBalance + body.minutes_delta,
+      comment: body.comment,
+      created_at: new Date().toISOString(),
+      created_by: mockService.currentUser().id,
+      created_by_name: mockService.currentUser().display_name,
+      source_type: 'manual',
+      source_id: nextWorkTimeEntryId,
+    };
+    workTimeEntries.push(newEntry);
+    return of(jsonResponse({ data: newEntry, message: 'Work time account entry created.' }, 201)).pipe(delay(MOCK_DELAY));
+  }
+
+  // DELETE /api/admin/users/:id/work-time-account/:entryId
+  const deleteWorkTimeMatch = url.match(/\/api\/admin\/users\/(\d+)\/work-time-account\/(\d+)$/);
+  if (method === 'DELETE' && deleteWorkTimeMatch) {
+    const entryId = parseInt(deleteWorkTimeMatch[2], 10);
+    workTimeEntries = workTimeEntries.filter(entry => entry.id !== entryId);
     return of(jsonResponse(null, 200)).pipe(delay(MOCK_DELAY));
   }
 

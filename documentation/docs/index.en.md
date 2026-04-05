@@ -3,7 +3,7 @@
 Hournest is an internal web application for **vacation management** with an already expanded **time tracking and cost center booking** area. It is designed for small companies (under 20 employees).
 
 !!! info "Current Status"
-    Vacation management is stable and broadly implemented. Large parts of time tracking, absences, cost centers, locking, blackouts including company-holiday automation, and first admin reports are also already implemented. Additional analytics and later expansion stages remain planned.
+    Vacation management is stable and broadly implemented. Large parts of time tracking, absences, cost centers, locking, blackouts including company-holiday automation, admin reports, and the new working time account are also already implemented. Additional analytics and later expansion stages remain planned.
 
 ---
 
@@ -30,6 +30,12 @@ Hournest is an internal web application for **vacation management** with an alre
 - Complete booking overview per year: entitlement, carryover, bonus days, taken days, expired
 - Automatic remaining vacation carryover with configurable expiry date
 - Bonus day bookings only by admin
+- Running balance column for transparent balance changes
+
+### Working Time Account
+- Yearly ledger with opening balance, daily delta bookings, and manual corrections
+- Target time based on individual work schedules, holidays, vacations, absences, and company holidays
+- Admins can manage manual adjustments and carryover entries per employee
 
 ### Holidays
 - Management of fixed and variable holidays by admins
@@ -51,7 +57,7 @@ Hournest is an internal web application for **vacation management** with an alre
 - Bilingual: German and English (switchable at runtime)
 - Auto-generated API documentation (OpenAPI/Scramble) at `/docs/api`
 - Mock mode for frontend development without backend
-- Backend test coverage with 368 tests / 1031 assertions
+- Backend test coverage with 385 tests / 1098 assertions
 
 ---
 
@@ -101,6 +107,6 @@ hournest/
 
 ## Implementation Status Notes
 
-- **Already implemented:** vacations, vacation ledger, holidays, work schedules, roles, OIDC, local auth, core time tracking, cost centers, favorites, absences, locks
+- **Already implemented:** vacations, vacation ledger, working time account, holidays, work schedules, roles, OIDC, local auth, core time tracking, cost centers, favorites, absences, locks, admin reports
 - **Partially implemented:** additional convenience features and later analytics stages
-- **Still planned:** shift planning, more advanced reports/analytics, and working time account
+- **Still planned:** shift planning and more advanced reports/analytics

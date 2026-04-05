@@ -68,7 +68,7 @@ The **"My Vacations"** page shows:
 - your current remaining vacation days
 - the vacation ledger for the selected year
 
-The ledger includes entitlement, carryover, expiry, adjustments, and taken days.
+The ledger includes entitlement, carryover, expiry, adjustments, and taken days. The table also shows a **running balance** so every change stays transparent.
 
 ---
 

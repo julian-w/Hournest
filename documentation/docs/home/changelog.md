@@ -8,10 +8,12 @@ Alle nennenswerten Änderungen an Hournest werden auf dieser Seite dokumentiert.
 
 ### Tests & Qualitätssicherung
 
-- Backend-Testabdeckung deutlich ausgebaut auf **368 Tests / 1031 Assertions**
+- Backend-Testabdeckung deutlich ausgebaut auf **400 Tests / 1166 Assertions**
 - Neue Feature-Tests für OIDC-Login, Favoriten, Admin-Abwesenheitsverwaltung, Admin-Zeitbuchungen, Jahreswartung und systemübergreifende Regeln
 - Frontend-Specs für alle Core-Services ergänzt
 - Feature-Komponenten mit Tests abgesichert: Login, Mein Urlaub und Zeiterfassung
+- Arbeitszeitkonto mit eigenem Ledger, Admin-Korrekturen und Tests ergänzt
+- Arbeitszeitkonto zeigt jetzt auch gutgeschriebene Tage wie Feiertage, Betriebsferien, Urlaub und Abwesenheiten explizit als nachvollziehbare Ledger-Zeilen
 
 ### Zeiterfassung & System-Buchungen
 

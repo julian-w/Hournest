@@ -382,6 +382,67 @@ Returns the user's own vacation account bookings.
 }
 ```
 
+!!! info "Frontend rendering"
+    The UI additionally computes a running balance per row so vacation-account changes stay transparent.
+
+### DELETE /api/admin/users/{id}/vacation-ledger/{entryId}
+
+Deletes a **manual** vacation ledger entry for a user.
+
+**Auth:** Sanctum + Admin
+
+**Error (422):** automatically created entries from vacation or company holidays cannot be deleted
+
+---
+
+## Work Time Account Endpoints
+
+### GET /api/work-time-account
+
+Returns the authenticated user's own working time account.
+
+**Auth:** Sanctum
+
+**Query Parameters:**
+
+- `year` (optional, default: current year)
+
+**Response contents:**
+
+- `opening_balance` for balances carried over from previous years
+- `worked` for daily deltas between recorded time and target time
+- manual entries such as `manual_adjustment` or `carryover`
+- `balance_after` as the running balance after each entry
+
+### GET /api/admin/users/{id}/work-time-account
+
+Returns the working time account for a user.
+
+**Auth:** Sanctum + Admin
+
+### POST /api/admin/users/{id}/work-time-account
+
+Creates a manual working time account entry.
+
+**Auth:** Sanctum + Admin
+
+**Request Body:**
+
+```json
+{
+  "effective_date": "2026-04-05",
+  "type": "manual_adjustment",
+  "minutes_delta": 60,
+  "comment": "Manual correction after review"
+}
+```
+
+### DELETE /api/admin/users/{id}/work-time-account/{entryId}
+
+Deletes a manual working time account entry.
+
+**Auth:** Sanctum + Admin
+
 ---
 
 ## Holiday Endpoints

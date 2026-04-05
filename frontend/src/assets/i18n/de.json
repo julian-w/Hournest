@@ -150,6 +150,7 @@
     "holidays_exempt": "Feiertagsbefreit",
     "weekend_worker": "Wochenendarbeit",
     "adjust_ledger": "Urlaubskonto anpassen",
+    "adjust_time_account": "Arbeitszeitkonto anpassen",
     "ledger_updated": "Urlaubskonto aktualisiert.",
     "create_user": "Benutzer erstellen",
     "default_password": "Standard-Passwort",
@@ -237,7 +238,8 @@
     "no": "Nein",
     "ok": "OK",
     "loading": "Laden...",
-    "no_data": "Keine Daten vorhanden"
+    "no_data": "Keine Daten vorhanden",
+    "add": "Hinzufügen"
   },
   "time_tracking": {
     "title": "Zeiterfassung",
@@ -279,6 +281,30 @@
     "absence_special_leave": "Sonderurlaub",
     "absence_vacation": "Urlaub",
     "absence_company_holiday": "Betriebsferien"
+    ,
+    "account": {
+      "title": "Arbeitszeitkonto",
+      "admin_title": "Arbeitszeitkonto anpassen",
+      "year": "Jahr",
+      "date": "Datum",
+      "type": "Typ",
+      "change": "Änderung",
+      "balance": "Saldo",
+      "balance_after": "Saldo danach",
+      "comment": "Kommentar",
+      "empty": "Keine Buchungen im gewählten Jahr.",
+      "updated": "Arbeitszeitkonto aktualisiert.",
+      "type_opening_balance": "Startsaldo",
+      "type_worked": "Arbeitszeit-Differenz",
+      "type_manual_adjustment": "Manuelle Korrektur",
+      "type_carryover": "Übertrag",
+      "type_holiday_credit": "Feiertag gutgeschrieben",
+      "type_company_holiday_credit": "Betriebsferien gutgeschrieben",
+      "type_vacation_credit": "Urlaub gutgeschrieben",
+      "type_absence_credit": "Abwesenheit gutgeschrieben",
+      "type_half_day_vacation_credit": "Halbtags-Urlaub berücksichtigt",
+      "type_half_day_absence_credit": "Halbtags-Abwesenheit berücksichtigt"
+    }
   },
   "my_absences": {
     "title": "Meine Abwesenheiten",

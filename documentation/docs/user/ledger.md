@@ -6,18 +6,17 @@ Das Urlaubskonto zeigt eine vollständige Jahresübersicht aller Buchungen, die 
 
 ## Jahresübersicht
 
-Das Urlaubskonto zeigt pro Jahr eine chronologische Liste aller Buchungen. Am Ende ergibt sich aus der Summe aller Buchungen der **aktuelle Resturlaub**.
+Das Urlaubskonto zeigt pro Jahr eine chronologische Liste aller Buchungen. Jede Zeile hat einen laufenden Saldo, sodass direkt sichtbar ist, wie sich der Resturlaub nach jeder Änderung entwickelt. Am Ende ergibt sich daraus der **aktuelle Resturlaub**.
 
 ### Beispiel
 
-| Datum       | Typ           | Tage  | Kommentar                       |
-|-------------|---------------|-------|---------------------------------|
-| 01.01.2026  | Jahresanspruch| +30   | Grundanspruch 2026              |
-| 01.01.2026  | Übertrag      | +3    | Resturlaub aus 2025             |
-| 15.02.2026  | Sonderurlaub  | +1    | Extra-Tag für Firmenjubiläum    |
-| 15.03.2026  | Genommen      | -5    | 23.03. - 27.03.2026             |
-| 01.04.2026  | Genommen      | -10   | 06.04. - 17.04.2026             |
-|             |               | **= 19** | **Resturlaub**              |
+| Datum       | Typ           | Tage  | Saldo | Kommentar                    |
+|-------------|---------------|-------|-------|------------------------------|
+| 01.01.2026  | Jahresanspruch| +30   | 30    | Grundanspruch 2026           |
+| 01.01.2026  | Übertrag      | +3    | 33    | Resturlaub aus 2025          |
+| 15.02.2026  | Sonderurlaub  | +1    | 34    | Extra-Tag für Firmenjubiläum |
+| 15.03.2026  | Genommen      | -5    | 29    | 23.03. - 27.03.2026          |
+| 01.04.2026  | Genommen      | -10   | 19    | 06.04. - 17.04.2026          |
 
 ---
 

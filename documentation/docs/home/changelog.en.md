@@ -8,10 +8,12 @@ All notable changes to Hournest are documented on this page.
 
 ### Tests & Quality Assurance
 
-- Backend coverage expanded to **368 tests / 1031 assertions**
+- Backend coverage expanded to **400 tests / 1166 assertions**
 - New feature tests for OIDC login, favorites, admin absence management, admin time bookings, yearly maintenance, and cross-system rules
 - Frontend specs added for all core services
 - Feature components now covered with specs: Login, My Vacations, and Time Tracking
+- Working time account added with its own ledger, admin corrections, and tests
+- Working time account now also shows credited days such as holidays, company holidays, vacation, and absences as explicit ledger rows
 
 ### Time Tracking & System Bookings
 

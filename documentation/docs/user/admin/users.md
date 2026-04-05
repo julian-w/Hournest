@@ -104,6 +104,28 @@ Admins können für jeden Benutzer Buchungen im Urlaubskonto anlegen:
 - **Jahresanspruch buchen:** Typ = Entitlement, Tage = +30, Kommentar = "Grundanspruch 2026"
 - **Übertrag buchen:** Typ = Carryover, Tage = +3, Kommentar = "Resturlaub aus 2025"
 
+Automatisch erzeugte Urlaubskonto-Einträge, z. B. aus genehmigtem Urlaub oder Betriebsferien, bleiben schreibgeschützt. Löschbar sind nur manuelle Einträge.
+
+---
+
+## Arbeitszeitkonto verwalten
+
+Admins können für jeden Benutzer auch das **Arbeitszeitkonto** öffnen.
+
+Die Tabelle zeigt:
+
+- Eröffnungssaldo aus Vorjahren
+- tägliche Delta-Buchungen aus erfasster Arbeitszeit gegen Sollzeit
+- manuelle Korrekturen
+- Carryover-Einträge
+
+### Typische Anwendungsfälle
+
+- **Korrektur nach Abstimmung:** Typ = `manual_adjustment`, Minuten = `+60`, Kommentar = "Nachtrag Projektmeeting"
+- **Übernahme aus Vorperiode:** Typ = `carryover`, Minuten = `-120`, Kommentar = "Saldo aus Dezember übernommen"
+
+Nur manuelle Arbeitszeitkonto-Einträge können im Dialog wieder gelöscht werden.
+
 ---
 
 ## Nutzer erstellen

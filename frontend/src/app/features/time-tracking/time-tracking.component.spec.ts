@@ -11,6 +11,7 @@ import { SettingsService } from '../../core/services/settings.service';
 import { TimeBookingTemplateService } from '../../core/services/time-booking-template.service';
 import { TimeTrackingService } from '../../core/services/time-tracking.service';
 import { VacationService } from '../../core/services/vacation.service';
+import { WorkTimeAccountService } from '../../core/services/work-time-account.service';
 import { WorkScheduleService } from '../../core/services/work-schedule.service';
 import { TimeTrackingComponent } from './time-tracking.component';
 
@@ -45,6 +46,9 @@ describe('TimeTrackingComponent', () => {
   };
   let workScheduleServiceStub: {
     getMyWorkSchedules: jasmine.Spy;
+  };
+  let workTimeAccountServiceStub: {
+    getMyLedger: jasmine.Spy;
   };
   let dialogStub: {
     open: jasmine.Spy;
@@ -118,6 +122,10 @@ describe('TimeTrackingComponent', () => {
       getMyWorkSchedules: jasmine.createSpy('getMyWorkSchedules').and.returnValue(of([])),
     };
 
+    workTimeAccountServiceStub = {
+      getMyLedger: jasmine.createSpy('getMyLedger').and.returnValue(of([])),
+    };
+
     dialogStub = {
       open: jasmine.createSpy('open').and.returnValue({
         afterClosed: () => of('Focus Day'),
@@ -143,6 +151,7 @@ describe('TimeTrackingComponent', () => {
         { provide: VacationService, useValue: vacationServiceStub },
         { provide: SettingsService, useValue: settingsServiceStub },
         { provide: WorkScheduleService, useValue: workScheduleServiceStub },
+        { provide: WorkTimeAccountService, useValue: workTimeAccountServiceStub },
         { provide: MatDialog, useValue: dialogStub },
         { provide: MatSnackBar, useValue: snackBarStub },
         {
@@ -378,5 +387,48 @@ describe('TimeTrackingComponent', () => {
     expect(workScheduleServiceStub.getMyWorkSchedules).toHaveBeenCalled();
     expect(component.weekTarget()).toBe('32:00');
     expect(component.weekDelta()).toBe('-32:00');
+  });
+
+  it('should load the work time account ledger and expose the current balance', () => {
+    workTimeAccountServiceStub.getMyLedger.and.returnValue(of([
+      {
+        id: 1,
+        user_id: 3,
+        effective_date: '2026-04-01',
+        type: 'worked',
+        minutes_delta: 60,
+        balance_after: 60,
+        comment: 'Worked 540 min vs target 480 min',
+        created_at: '2026-04-01T17:00:00Z',
+        created_by: null,
+        created_by_name: null,
+        source_type: 'time_entry',
+        source_id: 12,
+      },
+      {
+        id: 2,
+        user_id: 3,
+        effective_date: '2026-04-02',
+        type: 'manual_adjustment',
+        minutes_delta: -30,
+        balance_after: 30,
+        comment: 'Correction',
+        created_at: '2026-04-02T09:00:00Z',
+        created_by: 1,
+        created_by_name: 'Admin',
+        source_type: 'manual',
+        source_id: 2,
+      },
+    ]));
+
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+
+    expect(workTimeAccountServiceStub.getMyLedger).toHaveBeenCalled();
+    expect(component.workTimeLedger().length).toBe(2);
+    expect(component.currentLedgerBalance()).toBe(30);
+    expect(component.formatSignedMinutes(-30)).toBe('-0:30');
   });
 });

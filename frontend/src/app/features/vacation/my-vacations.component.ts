@@ -17,6 +17,10 @@ import { Vacation } from '../../core/models/vacation.model';
 import { VacationLedgerEntry } from '../../core/models/vacation-ledger-entry.model';
 import { VacationDialogComponent } from './vacation-dialog.component';
 
+interface VacationLedgerDisplayRow extends VacationLedgerEntry {
+  running_balance: number;
+}
+
 @Component({
   selector: 'app-my-vacations',
   standalone: true,
@@ -134,6 +138,13 @@ import { VacationDialogComponent } from './vacation-dialog.component';
           <td mat-cell *matCellDef="let e">{{ e.created_at | date:'mediumDate' }}</td>
         </ng-container>
 
+        <ng-container matColumnDef="running_balance">
+          <th mat-header-cell *matHeaderCellDef>{{ 'vacations.ledger.balance' | translate }}</th>
+          <td mat-cell *matCellDef="let e" [class.positive]="e.running_balance > 0" [class.negative]="e.running_balance < 0">
+            {{ e.running_balance > 0 ? '+' : '' }}{{ e.running_balance }}
+          </td>
+        </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="ledgerColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: ledgerColumns;"></tr>
       </table>
@@ -209,10 +220,10 @@ export class MyVacationsComponent implements OnInit {
   auth = inject(AuthService);
 
   vacations = signal<Vacation[]>([]);
-  ledgerEntries = signal<VacationLedgerEntry[]>([]);
+  ledgerEntries = signal<VacationLedgerDisplayRow[]>([]);
   selectedYear = signal(new Date().getFullYear());
   displayedColumns = ['start_date', 'end_date', 'scope', 'workdays', 'status', 'comment', 'actions'];
-  ledgerColumns = ['type', 'days', 'comment', 'created_at'];
+  ledgerColumns = ['type', 'days', 'comment', 'created_at', 'running_balance'];
 
   availableYears: number[] = [];
 
@@ -263,7 +274,11 @@ export class MyVacationsComponent implements OnInit {
 
   private loadLedger(): void {
     this.ledgerService.getMyLedger(this.selectedYear()).subscribe(entries => {
-      this.ledgerEntries.set(entries);
+      let runningBalance = 0;
+      this.ledgerEntries.set(entries.map(entry => {
+        runningBalance += entry.days;
+        return { ...entry, running_balance: runningBalance };
+      }));
     });
   }
 }

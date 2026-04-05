@@ -20,6 +20,10 @@ export interface LedgerAdjustmentDialogData {
   userId: number;
 }
 
+interface VacationLedgerDisplayRow extends VacationLedgerEntry {
+  running_balance: number;
+}
+
 @Component({
   selector: 'app-ledger-adjustment-dialog',
   standalone: true,
@@ -63,6 +67,13 @@ export interface LedgerAdjustmentDialogData {
           <td mat-cell *matCellDef="let e">{{ e.created_at | date:'shortDate' }}</td>
         </ng-container>
 
+        <ng-container matColumnDef="running_balance">
+          <th mat-header-cell *matHeaderCellDef>{{ 'vacations.ledger.balance' | translate }}</th>
+          <td mat-cell *matCellDef="let e" [class.positive]="e.running_balance > 0" [class.negative]="e.running_balance < 0">
+            {{ e.running_balance > 0 ? '+' : '' }}{{ e.running_balance }}
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let e">
@@ -92,9 +103,10 @@ export interface LedgerAdjustmentDialogData {
         <mat-form-field appearance="outline" class="type-field">
           <mat-label>{{ 'ledger_dialog.type' | translate }}</mat-label>
           <mat-select [(ngModel)]="newType">
-            <mat-option value="entitlement">{{ 'vacations.ledger.entitlement' | translate }}</mat-option>
             <mat-option value="bonus">{{ 'vacations.ledger.bonus' | translate }}</mat-option>
             <mat-option value="adjustment">{{ 'vacations.ledger.adjustment' | translate }}</mat-option>
+            <mat-option value="carryover">{{ 'vacations.ledger.carryover' | translate }}</mat-option>
+            <mat-option value="expired">{{ 'vacations.ledger.expired' | translate }}</mat-option>
           </mat-select>
         </mat-form-field>
 
@@ -156,18 +168,18 @@ export class LedgerAdjustmentDialogComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
 
-  entries = signal<VacationLedgerEntry[]>([]);
+  entries = signal<VacationLedgerDisplayRow[]>([]);
   balance = signal(0);
   changed = false;
 
   selectedYear = new Date().getFullYear();
   availableYears: number[] = [];
 
-  newType: 'entitlement' | 'bonus' | 'adjustment' = 'adjustment';
+  newType: 'bonus' | 'adjustment' | 'carryover' | 'expired' = 'adjustment';
   newDays = 0;
   newComment = '';
 
-  displayedColumns = ['type', 'days', 'comment', 'date', 'actions'];
+  displayedColumns = ['type', 'days', 'comment', 'date', 'running_balance', 'actions'];
 
   constructor() {
     const year = new Date().getFullYear();
@@ -182,8 +194,13 @@ export class LedgerAdjustmentDialogComponent implements OnInit {
 
   loadEntries(): void {
     this.ledgerService.getUserLedger(this.data.userId, this.selectedYear).subscribe(entries => {
-      this.entries.set(entries);
-      this.balance.set(entries.reduce((sum, e) => sum + e.days, 0));
+      let runningBalance = 0;
+      const rows = entries.map(entry => {
+        runningBalance += entry.days;
+        return { ...entry, running_balance: runningBalance };
+      });
+      this.entries.set(rows);
+      this.balance.set(runningBalance);
     });
   }
 

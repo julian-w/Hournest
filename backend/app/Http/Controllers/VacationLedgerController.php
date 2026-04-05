@@ -53,4 +53,19 @@ class VacationLedgerController extends Controller
             'message' => 'Ledger entry created.',
         ], 201);
     }
+
+    public function destroy(User $user, VacationLedgerEntry $entry): JsonResponse
+    {
+        abort_unless($entry->user_id === $user->id, 404);
+
+        if ($entry->vacation_id !== null || $entry->blackout_period_id !== null) {
+            return response()->json([
+                'message' => 'Automatically created ledger entries cannot be deleted manually.',
+            ], 422);
+        }
+
+        $entry->delete();
+
+        return response()->json(['message' => 'Ledger entry deleted.']);
+    }
 }

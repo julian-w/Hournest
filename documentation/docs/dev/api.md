@@ -382,6 +382,67 @@ Gibt die eigenen Urlaubskonto-Buchungen zurück.
 }
 ```
 
+!!! info "Antwortdarstellung im Frontend"
+    Die UI berechnet zusätzlich einen laufenden Saldo je Zeile, damit Änderungen am Urlaubskonto direkt nachvollziehbar sind.
+
+### DELETE /api/admin/users/{id}/vacation-ledger/{entryId}
+
+Löscht eine **manuelle** Urlaubskonto-Buchung eines Benutzers.
+
+**Auth:** Sanctum + Admin
+
+**Fehler (422):** automatisch erzeugte Einträge aus Urlaub oder Betriebsferien sind nicht löschbar
+
+---
+
+## Work Time Account Endpoints
+
+### GET /api/work-time-account
+
+Gibt das eigene Arbeitszeitkonto des angemeldeten Benutzers zurück.
+
+**Auth:** Sanctum
+
+**Query-Parameter:**
+
+- `year` (optional, default: aktuelles Jahr)
+
+**Antwortinhalt:**
+
+- `opening_balance` für aus Vorjahren übernommene Salden
+- `worked` für Tagesdeltas aus erfasster Arbeitszeit gegen Sollzeit
+- manuelle Einträge wie `manual_adjustment` oder `carryover`
+- `balance_after` als laufender Saldo nach jeder Buchung
+
+### GET /api/admin/users/{id}/work-time-account
+
+Gibt das Arbeitszeitkonto eines Benutzers zurück.
+
+**Auth:** Sanctum + Admin
+
+### POST /api/admin/users/{id}/work-time-account
+
+Erstellt einen manuellen Arbeitszeitkonto-Eintrag.
+
+**Auth:** Sanctum + Admin
+
+**Request Body:**
+
+```json
+{
+  "effective_date": "2026-04-05",
+  "type": "manual_adjustment",
+  "minutes_delta": 60,
+  "comment": "Manual correction after review"
+}
+```
+
+### DELETE /api/admin/users/{id}/work-time-account/{entryId}
+
+Löscht einen manuellen Arbeitszeitkonto-Eintrag.
+
+**Auth:** Sanctum + Admin
+
 ---
 
 ## Holiday Endpoints

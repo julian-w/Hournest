@@ -75,7 +75,7 @@ Der Hauptbereich zeigt den Inhalt der aktuell gewählten Seite.
 - **Kalender:** Eigene Urlaube im Monatskalender
 - **Meine Urlaube:** Liste aller eigenen Urlaubsanträge mit Status
 - **Abwesenheiten:** Krankheit und Sonderurlaub melden oder stornieren
-- **Zeiterfassung:** Arbeitszeiten und Kostenstellen-Buchungen pro Woche
+- **Zeiterfassung:** Arbeitszeiten, Kostenstellen-Buchungen und Arbeitszeitkonto pro Woche
 - **Urlaubskonto:** Eigenes Jahreslog (nur lesen)
 
 ### Admin (Administrator)
@@ -85,7 +85,7 @@ Alles, was der Employee sieht, plus:
 - **Dashboard:** Zu bearbeitende Anfragen aller Mitarbeiter, Team-Status
 - **Kalender:** Urlaube aller Mitarbeiter sichtbar
 - **Urlaubsanfragen:** Liste aller offenen Anträge mit Genehmigungs-/Ablehnungsfunktion
-- **Benutzerverwaltung:** Rollen, Urlaubstage, Arbeitszeitmodelle, Urlaubskonto verwalten
+- **Benutzerverwaltung:** Rollen, Urlaubstage, Arbeitszeitmodelle, Urlaubs- und Arbeitszeitkonto verwalten
 - **Feiertage:** Feiertage anlegen, bearbeiten, löschen
 - **Abwesenheiten:** Meldungen prüfen, genehmigen, bestätigen, selbst anlegen
 - **Kostenstellen & Gruppen:** Kostenstellen, Gruppen und direkte Zuweisungen verwalten

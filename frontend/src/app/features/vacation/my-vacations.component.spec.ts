@@ -118,7 +118,8 @@ describe('MyVacationsComponent', () => {
     expect(vacationServiceStub.getMyVacations).toHaveBeenCalled();
     expect(ledgerServiceStub.getMyLedger).toHaveBeenCalledWith(currentYear);
     expect(component.vacations()).toEqual(vacations);
-    expect(component.ledgerEntries()).toEqual(ledgerEntries);
+    expect(component.ledgerEntries()[0].type).toBe('entitlement');
+    expect(component.ledgerEntries()[0].running_balance).toBe(30);
   });
 
   it('should reload vacations, ledger, and user after a successful request dialog close', () => {

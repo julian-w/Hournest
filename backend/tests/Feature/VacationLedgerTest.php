@@ -407,4 +407,47 @@ class VacationLedgerTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['comment']);
     }
+
+    public function test_admin_can_delete_manual_ledger_entry(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $user = User::factory()->create();
+        $entry = VacationLedgerEntry::create([
+            'user_id' => $user->id,
+            'year' => 2026,
+            'type' => 'bonus',
+            'days' => 1,
+            'comment' => 'Manual bonus',
+        ]);
+
+        $response = $this->actingAs($admin)->deleteJson("/api/admin/users/{$user->id}/vacation-ledger/{$entry->id}");
+
+        $response->assertOk();
+        $this->assertDatabaseMissing('vacation_ledger_entries', ['id' => $entry->id]);
+    }
+
+    public function test_admin_cannot_delete_automatic_vacation_ledger_entry(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $user = User::factory()->create();
+        $vacation = $user->vacations()->create([
+            'start_date' => '2026-06-01',
+            'end_date' => '2026-06-01',
+            'scope' => 'full_day',
+            'status' => 'approved',
+        ]);
+        $entry = VacationLedgerEntry::create([
+            'user_id' => $user->id,
+            'year' => 2026,
+            'type' => 'taken',
+            'days' => -1,
+            'comment' => 'Auto',
+            'vacation_id' => $vacation->id,
+        ]);
+
+        $response = $this->actingAs($admin)->deleteJson("/api/admin/users/{$user->id}/vacation-ledger/{$entry->id}");
+
+        $response->assertStatus(422);
+        $this->assertDatabaseHas('vacation_ledger_entries', ['id' => $entry->id]);
+    }
 }

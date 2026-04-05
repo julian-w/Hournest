@@ -21,6 +21,7 @@ use App\Http\Controllers\UserGroupController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\VacationLedgerController;
 use App\Http\Controllers\WorkScheduleController;
+use App\Http\Controllers\WorkTimeAccountController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Resources\UserResource;
@@ -67,6 +68,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Own work schedules
     Route::get('/work-schedules/mine', [WorkScheduleController::class, 'mine']);
+
+    // Own work time account
+    Route::get('/work-time-account', [WorkTimeAccountController::class, 'index']);
 
     // Time Tracking
     Route::get('/time-entries', [TimeEntryController::class, 'index']);
@@ -131,6 +135,12 @@ Route::middleware('auth:sanctum')->group(function () {
         // Vacation Ledger per user (admin)
         Route::get('/users/{user}/vacation-ledger', [VacationLedgerController::class, 'adminIndex']);
         Route::post('/users/{user}/vacation-ledger', [VacationLedgerController::class, 'store']);
+        Route::delete('/users/{user}/vacation-ledger/{entry}', [VacationLedgerController::class, 'destroy']);
+
+        // Work time account per user (admin)
+        Route::get('/users/{user}/work-time-account', [WorkTimeAccountController::class, 'adminIndex']);
+        Route::post('/users/{user}/work-time-account', [WorkTimeAccountController::class, 'store']);
+        Route::delete('/users/{user}/work-time-account/{entry}', [WorkTimeAccountController::class, 'destroy']);
 
         // Cost Centers (admin CRUD)
         Route::get('/cost-centers', [CostCenterAdminController::class, 'index']);

@@ -277,19 +277,24 @@ The UI shows actual vs. target hours:
 - Full-day absences (vacation, illness, special leave, holiday): target counts as fulfilled (delta = 0)
 - Monthly overview aggregates weekly summaries
 
-#### Working Time Account (Arbeitszeitkonto) -- Phase 2c
+#### Working Time Account (Arbeitszeitkonto)
 
 A **running balance** of overtime and undertime across months.
 
 - Each day's delta (actual - target) feeds into the account
-- Balance carries over month to month
-- Admin can configure:
-  - Maximum positive balance (overtime cap, e.g. +40h)
-  - Maximum negative balance (undertime cap, e.g. -20h)
-  - Monthly reset or continuous carry-over
-- Admin can make manual adjustments with comment (e.g. overtime payout)
-- Employee sees their current balance on the dashboard
-- Monthly statement showing opening balance, daily deltas, adjustments, closing balance
+- Balance carries over across years via an opening balance line
+- Employees can see a yearly ledger in time tracking with:
+  - opening balance
+  - daily deltas
+  - manual adjustments
+  - carryover entries
+  - running balance after each booking
+- Admins can add manual adjustments with comment and delete manual entries
+
+Current implementation note:
+- The core ledger and admin correction flow are implemented
+- Weekly target calculation already respects work schedules, holidays, half days, absences, and company holidays
+- Configurable caps, automated reminders, dashboard widgets, and richer monthly statements are still future work
 
 ### 13.2 Cost Centers
 
@@ -636,7 +641,7 @@ GET    /api/admin/reports/export?format=csv&from=&to=
   - Current implementation note: favorites, booking templates, copy previous day, copy previous week, first admin reports, and CSV export are implemented
 
 #### Phase 2c (Future)
-- Working time account (Arbeitszeitkonto) with running balance
+- Extended working time account features (caps, reminders, dashboard widgets)
 - Reminders (email/push for missing time entries)
 - Budget tracking per cost center
 - Audit log for all modifications

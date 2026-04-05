@@ -3,7 +3,7 @@
 Hournest ist eine interne Webanwendung für **Urlaubsverwaltung** mit bereits ausgebautem Bereich für **Zeiterfassung und Kostenstellenbuchung**. Die Anwendung richtet sich an kleine Unternehmen (unter 20 Mitarbeiter).
 
 !!! info "Aktueller Stand"
-    Die Urlaubsverwaltung ist stabil umgesetzt. Große Teile der Zeiterfassung, Abwesenheiten, Kostenstellen, Sperrlogik, Blackouts inklusive Betriebsferien-Automatik sowie erste Admin-Reports sind ebenfalls bereits implementiert. Weitere Auswertungen und spätere Ausbaustufen bleiben geplant.
+    Die Urlaubsverwaltung ist stabil umgesetzt. Große Teile der Zeiterfassung, Abwesenheiten, Kostenstellen, Sperrlogik, Blackouts inklusive Betriebsferien-Automatik, Admin-Reports sowie das neue Arbeitszeitkonto sind ebenfalls bereits implementiert. Weitere Auswertungen und spätere Ausbaustufen bleiben geplant.
 
 ---
 
@@ -30,6 +30,12 @@ Hournest ist eine interne Webanwendung für **Urlaubsverwaltung** mit bereits au
 - Vollständige Buchungsübersicht pro Jahr: Anspruch, Übertrag, Sonderurlaub, genommene Tage, Verfall
 - Automatischer Resturlaub-Übertrag mit konfigurierbarem Verfallsdatum
 - Sonderurlaub-Buchungen nur durch Admin
+- Laufender Saldo in der Tabelle für bessere Nachvollziehbarkeit
+
+### Arbeitszeitkonto
+- Jahreslog mit Eröffnungssaldo, täglichen Delta-Buchungen und manuellen Korrekturen
+- Sollzeit auf Basis individueller Arbeitszeitmodelle, Feiertage, Urlaub, Abwesenheiten und Betriebsferien
+- Admins können manuelle Korrekturen und Carryover-Einträge pro Mitarbeiter verwalten
 
 ### Feiertage
 - Verwaltung fixer und variabler Feiertage durch Admins
@@ -51,7 +57,7 @@ Hournest ist eine interne Webanwendung für **Urlaubsverwaltung** mit bereits au
 - Zweisprachig: Deutsch und Englisch (umschaltbar zur Laufzeit)
 - Auto-generierte API-Dokumentation (OpenAPI/Scramble) unter `/docs/api`
 - Mock-Modus für Frontend-Entwicklung ohne Backend
-- Backend-Testabdeckung mit 368 Tests / 1031 Assertions
+- Backend-Testabdeckung mit 385 Tests / 1098 Assertions
 
 ---
 
@@ -101,6 +107,6 @@ hournest/
 
 ## Hinweise zum Funktionsstand
 
-- **Bereits umgesetzt:** Urlaub, Urlaubskonto, Feiertage, Arbeitszeitmodelle, Rollen, OIDC, lokale Anmeldung, Zeiterfassung-Kernfunktionen, Kostenstellen, Favoriten, Abwesenheiten, Locks
+- **Bereits umgesetzt:** Urlaub, Urlaubskonto, Arbeitszeitkonto, Feiertage, Arbeitszeitmodelle, Rollen, OIDC, lokale Anmeldung, Zeiterfassung-Kernfunktionen, Kostenstellen, Favoriten, Abwesenheiten, Locks, Admin-Reports
 - **Teilweise umgesetzt:** weiterführende Komfortfunktionen und spätere Analytics-Ausbaustufen
-- **Noch geplant:** Schichtplanung, weiterführende Reports/Analytics und Arbeitszeitkonto
+- **Noch geplant:** Schichtplanung und weiterführende Reports/Analytics

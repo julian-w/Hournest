@@ -6,18 +6,17 @@ The vacation account shows a complete yearly overview of all bookings that affec
 
 ## Yearly Overview
 
-The vacation account shows a chronological list of all bookings per year. The sum of all bookings results in the **current remaining vacation**.
+The vacation account shows a chronological list of all bookings per year. Each row includes a running balance so you can see immediately how every change affects the remaining vacation. The sum of all bookings results in the **current remaining vacation**.
 
 ### Example
 
-| Date        | Type          | Days  | Comment                         |
-|-------------|---------------|-------|---------------------------------|
-| 01/01/2026  | Entitlement   | +30   | Annual entitlement 2026         |
-| 01/01/2026  | Carryover     | +3    | Remaining from 2025             |
-| 02/15/2026  | Bonus         | +1    | Extra day for company anniversary |
-| 03/15/2026  | Taken         | -5    | 03/23 - 03/27/2026              |
-| 04/01/2026  | Taken         | -10   | 04/06 - 04/17/2026              |
-|             |               | **= 19** | **Remaining vacation**       |
+| Date        | Type          | Days  | Balance | Comment                      |
+|-------------|---------------|-------|---------|------------------------------|
+| 01/01/2026  | Entitlement   | +30   | 30      | Annual entitlement 2026      |
+| 01/01/2026  | Carryover     | +3    | 33      | Remaining from 2025          |
+| 02/15/2026  | Bonus         | +1    | 34      | Extra day for company anniversary |
+| 03/15/2026  | Taken         | -5    | 29      | 03/23 - 03/27/2026           |
+| 04/01/2026  | Taken         | -10   | 19      | 04/06 - 04/17/2026           |
 
 ---
 
