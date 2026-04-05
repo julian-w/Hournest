@@ -5,8 +5,8 @@
 ## Current Product Status
 
 - **Stable and broadly implemented:** vacation management, vacation ledger, holidays, work schedules, user/admin management, local auth and OIDC
-- **Implemented in a first substantial version:** time tracking, cost centers, favorites, absences, locks, and core cross-system auto-booking
-- **Still planned / not fully implemented yet:** shift planning, advanced reports and analytics, working time account
+- **Implemented in a first substantial version:** time tracking, cost centers, favorites, absences, locks, core cross-system auto-booking, booking templates, admin reports, CSV export, and blackout/company-holiday handling
+- **Still planned / not fully implemented yet:** shift planning, advanced analytics, dedicated absence reports, and working time account
 
 ## Features (Phase 1 -- Vacation Management)
 
@@ -15,7 +15,7 @@
 - **Vacation Requests:** Employees request vacation (from/to/comment), admins approve or reject
 - **Vacation Account:** Annual ledger with entitlement, carryover, bonus days, taken days; admin can add and delete entries
 - **Holidays:** Admin manages fixed and variable holidays with start/end year; fixed holidays are carried over automatically, variable holidays need yearly confirmation; vacation booking only possible when all holidays for a year are confirmed
-- **Vacation Planning:** Vacation freeze is implemented; company holiday currently acts as a planning warning and is not yet a full forced-vacation automation
+- **Vacation Planning:** Vacation freeze and company holiday are implemented, including automatic ledger and time-booking effects for company holidays
 - **Work Schedules:** Individual work schedule models per employee (e.g. part-time bridge schedules)
 - **Remaining Vacation:** Automatic calculation, automatic carryover, configurable expiry
 - **Maintenance:** `php artisan hournest:yearly-maintenance` -- books annual entitlements, carryover and expiry for all users (idempotent, schedulable)
@@ -36,9 +36,6 @@
 - Shift planning
 - Advanced reports & analytics
 - Working time account (Arbeitszeitkonto)
-- Booking templates
-- Copy previous day
-- Half-day vacation support
 
 ## Features (Implemented Time Tracking Slice)
 
@@ -51,6 +48,7 @@
 - **Absence Management:** Report illness (employee → admin acknowledges), request special leave (employee → admin approves/rejects), admin can create directly
 - **Half-day Absences & Vacation:** Support for full day, morning, or afternoon handling
 - **Admin Reports:** Time booking summaries, missing-entry reports, and CSV export
+- **Blackouts / Vacation Planning:** Vacation freezes plus company holidays with automatic vacation ledger and system-booking effects
 - **System Bookings:** Vacation, illness, special leave, and holidays create automatic system cost center bookings
 - **Weekly Target Hours:** Configurable per work schedule; actual vs. target comparison with weekly delta
 - **Locking:** Auto-lock after configurable days (default 30), manual month lock by admin
@@ -60,7 +58,8 @@
 
 - Vacation auto-booking is implemented for **full-day and half-day vacation**
 - Half-day absences and half-day vacation are both implemented
-- `Company Holiday` / `Betriebsferien` is not yet a full automatic vacation-deduction workflow
+- Vacation freezes are now enforced on the backend for vacation requests
+- Company holidays now create automatic vacation effects in ledger and time booking
 
 ## Tech Stack
 
@@ -227,7 +226,7 @@ cd backend && php artisan test     # PHPUnit, SQLite :memory:
 ```
 
 Current verified status:
-- Backend suite: **357 tests / 996 assertions**
+- Backend suite: **368 tests / 1031 assertions**
 - Frontend: spec coverage for all core services plus first feature components
 
 ## API Documentation

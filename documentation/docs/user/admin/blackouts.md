@@ -31,11 +31,11 @@ Eine Urlaubssperre bedeutet, dass in dem definierten Zeitraum **kein Urlaub geno
 - Messewochen
 
 !!! warning "Auswirkung"
-    Mitarbeiter können für diesen Zeitraum keinen Urlaubsantrag stellen. Bestehende Anträge sind davon nicht betroffen.
+    Mitarbeiter können für diesen Zeitraum keinen Urlaubsantrag stellen. Die Sperre wird serverseitig geprüft. Bestehende Anträge sind davon nicht betroffen.
 
 ### Betriebsferien (Company Holiday)
 
-Betriebsferien bedeuten, dass in dem definierten Zeitraum ein firmenweiter Hinweis für die Urlaubsplanung gilt. Im Urlaubsdialog wird dafür eine Warnung angezeigt, der Antrag bleibt jedoch möglich.
+Betriebsferien bedeuten, dass in dem definierten Zeitraum firmenweit **Urlaub automatisch berücksichtigt** wird.
 
 **Typische Anwendungsfälle:**
 
@@ -44,7 +44,7 @@ Betriebsferien bedeuten, dass in dem definierten Zeitraum ein firmenweiter Hinwe
 - Brückentage
 
 !!! info "Urlaubstage"
-    Aktuell werden bei Betriebsferien **keine Urlaubstage automatisch abgezogen**. Der Zeitraum wird im Urlaubsdialog als Warnung angezeigt, blockiert den Antrag aber nicht.
+    Für Arbeitstage im Zeitraum werden Urlaubskonto und Zeiterfassung automatisch angepasst. Zusätzliche Urlaubsanträge für diesen Zeitraum sind nicht nötig und werden blockiert.
 
 ---
 
@@ -53,7 +53,7 @@ Betriebsferien bedeuten, dass in dem definierten Zeitraum ein firmenweiter Hinwe
 1. Klicke auf den Button **"Eintrag hinzufügen"**
 2. Wähle die **Art**:
     - **Urlaubssperre** -- Kein Urlaub erlaubt, keine Tage abgezogen
-    - **Betriebsferien** -- Warnhinweis für die Urlaubsplanung, Antrag bleibt möglich
+    - **Betriebsferien** -- Firmenweiter Zwangsurlaub mit automatischer Urlaubswirkung
 3. Setze das **Von-Datum** und **Bis-Datum**
 4. Gib einen **Grund** ein (z.B. "Inventur" oder "Betriebsferien Weihnachten")
 5. Klicke auf **"Speichern"**
@@ -74,7 +74,7 @@ Betriebsferien bedeuten, dass in dem definierten Zeitraum ein firmenweiter Hinwe
 2. Der Eintrag wird sofort entfernt
 
 !!! warning "Achtung"
-    Das Löschen eines Eintrags hebt die Sperre sofort auf. Mitarbeiter können dann wieder Urlaub für den betroffenen Zeitraum beantragen.
+    Das Löschen eines Eintrags hebt die Sperre oder Betriebsferien-Wirkung sofort auf. Mitarbeiter können dann wieder regulär Urlaub für den betroffenen Zeitraum beantragen. Bereits automatisch erzeugte Ledger- und Systembuchungen werden dabei neu berechnet.
 
 ---
 
@@ -85,4 +85,4 @@ Wenn ein Mitarbeiter einen Urlaubsantrag stellt, der in einen konfigurierten Zei
 | Art              | Verhalten                                                        |
 |------------------|------------------------------------------------------------------|
 | Urlaubssperre    | Antrag wird **blockiert** -- roter Hinweis, Absenden nicht möglich |
-| Betriebsferien   | **Warnung** wird angezeigt (orange), Antrag bleibt möglich       |
+| Betriebsferien   | Urlaub wird automatisch berücksichtigt, zusätzlicher Antrag ist nicht möglich |

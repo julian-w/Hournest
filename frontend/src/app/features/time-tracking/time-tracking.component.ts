@@ -13,12 +13,14 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Absence } from '../../core/models/absence.model';
+import { BlackoutPeriod } from '../../core/models/blackout-period.model';
 import { CostCenter } from '../../core/models/cost-center.model';
 import { TimeBookingTemplate } from '../../core/models/time-booking-template.model';
 import { TimeBooking } from '../../core/models/time-booking.model';
 import { TimeEntry } from '../../core/models/time-entry.model';
 import { Vacation } from '../../core/models/vacation.model';
 import { AbsenceService } from '../../core/services/absence.service';
+import { BlackoutService } from '../../core/services/blackout.service';
 import { CostCenterService } from '../../core/services/cost-center.service';
 import { TimeBookingTemplateService } from '../../core/services/time-booking-template.service';
 import { TimeTrackingService } from '../../core/services/time-tracking.service';
@@ -33,6 +35,7 @@ interface DayData {
   timeEntry: TimeEntry | null;
   absence: Absence | null;
   vacation: Vacation | null;
+  companyHoliday: BlackoutPeriod | null;
   isLocked: boolean;
   startTime: string;
   endTime: string;
@@ -82,7 +85,7 @@ interface BookingRow {
         <div class="grid-header">
           <div class="label-col">{{ 'time_tracking.cost_center' | translate }}</div>
           @for (day of days(); track day.date) {
-            <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend" [class.locked]="day.isLocked || day.absence || day.vacation">
+            <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend" [class.locked]="day.isLocked || day.absence || day.vacation || day.companyHoliday">
               <div class="day-name">{{ day.dayLabel }}</div>
               <div class="day-date">{{ day.date | date:'dd.MM.' }}</div>
             </div>
@@ -96,7 +99,13 @@ interface BookingRow {
           </div>
           @for (day of days(); track day.date) {
             <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend" [class.locked]="day.isLocked">
-              @if (day.vacation && day.vacation.scope === 'full_day') {
+              @if (day.companyHoliday) {
+                <div class="absence-badge">
+                  <mat-chip class="absence-chip">
+                    {{ 'time_tracking.absence_company_holiday' | translate }}
+                  </mat-chip>
+                </div>
+              } @else if (day.vacation && day.vacation.scope === 'full_day') {
                 <div class="absence-badge">
                   <mat-chip class="absence-chip">
                     {{ 'time_tracking.absence_vacation' | translate }}
@@ -138,8 +147,8 @@ interface BookingRow {
               <span class="cc-name" [matTooltip]="row.costCenter.code">{{ row.costCenter.name }}</span>
             </div>
             @for (day of days(); track day.date) {
-              <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend" [class.locked]="day.isLocked || (day.absence && day.absence.scope === 'full_day') || (day.vacation && day.vacation.scope === 'full_day')">
-                @if (!day.isWeekend && !(day.absence && day.absence.scope === 'full_day') && !(day.vacation && day.vacation.scope === 'full_day')) {
+              <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend" [class.locked]="day.isLocked || (day.absence && day.absence.scope === 'full_day') || (day.vacation && day.vacation.scope === 'full_day') || day.companyHoliday">
+                @if (!day.isWeekend && !(day.absence && day.absence.scope === 'full_day') && !(day.vacation && day.vacation.scope === 'full_day') && !day.companyHoliday) {
                   <input class="pct-input" type="number"
                          [ngModel]="row.percentages[day.date]"
                          (ngModelChange)="onPercentageChange(row, day.date, $event)"
@@ -157,7 +166,7 @@ interface BookingRow {
           @for (day of days(); track day.date) {
             <div class="day-col" [class.today]="day.isToday" [class.weekend]="day.isWeekend"
                  [class.total-ok]="getDayTotal(day.date) === expectedDayTotal(day)"
-                 [class.total-warn]="getDayTotal(day.date) > 0 && getDayTotal(day.date) !== expectedDayTotal(day) && !(day.absence && day.absence.scope === 'full_day') && !(day.vacation && day.vacation.scope === 'full_day')">
+                 [class.total-warn]="getDayTotal(day.date) > 0 && getDayTotal(day.date) !== expectedDayTotal(day) && !(day.absence && day.absence.scope === 'full_day') && !(day.vacation && day.vacation.scope === 'full_day') && !day.companyHoliday">
               @if (!day.isWeekend) {
                 <strong>{{ getDayTotal(day.date) }}%</strong>
               }
@@ -429,6 +438,7 @@ export class TimeTrackingComponent implements OnInit {
   private templateService = inject(TimeBookingTemplateService);
   private costCenterService = inject(CostCenterService);
   private absenceService = inject(AbsenceService);
+  private blackoutService = inject(BlackoutService);
   private vacationService = inject(VacationService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
@@ -442,6 +452,7 @@ export class TimeTrackingComponent implements OnInit {
   costCenters = signal<CostCenter[]>([]);
   favorites = signal<CostCenter[]>([]);
   absences = signal<Absence[]>([]);
+  companyHolidays = signal<BlackoutPeriod[]>([]);
   vacations = signal<Vacation[]>([]);
   templates = signal<TimeBookingTemplate[]>([]);
   bookingRows = signal<BookingRow[]>([]);
@@ -535,7 +546,8 @@ export class TimeTrackingComponent implements OnInit {
     const days = this.days().filter(day =>
       !day.isWeekend &&
       !(day.absence && day.absence.scope === 'full_day') &&
-      !(day.vacation && day.vacation.scope === 'full_day')
+      !(day.vacation && day.vacation.scope === 'full_day') &&
+      !day.companyHoliday
     );
     let pending = 0;
     let completed = 0;
@@ -836,6 +848,13 @@ export class TimeTrackingComponent implements OnInit {
       this.syncTemplateDateSelection();
     });
 
+    this.blackoutService.getMatchingBlackouts(from, to).subscribe(blackouts => {
+      const companyHolidays = blackouts.filter(blackout => blackout.type === 'company_holiday');
+      this.companyHolidays.set(companyHolidays);
+      this.applyCompanyHolidays(companyHolidays);
+      this.syncTemplateDateSelection();
+    });
+
     this.loadTemplates();
   }
 
@@ -869,6 +888,7 @@ export class TimeTrackingComponent implements OnInit {
         timeEntry: null,
         absence: null,
         vacation: null,
+        companyHoliday: null,
         isLocked: false,
         startTime: '',
         endTime: '',
@@ -916,6 +936,17 @@ export class TimeTrackingComponent implements OnInit {
     }));
   }
 
+  private applyCompanyHolidays(blackouts: BlackoutPeriod[]): void {
+    this.days.update(days => days.map(day => {
+      const blackout = blackouts.find(entry =>
+        entry.start_date <= day.date &&
+        entry.end_date >= day.date
+      );
+
+      return { ...day, companyHoliday: blackout ?? null };
+    }));
+  }
+
   private buildBookingRows(): void {
     const favoriteIds = new Set(this.favorites().map(favorite => favorite.id));
     const allCostCenters = this.costCenters().filter(costCenter => !costCenter.is_system);
@@ -956,7 +987,8 @@ export class TimeTrackingComponent implements OnInit {
     return !day.isWeekend &&
       !day.isLocked &&
       !(day.absence && day.absence.scope === 'full_day') &&
-      !(day.vacation && day.vacation.scope === 'full_day');
+      !(day.vacation && day.vacation.scope === 'full_day') &&
+      !day.companyHoliday;
   }
 
   private syncTemplateDateSelection(): void {

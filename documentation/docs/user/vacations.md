@@ -40,7 +40,7 @@ Sind noch variable Feiertage ohne bestätigtes Datum vorhanden, wird eine Warnun
 ### Urlaubssperren und Betriebsferien
 
 - **Urlaubssperre:** blockiert den Antrag
-- **Betriebsferien:** erzeugen eine Warnung, der Antrag bleibt aber möglich
+- **Betriebsferien:** werden automatisch berücksichtigt, zusätzlicher Antrag ist nicht möglich
 
 ---
 

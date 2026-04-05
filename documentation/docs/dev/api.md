@@ -419,6 +419,59 @@ Gibt alle Feiertage zurück.
 
 ---
 
+## Blackout-Endpoints
+
+### GET /api/blackouts/check
+
+Prüft, ob ein Datumsbereich mit konfigurierten Blackouts überlappt.
+
+**Auth:** Sanctum
+
+**Query-Parameter:**
+
+- `start_date`
+- `end_date`
+
+### GET /api/admin/blackouts
+
+Gibt alle konfigurierten Blackouts zurück.
+
+**Auth:** Sanctum + Admin
+
+### POST /api/admin/blackouts
+
+Erstellt einen Blackout.
+
+**Auth:** Sanctum + Admin
+
+**Request Body:**
+
+```json
+{
+  "type": "freeze",
+  "start_date": "2026-12-21",
+  "end_date": "2026-12-31",
+  "reason": "Inventur"
+}
+```
+
+### PATCH /api/admin/blackouts/{id}
+
+Aktualisiert einen Blackout.
+
+**Auth:** Sanctum + Admin
+
+### DELETE /api/admin/blackouts/{id}
+
+Löscht einen Blackout.
+
+**Auth:** Sanctum + Admin
+
+!!! info "Aktuelles Verhalten"
+    `freeze` blockiert Urlaubsanträge serverseitig. `company_holiday` wird sowohl über den Check-Endpunkt zurückgegeben als auch im Backend automatisch in Urlaubskonto und Zeiterfassung berücksichtigt. Überlappende Urlaubsanträge werden blockiert.
+
+---
+
 ## Settings Endpoints
 
 ### GET /api/settings

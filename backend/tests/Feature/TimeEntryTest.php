@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Absence;
+use App\Models\BlackoutPeriod;
 use App\Models\Holiday;
 use App\Models\Setting;
 use App\Models\TimeEntry;
@@ -237,6 +238,26 @@ class TimeEntryTest extends TestCase
         ]);
         $response->assertStatus(422)
             ->assertJsonPath('message', 'This is not a working day for you.');
+    }
+
+    public function test_cannot_create_time_entry_on_company_holiday(): void
+    {
+        $employee = User::factory()->create();
+        BlackoutPeriod::create([
+            'type' => 'company_holiday',
+            'start_date' => '2026-04-06',
+            'end_date' => '2026-04-06',
+            'reason' => 'Shutdown',
+        ]);
+
+        $response = $this->actingAs($employee)->putJson('/api/time-entries/2026-04-06', [
+            'start_time' => '08:00',
+            'end_time' => '17:00',
+            'break_minutes' => 60,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('message', 'Cannot create time entry on a company holiday.');
     }
 
     public function test_holidays_exempt_user_can_create_entry_on_holiday(): void

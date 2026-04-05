@@ -119,7 +119,7 @@
     "error_generic": "An error occurred.",
     "error_holidays_incomplete": "Not all holidays have been confirmed for this year. Vacation booking is not yet available.",
     "error_blackout_freeze": "This period falls within a vacation freeze: {{reason}}",
-    "error_blackout_company_holiday": "This period falls within company holidays: {{reason}} (vacation days are automatically deducted)"
+    "error_blackout_company_holiday": "This period falls within company holidays: {{reason}} (vacation is applied automatically, no additional request is needed)"
   },
   "admin_requests": {
     "title": "Pending Vacation Requests",
@@ -220,7 +220,7 @@
     "type_freeze": "Vacation Freeze",
     "type_freeze_desc": "No vacation allowed, no days deducted",
     "type_company_holiday": "Company Holiday",
-    "type_company_holiday_desc": "Forced vacation, days are automatically deducted",
+    "type_company_holiday_desc": "Company-wide forced vacation with automatic vacation effect",
     "no_blackouts": "No entries configured.",
     "created": "Entry created.",
     "updated": "Entry updated.",
@@ -277,7 +277,8 @@
     "week_delta": "Delta",
     "absence_illness": "Illness",
     "absence_special_leave": "Special Leave",
-    "absence_vacation": "Vacation"
+    "absence_vacation": "Vacation",
+    "absence_company_holiday": "Company Holiday"
   },
   "my_absences": {
     "title": "My Absences",

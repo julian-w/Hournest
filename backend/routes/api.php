@@ -7,6 +7,7 @@ use App\Http\Controllers\AbsenceController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BlackoutController;
 use App\Http\Controllers\CostCenterAdminController;
 use App\Http\Controllers\CostCenterController;
 use App\Http\Controllers\CostCenterFavoriteController;
@@ -58,6 +59,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Holidays (read for everyone)
     Route::get('/holidays', [HolidayController::class, 'index']);
 
+    // Blackouts (check for everyone with access)
+    Route::get('/blackouts/check', [BlackoutController::class, 'check']);
+
     // Settings (read for everyone)
     Route::get('/settings', [SettingController::class, 'index']);
 
@@ -105,6 +109,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/holidays', [HolidayController::class, 'store']);
         Route::patch('/holidays/{holiday}', [HolidayController::class, 'update']);
         Route::delete('/holidays/{holiday}', [HolidayController::class, 'destroy']);
+
+        // Blackouts CRUD
+        Route::get('/blackouts', [BlackoutController::class, 'index']);
+        Route::post('/blackouts', [BlackoutController::class, 'store']);
+        Route::patch('/blackouts/{blackout}', [BlackoutController::class, 'update']);
+        Route::delete('/blackouts/{blackout}', [BlackoutController::class, 'destroy']);
 
         // Settings
         Route::put('/settings', [SettingController::class, 'update']);

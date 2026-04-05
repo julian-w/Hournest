@@ -6,14 +6,18 @@ namespace App\Services;
 
 use App\Enums\AbsenceStatus;
 use App\Enums\AbsenceType;
+use App\Enums\BlackoutType;
+use App\Enums\LedgerEntryType;
 use App\Enums\VacationScope;
 use App\Models\Absence;
+use App\Models\BlackoutPeriod;
 use App\Models\CostCenter;
 use App\Models\Holiday;
 use App\Models\TimeBooking;
 use App\Models\TimeEntry;
 use App\Models\User;
 use App\Models\Vacation;
+use App\Models\VacationLedgerEntry;
 use Carbon\Carbon;
 
 class SystemTimeBookingService
@@ -65,6 +69,66 @@ class SystemTimeBookingService
         }
     }
 
+    public function syncCompanyHoliday(BlackoutPeriod $blackout, ?Carbon $previousStart = null, ?Carbon $previousEnd = null): void
+    {
+        if ($blackout->type !== BlackoutType::CompanyHoliday) {
+            return;
+        }
+
+        if ($previousStart !== null && $previousEnd !== null) {
+            foreach (User::all() as $user) {
+                foreach ($this->dateRange($previousStart, $previousEnd) as $date) {
+                    $this->recalculateSystemBookingsForDate($user, $date);
+                }
+            }
+        }
+
+        foreach (User::all() as $user) {
+            $days = $this->calculateCompanyHolidayDaysForUser($blackout, $user);
+
+            VacationLedgerEntry::query()
+                ->where('user_id', $user->id)
+                ->where('blackout_period_id', $blackout->id)
+                ->delete();
+
+            if ($days > 0) {
+                VacationLedgerEntry::create([
+                    'user_id' => $user->id,
+                    'year' => $blackout->start_date->year,
+                    'type' => LedgerEntryType::Taken,
+                    'days' => -$days,
+                    'comment' => sprintf(
+                        'Company holiday %s to %s',
+                        $blackout->start_date->toDateString(),
+                        $blackout->end_date->toDateString()
+                    ),
+                    'blackout_period_id' => $blackout->id,
+                ]);
+            }
+
+            foreach ($this->dateRange($blackout->start_date, $blackout->end_date) as $date) {
+                $this->recalculateSystemBookingsForDate($user, $date);
+            }
+        }
+    }
+
+    public function removeCompanyHoliday(BlackoutPeriod $blackout): void
+    {
+        if ($blackout->type !== BlackoutType::CompanyHoliday) {
+            return;
+        }
+
+        VacationLedgerEntry::query()
+            ->where('blackout_period_id', $blackout->id)
+            ->delete();
+
+        foreach (User::all() as $user) {
+            foreach ($this->dateRange($blackout->start_date, $blackout->end_date) as $date) {
+                $this->recalculateSystemBookingsForDate($user, $date);
+            }
+        }
+    }
+
     /**
      * @return array<int, Carbon>
      */
@@ -102,22 +166,11 @@ class SystemTimeBookingService
             ->whereDate('end_date', '>=', $date->toDateString())
             ->first();
 
-        if ($approvedVacation !== null && $user->isWorkDay($date)) {
-            if ($approvedVacation->scope === VacationScope::FullDay) {
-                TimeEntry::where('user_id', $user->id)
-                    ->whereDate('date', $date->toDateString())
-                    ->delete();
-            }
-
-            TimeBooking::create([
-                'user_id' => $user->id,
-                'date' => $date->toDateString(),
-                'cost_center_id' => $this->costCenterIdByCode('VACATION'),
-                'percentage' => $approvedVacation->scope === VacationScope::FullDay ? 100 : 50,
-            ]);
-
-            return;
-        }
+        $companyHoliday = BlackoutPeriod::query()
+            ->where('type', BlackoutType::CompanyHoliday)
+            ->whereDate('start_date', '<=', $date->toDateString())
+            ->whereDate('end_date', '>=', $date->toDateString())
+            ->exists();
 
         $absences = Absence::where('user_id', $user->id)
             ->whereIn('status', [
@@ -145,25 +198,6 @@ class SystemTimeBookingService
             return;
         }
 
-        if (!$absences->isEmpty() && $user->isWorkDay($date)) {
-            $percentagesByCostCenter = [];
-            foreach ($absences as $absence) {
-                $costCenterId = $this->costCenterIdByAbsenceType($absence->type);
-                $percentagesByCostCenter[$costCenterId] = ($percentagesByCostCenter[$costCenterId] ?? 0) + 50;
-            }
-
-            foreach ($percentagesByCostCenter as $costCenterId => $percentage) {
-                TimeBooking::create([
-                    'user_id' => $user->id,
-                    'date' => $date->toDateString(),
-                    'cost_center_id' => $costCenterId,
-                    'percentage' => $percentage,
-                ]);
-            }
-
-            return;
-        }
-
         $hasHoliday = Holiday::whereDate('date', $date->toDateString())->exists();
         if ($hasHoliday && !$user->holidays_exempt && $this->isWorkDayIgnoringHolidays($user, $date)) {
             TimeEntry::where('user_id', $user->id)
@@ -176,6 +210,49 @@ class SystemTimeBookingService
                 'cost_center_id' => $this->costCenterIdByCode('HOLIDAY'),
                 'percentage' => 100,
             ]);
+
+            return;
+        }
+
+        $percentagesByCostCenter = [];
+
+        foreach ($absences as $absence) {
+            $costCenterId = $this->costCenterIdByAbsenceType($absence->type);
+            $percentagesByCostCenter[$costCenterId] = ($percentagesByCostCenter[$costCenterId] ?? 0) + 50;
+        }
+
+        if ($approvedVacation !== null && $user->isWorkDay($date)) {
+            $vacationPercentage = $approvedVacation->scope === VacationScope::FullDay ? 100 : 50;
+            $percentagesByCostCenter[$this->costCenterIdByCode('VACATION')] = ($percentagesByCostCenter[$this->costCenterIdByCode('VACATION')] ?? 0) + $vacationPercentage;
+        }
+
+        if ($companyHoliday && $this->isWorkDayIgnoringHolidays($user, $date)) {
+            $usedPercentage = array_sum($percentagesByCostCenter);
+            $remaining = max(0, 100 - $usedPercentage);
+
+            if ($remaining > 0) {
+                $vacationCostCenterId = $this->costCenterIdByCode('VACATION');
+                $percentagesByCostCenter[$vacationCostCenterId] = ($percentagesByCostCenter[$vacationCostCenterId] ?? 0) + $remaining;
+            }
+        }
+
+        foreach ($percentagesByCostCenter as $costCenterId => $percentage) {
+            if ($percentage <= 0) {
+                continue;
+            }
+
+            TimeBooking::create([
+                'user_id' => $user->id,
+                'date' => $date->toDateString(),
+                'cost_center_id' => $costCenterId,
+                'percentage' => $percentage,
+            ]);
+        }
+
+        if (array_sum($percentagesByCostCenter) >= 100) {
+            TimeEntry::where('user_id', $user->id)
+                ->whereDate('date', $date->toDateString())
+                ->delete();
         }
     }
 
@@ -216,5 +293,62 @@ class SystemTimeBookingService
         }
 
         return true;
+    }
+
+    private function calculateCompanyHolidayDaysForUser(BlackoutPeriod $blackout, User $user): float
+    {
+        $days = 0.0;
+
+        foreach ($this->dateRange($blackout->start_date, $blackout->end_date) as $date) {
+            if (!$user->isWorkDay($date)) {
+                continue;
+            }
+
+            $fullDayAbsence = Absence::query()
+                ->where('user_id', $user->id)
+                ->whereIn('status', [
+                    AbsenceStatus::Acknowledged->value,
+                    AbsenceStatus::Approved->value,
+                    AbsenceStatus::AdminCreated->value,
+                ])
+                ->where('scope', 'full_day')
+                ->whereDate('start_date', '<=', $date->toDateString())
+                ->whereDate('end_date', '>=', $date->toDateString())
+                ->exists();
+
+            if ($fullDayAbsence) {
+                continue;
+            }
+
+            $fraction = 1.0;
+
+            $halfDayAbsenceCount = Absence::query()
+                ->where('user_id', $user->id)
+                ->whereIn('status', [
+                    AbsenceStatus::Acknowledged->value,
+                    AbsenceStatus::Approved->value,
+                    AbsenceStatus::AdminCreated->value,
+                ])
+                ->whereIn('scope', ['morning', 'afternoon'])
+                ->whereDate('start_date', '<=', $date->toDateString())
+                ->whereDate('end_date', '>=', $date->toDateString())
+                ->count();
+            $fraction -= min(1.0, $halfDayAbsenceCount * 0.5);
+
+            $approvedVacation = Vacation::query()
+                ->where('user_id', $user->id)
+                ->where('status', 'approved')
+                ->whereDate('start_date', '<=', $date->toDateString())
+                ->whereDate('end_date', '>=', $date->toDateString())
+                ->first();
+
+            if ($approvedVacation !== null) {
+                $fraction -= $approvedVacation->scope === VacationScope::FullDay ? 1.0 : 0.5;
+            }
+
+            $days += max(0.0, $fraction);
+        }
+
+        return $days;
     }
 }

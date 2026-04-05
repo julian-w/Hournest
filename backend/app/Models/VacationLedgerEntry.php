@@ -17,6 +17,7 @@ class VacationLedgerEntry extends Model
         'days',
         'comment',
         'vacation_id',
+        'blackout_period_id',
     ];
 
     protected function casts(): array
@@ -36,5 +37,10 @@ class VacationLedgerEntry extends Model
     public function vacation(): BelongsTo
     {
         return $this->belongsTo(Vacation::class);
+    }
+
+    public function blackoutPeriod(): BelongsTo
+    {
+        return $this->belongsTo(BlackoutPeriod::class);
     }
 }

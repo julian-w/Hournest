@@ -150,4 +150,22 @@ describe('BlackoutService', () => {
 
     expect(result).toBeNull();
   });
+
+  it('should fetch all matching blackouts for a date range', () => {
+    let result: BlackoutPeriod[] | undefined;
+
+    service.getMatchingBlackouts('2026-12-24', '2026-12-26').subscribe(data => {
+      result = data;
+    });
+
+    const req = httpMock.expectOne(r =>
+      r.url === '/api/blackouts/check'
+      && r.params.get('start_date') === '2026-12-24'
+      && r.params.get('end_date') === '2026-12-26'
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: [blackout] });
+
+    expect(result).toEqual([blackout]);
+  });
 });

@@ -31,11 +31,11 @@ A vacation freeze means that **no vacation may be taken** during the defined per
 - Trade fair weeks
 
 !!! warning "Impact"
-    Employees cannot submit vacation requests for this period. Existing requests are not affected.
+    Employees cannot submit vacation requests for this period. The restriction is enforced on the backend. Existing requests are not affected.
 
 ### Company Holiday
 
-Company holidays define a company-wide planning period. In the vacation dialog, they show up as a warning, but the request remains possible.
+Company holidays define a company-wide period where vacation is applied automatically.
 
 **Typical use cases:**
 
@@ -44,7 +44,7 @@ Company holidays define a company-wide planning period. In the vacation dialog, 
 - Bridge days
 
 !!! info "Vacation Days"
-    At the moment, company holidays do **not** automatically deduct vacation days. They appear as a warning in the vacation dialog, but do not block submission.
+    Workdays in the period are handled automatically in the vacation ledger and time tracking. Additional vacation requests for the same period are not needed and are blocked.
 
 ---
 
@@ -53,7 +53,7 @@ Company holidays define a company-wide planning period. In the vacation dialog, 
 1. Click the **"Add Entry"** button
 2. Select the **Type**:
     - **Vacation Freeze** -- No vacation allowed, no days deducted
-    - **Company Holiday** -- Planning warning, request remains possible
+    - **Company Holiday** -- Company-wide forced vacation with automatic vacation effect
 3. Set the **From date** and **To date**
 4. Enter a **Reason** (e.g., "Inventory" or "Christmas shutdown")
 5. Click **"Save"**
@@ -74,7 +74,7 @@ Company holidays define a company-wide planning period. In the vacation dialog, 
 2. The entry is removed immediately
 
 !!! warning "Caution"
-    Deleting an entry lifts the restriction immediately. Employees can then request vacation for the affected period again.
+    Deleting an entry removes the restriction or company-holiday effect immediately. Employees can then request vacation for the affected period again, and automatically created ledger and system bookings are recalculated.
 
 ---
 
@@ -85,4 +85,4 @@ When an employee submits a vacation request that falls within a configured perio
 | Type             | Behavior                                                         |
 |------------------|------------------------------------------------------------------|
 | Vacation Freeze  | Request is **blocked** -- red notice, submit not possible        |
-| Company Holiday  | **Warning** is shown (orange), request remains possible          |
+| Company Holiday  | Vacation is handled automatically, additional requests are not possible |

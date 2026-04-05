@@ -419,6 +419,59 @@ Returns all holidays.
 
 ---
 
+## Blackout Endpoints
+
+### GET /api/blackouts/check
+
+Checks whether a date range overlaps with configured blackout periods.
+
+**Auth:** Sanctum
+
+**Query Parameters:**
+
+- `start_date`
+- `end_date`
+
+### GET /api/admin/blackouts
+
+Returns all configured blackout periods.
+
+**Auth:** Sanctum + Admin
+
+### POST /api/admin/blackouts
+
+Creates a blackout period.
+
+**Auth:** Sanctum + Admin
+
+**Request Body:**
+
+```json
+{
+  "type": "freeze",
+  "start_date": "2026-12-21",
+  "end_date": "2026-12-31",
+  "reason": "Inventory"
+}
+```
+
+### PATCH /api/admin/blackouts/{id}
+
+Updates a blackout period.
+
+**Auth:** Sanctum + Admin
+
+### DELETE /api/admin/blackouts/{id}
+
+Deletes a blackout period.
+
+**Auth:** Sanctum + Admin
+
+!!! info "Current behavior"
+    `freeze` blocks vacation requests on the backend. `company_holiday` is also returned by the check endpoint and is applied automatically in both the vacation ledger and time tracking. Overlapping vacation requests are blocked.
+
+---
+
 ## Settings Endpoints
 
 ### GET /api/settings

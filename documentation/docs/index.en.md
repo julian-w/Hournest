@@ -3,7 +3,7 @@
 Hournest is an internal web application for **vacation management** with an already expanded **time tracking and cost center booking** area. It is designed for small companies (under 20 employees).
 
 !!! info "Current Status"
-    Vacation management is stable and broadly implemented. Large parts of time tracking, absences, cost centers, locking, and first admin reports are also already implemented. Additional analytics and later expansion stages remain planned.
+    Vacation management is stable and broadly implemented. Large parts of time tracking, absences, cost centers, locking, blackouts including company-holiday automation, and first admin reports are also already implemented. Additional analytics and later expansion stages remain planned.
 
 ---
 
@@ -51,7 +51,7 @@ Hournest is an internal web application for **vacation management** with an alre
 - Bilingual: German and English (switchable at runtime)
 - Auto-generated API documentation (OpenAPI/Scramble) at `/docs/api`
 - Mock mode for frontend development without backend
-- Backend test coverage with 357 tests / 996 assertions
+- Backend test coverage with 368 tests / 1031 assertions
 
 ---
 
@@ -102,5 +102,5 @@ hournest/
 ## Implementation Status Notes
 
 - **Already implemented:** vacations, vacation ledger, holidays, work schedules, roles, OIDC, local auth, core time tracking, cost centers, favorites, absences, locks
-- **Partially implemented:** blackouts/company holidays and additional convenience features
+- **Partially implemented:** additional convenience features and later analytics stages
 - **Still planned:** shift planning, more advanced reports/analytics, and working time account

@@ -255,4 +255,4 @@ The database seeder creates test data for local development. It can be run with 
 
 ## Current Note
 
-Some frontend areas are already prepared further than the stable backend features documented here. This especially affects **blackouts/company holidays** and additional convenience features in the time-booking area. If a feature is described as planned in `CONCEPT.md`, the current implementation status should still be verified against actual Laravel routes and controllers in `backend/routes/api.php` and `backend/app/Http/Controllers`.
+Some frontend areas are already prepared further than the stable backend features documented here. This mainly affects later convenience features and broader analytics in the time-booking area. If a feature is described as planned in `CONCEPT.md`, the current implementation status should still be verified against actual Laravel routes and controllers in `backend/routes/api.php` and `backend/app/Http/Controllers`.

@@ -151,11 +151,29 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
   if (method === 'POST' && url.endsWith('/api/vacations')) {
     const body = parseBody<{ start_date: string; end_date: string; scope?: 'full_day' | 'morning' | 'afternoon'; comment: string | null }>(req);
     const vacYear = parseInt(body.start_date.substring(0, 4), 10);
+    const overlappingBlackout = blackouts.find(blackout =>
+      blackout.start_date <= body.end_date &&
+      blackout.end_date >= body.start_date
+    );
 
     // Check if holidays are confirmed for the vacation year
     if (!isYearFullyConfirmed(vacYear)) {
       return of(jsonResponse(
         { message: 'Holidays not confirmed for this year', errors: { year: ['holidays_incomplete'] } },
+        422
+      )).pipe(delay(MOCK_DELAY));
+    }
+
+    if (overlappingBlackout?.type === 'freeze') {
+      return of(jsonResponse(
+        { message: 'Vacation request falls within a vacation freeze.' },
+        422
+      )).pipe(delay(MOCK_DELAY));
+    }
+
+    if (overlappingBlackout?.type === 'company_holiday') {
+      return of(jsonResponse(
+        { message: 'Vacation request overlaps with a company holiday.' },
         422
       )).pipe(delay(MOCK_DELAY));
     }

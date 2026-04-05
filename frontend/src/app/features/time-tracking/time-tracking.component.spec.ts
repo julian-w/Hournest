@@ -5,6 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { AbsenceService } from '../../core/services/absence.service';
+import { BlackoutService } from '../../core/services/blackout.service';
 import { CostCenterService } from '../../core/services/cost-center.service';
 import { TimeBookingTemplateService } from '../../core/services/time-booking-template.service';
 import { TimeTrackingService } from '../../core/services/time-tracking.service';
@@ -30,6 +31,9 @@ describe('TimeTrackingComponent', () => {
   };
   let absenceServiceStub: {
     getMyAbsences: jasmine.Spy;
+  };
+  let blackoutServiceStub: {
+    getMatchingBlackouts: jasmine.Spy;
   };
   let vacationServiceStub: {
     getMyVacations: jasmine.Spy;
@@ -88,6 +92,10 @@ describe('TimeTrackingComponent', () => {
       getMyAbsences: jasmine.createSpy('getMyAbsences').and.returnValue(of([])),
     };
 
+    blackoutServiceStub = {
+      getMatchingBlackouts: jasmine.createSpy('getMatchingBlackouts').and.returnValue(of([])),
+    };
+
     vacationServiceStub = {
       getMyVacations: jasmine.createSpy('getMyVacations').and.returnValue(of([])),
     };
@@ -113,6 +121,7 @@ describe('TimeTrackingComponent', () => {
         { provide: TimeBookingTemplateService, useValue: templateServiceStub },
         { provide: CostCenterService, useValue: costCenterServiceStub },
         { provide: AbsenceService, useValue: absenceServiceStub },
+        { provide: BlackoutService, useValue: blackoutServiceStub },
         { provide: VacationService, useValue: vacationServiceStub },
         { provide: MatDialog, useValue: dialogStub },
         { provide: MatSnackBar, useValue: snackBarStub },
@@ -256,5 +265,28 @@ describe('TimeTrackingComponent', () => {
     expect(vacationServiceStub.getMyVacations).toHaveBeenCalled();
     expect(vacationDay?.vacation?.scope).toBe('morning');
     expect(vacationDay ? component.expectedDayTotal(vacationDay) : null).toBe(50);
+  });
+
+  it('should treat company holidays as locked days in the weekly grid', () => {
+    blackoutServiceStub.getMatchingBlackouts.and.returnValue(of([
+      {
+        id: 15,
+        type: 'company_holiday',
+        start_date: '2026-04-06',
+        end_date: '2026-04-06',
+        reason: 'Shutdown',
+        created_at: '2026-04-01T12:00:00Z',
+      },
+    ]));
+
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const holidayDay = component.days().find(day => day.date === '2026-04-06');
+
+    expect(blackoutServiceStub.getMatchingBlackouts).toHaveBeenCalled();
+    expect(holidayDay?.companyHoliday?.type).toBe('company_holiday');
+    expect(holidayDay ? component['canEditBookingsForDay'](holidayDay) : true).toBeFalse();
   });
 });

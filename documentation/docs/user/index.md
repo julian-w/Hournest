@@ -90,7 +90,7 @@ Alles, was der Employee sieht, plus:
 - **Abwesenheiten:** Meldungen prüfen, genehmigen, bestätigen, selbst anlegen
 - **Kostenstellen & Gruppen:** Kostenstellen, Gruppen und direkte Zuweisungen verwalten
 - **Reports:** Auswertungen zu Zeitbuchungen, fehlenden Einträgen und CSV-Export
-- **Urlaubsplanung:** Urlaubssperren und Planungszeiträume verwalten
+- **Urlaubsplanung:** Urlaubssperren und Betriebsferien verwalten
 - **Einstellungen:** Globale Einstellungen (Arbeitstage, Übertrag, Verfall)
 
 ### Superadmin

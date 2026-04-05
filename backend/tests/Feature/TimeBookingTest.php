@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Absence;
+use App\Models\BlackoutPeriod;
 use App\Models\CostCenter;
 use App\Models\Setting;
 use App\Models\TimeBooking;
@@ -463,6 +464,37 @@ class TimeBookingTest extends TestCase
         ]);
         $response->assertStatus(422)
             ->assertJsonPath('message', 'Cannot book time on a vacation day.');
+    }
+
+    public function test_cannot_book_on_company_holiday(): void
+    {
+        $employee = User::factory()->create();
+        $cc = CostCenter::factory()->create();
+        $employee->costCenters()->attach($cc->id);
+
+        BlackoutPeriod::create([
+            'type' => 'company_holiday',
+            'start_date' => '2026-04-06',
+            'end_date' => '2026-04-06',
+            'reason' => 'Shutdown',
+        ]);
+
+        TimeEntry::create([
+            'user_id' => $employee->id,
+            'date' => '2026-04-06',
+            'start_time' => '08:00',
+            'end_time' => '17:00',
+            'break_minutes' => 30,
+        ]);
+
+        $response = $this->actingAs($employee)->putJson('/api/time-bookings/2026-04-06', [
+            'bookings' => [
+                ['cost_center_id' => $cc->id, 'percentage' => 100],
+            ],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('message', 'Cannot book time on a company holiday.');
     }
 
     public function test_cannot_book_without_time_entry(): void

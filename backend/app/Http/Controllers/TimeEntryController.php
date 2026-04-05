@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTimeEntryRequest;
 use App\Http\Resources\TimeEntryResource;
 use App\Models\Absence;
+use App\Models\BlackoutPeriod;
 use App\Models\TimeBooking;
 use App\Models\TimeEntry;
 use App\Models\TimeLock;
@@ -66,6 +67,15 @@ class TimeEntryController extends Controller
             ->exists();
         if ($hasFullDayVacation) {
             return response()->json(['message' => 'Cannot create time entry on a full-day vacation.'], 422);
+        }
+
+        $hasCompanyHoliday = BlackoutPeriod::query()
+            ->where('type', 'company_holiday')
+            ->whereDate('start_date', '<=', $date)
+            ->whereDate('end_date', '>=', $date)
+            ->exists();
+        if ($hasCompanyHoliday) {
+            return response()->json(['message' => 'Cannot create time entry on a company holiday.'], 422);
         }
 
         $entry = TimeEntry::where('user_id', $user->id)

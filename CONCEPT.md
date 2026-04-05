@@ -503,6 +503,12 @@ Time bookings become **locked** after a configurable period to ensure data integ
 - Current implementation note: half-day vacation support is implemented; holiday precedence still applies on overlapping holiday dates
 - If a vacation is **cancelled**, the auto-booking is removed and the day becomes editable again
 
+#### Blackouts / Company Holidays
+- Vacation freezes block new vacation requests in the configured period
+- Company holidays automatically create the remaining `VACATION` booking share for affected workdays and also book corresponding taken days into the vacation ledger
+- If a day already has a full holiday booking, the holiday still takes precedence
+- Full-day absence still takes precedence over company holiday; half-day absence reduces the automatically applied company-holiday fraction accordingly
+
 #### Holidays (Section 6)
 - On holidays, working days are automatically booked to the `HOLIDAY` system cost center (100%)
 - Exception: `holidays_exempt` employees -- holidays are treated as regular working days

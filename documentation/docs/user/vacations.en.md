@@ -40,7 +40,7 @@ If variable holidays for the year are still missing confirmed dates, a warning i
 ### Vacation Freezes and Company Holidays
 
 - **Vacation freeze:** blocks the request
-- **Company holiday:** shows a warning, but the request remains possible
+- **Company holiday:** vacation is applied automatically, and an additional request is not possible
 
 ---
 

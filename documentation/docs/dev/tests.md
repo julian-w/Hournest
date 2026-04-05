@@ -115,7 +115,7 @@ frontend/src/app/
 
 ## Aktueller Stand
 
-- Backend-Suite: **357 Tests / 996 Assertions**
+- Backend-Suite: **368 Tests / 1031 Assertions**
 - Frontend: alle Services unter `frontend/src/app/core/services` haben Spec-Dateien
 - Feature-Komponenten mit Specs: Login, Mein Urlaub und Zeiterfassung
 
@@ -152,8 +152,9 @@ frontend/src/app/
 | `AbsenceTest` | Krankheit, Sonderurlaub, Halbtag-Regeln, Überschneidungen |
 | `AbsenceAdminManagementTest` | Admin-Filter, Review und Löschen von Abwesenheiten |
 | `AdminReportTest` | Aggregierte Zeitbuchungen, fehlende Einträge und CSV-Export |
-| `TimeEntryTest` | Arbeitszeiterfassung, Feiertage, Sperren, Auto-Lock und Urlaubssperren |
-| `TimeBookingTest` | Prozentbuchungen, 100-%-/50-%-Regeln, Systemkostenstellen-Schutz, Auto-Lock und Halbtags-Urlaub |
+| `BlackoutTest` | Blackout-CRUD, Check-Endpunkt, Freeze-Blockierung und automatische Betriebsferien-Wirkung in Urlaubskonto/Zeiterfassung |
+| `TimeEntryTest` | Arbeitszeiterfassung, Feiertage, Sperren, Auto-Lock, Halbtags-Urlaub und Betriebsferien-Sperren |
+| `TimeBookingTest` | Prozentbuchungen, 100-%-/50-%-Regeln, Systemkostenstellen-Schutz, Auto-Lock, Halbtags-Urlaub und Betriebsferien-Sperren |
 | `TimeBookingAdminTest` | Admin-Zugriffe auf Buchungen und direkte Kostenstellenzuordnung |
 | `TimeBookingTemplateTest` | Eigene Buchungsvorlagen, 100-%-Validierung, Besitzregeln, keine Systemkostenstellen |
 | `TimeLockTest` | Monatsabschluss, Sperren und Entsperren |
@@ -172,7 +173,7 @@ frontend/src/app/
 | `app.component.spec.ts` | Sprachinitialisierung und Sprachwechsel |
 | `core/services/*.spec.ts` | Request-URLs, Payloads und Response-Mapping aller Core-Services |
 | `features/login/login.component.spec.ts` | Login-Flow, Fehlerzustände, erzwungener Passwortwechsel |
-| `features/time-tracking/time-tracking.component.spec.ts` | Vorlagen anwenden, speichern, aktualisieren, löschen und Halbtags-Urlaub im Wochengrid |
+| `features/time-tracking/time-tracking.component.spec.ts` | Vorlagen anwenden, speichern, aktualisieren, löschen sowie Halbtags-Urlaub und Betriebsferien im Wochengrid |
 | `features/admin/reports/admin-reports.component.spec.ts` | Laden von Reports, Gruppierungswechsel und CSV-Export |
 | `features/vacation/my-vacations.component.spec.ts` | Laden, Stornieren, Dialog-Refresh und Ledger-Jahreswechsel |
 

@@ -90,7 +90,7 @@ Everything the employee sees, plus:
 - **Absences:** Review, approve, acknowledge, or create entries directly
 - **Cost Centers & Groups:** Manage cost centers, groups, and direct assignments
 - **Reports:** Reporting for time bookings, missing entries, and CSV export
-- **Vacation Planning:** Manage freezes and planning periods
+- **Vacation Planning:** Manage freezes and company holidays
 - **Settings:** Global settings (work days, carryover, expiry)
 
 ### Superadmin

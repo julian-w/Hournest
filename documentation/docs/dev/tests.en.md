@@ -81,6 +81,7 @@ backend/tests/
 │   ├── AdminTest.php
 │   ├── AuthOidcTest.php
 │   ├── AuthTest.php
+│   ├── BlackoutTest.php
 │   ├── CostCenterFavoriteTest.php
 │   ├── CostCenterTest.php
 │   ├── CrossSystemTest.php
@@ -106,6 +107,7 @@ frontend/src/app/
 ├── app.component.spec.ts
 ├── core/services/*.spec.ts
 └── features/
+    ├── admin/reports/admin-reports.component.spec.ts
     ├── login/login.component.spec.ts
     ├── time-tracking/time-tracking.component.spec.ts
     └── vacation/my-vacations.component.spec.ts
@@ -115,7 +117,7 @@ frontend/src/app/
 
 ## Current Status
 
-- Backend suite: **357 tests / 996 assertions**
+- Backend suite: **368 tests / 1031 assertions**
 - Frontend: every service under `frontend/src/app/core/services` has a matching spec file
 - Feature components with specs: Login, My Vacations, and Time Tracking
 
@@ -152,8 +154,9 @@ frontend/src/app/
 | `AbsenceTest` | Illness, special leave, half-day rules, overlap validation |
 | `AbsenceAdminManagementTest` | Admin filters, review, and deletion of absences |
 | `AdminReportTest` | Aggregated time bookings, missing entries, and CSV export |
-| `TimeEntryTest` | Time recording, holidays, locking, auto-lock, and vacation locking |
-| `TimeBookingTest` | Percentage booking, 100%/50% rules, system cost center protection, auto-lock, and half-day vacation |
+| `BlackoutTest` | Blackout CRUD, check endpoint, freeze blocking, and automatic company-holiday effects in ledger/time tracking |
+| `TimeEntryTest` | Time recording, holidays, locking, auto-lock, half-day vacation, and company-holiday locks |
+| `TimeBookingTest` | Percentage booking, 100%/50% rules, system cost center protection, auto-lock, half-day vacation, and company-holiday locks |
 | `TimeBookingAdminTest` | Admin access to bookings and direct user cost center assignment |
 | `TimeBookingTemplateTest` | Own booking templates, 100% validation, ownership rules, no system cost centers |
 | `TimeLockTest` | Month closing, lock/unlock |
@@ -172,7 +175,7 @@ frontend/src/app/
 | `app.component.spec.ts` | Language initialization and switching |
 | `core/services/*.spec.ts` | Request URLs, payloads, and response mapping for all core services |
 | `features/login/login.component.spec.ts` | Login flow, error states, forced password change |
-| `features/time-tracking/time-tracking.component.spec.ts` | Applying, saving, updating, and deleting templates, plus half-day vacation behavior in the weekly grid |
+| `features/time-tracking/time-tracking.component.spec.ts` | Applying, saving, updating, and deleting templates, plus half-day vacation and company holidays in the weekly grid |
 | `features/admin/reports/admin-reports.component.spec.ts` | Loading reports, switching grouping, and CSV export |
 | `features/vacation/my-vacations.component.spec.ts` | Loading, cancelling, dialog refresh, ledger year switching |
 

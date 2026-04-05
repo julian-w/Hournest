@@ -8,6 +8,7 @@ use App\Enums\VacationScope;
 use App\Http\Requests\StoreTimeBookingsRequest;
 use App\Http\Resources\TimeBookingResource;
 use App\Models\Absence;
+use App\Models\BlackoutPeriod;
 use App\Models\Setting;
 use App\Models\TimeBooking;
 use App\Models\TimeEntry;
@@ -64,6 +65,15 @@ class TimeBookingController extends Controller
             ->first();
         if ($vacation !== null && $vacation->scope === VacationScope::FullDay) {
             return response()->json(['message' => 'Cannot book time on a vacation day.'], 422);
+        }
+
+        $hasCompanyHoliday = BlackoutPeriod::query()
+            ->where('type', 'company_holiday')
+            ->whereDate('start_date', '<=', $date)
+            ->whereDate('end_date', '>=', $date)
+            ->exists();
+        if ($hasCompanyHoliday) {
+            return response()->json(['message' => 'Cannot book time on a company holiday.'], 422);
         }
 
         $hasTimeEntry = TimeEntry::where('user_id', $user->id)

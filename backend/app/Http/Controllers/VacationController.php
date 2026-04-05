@@ -8,6 +8,7 @@ use App\Enums\VacationStatus;
 use App\Enums\VacationScope;
 use App\Http\Requests\StoreVacationRequest;
 use App\Http\Resources\VacationResource;
+use App\Models\BlackoutPeriod;
 use App\Models\Vacation;
 use App\Models\VacationLedgerEntry;
 use Illuminate\Http\JsonResponse;
@@ -53,6 +54,30 @@ class VacationController extends Controller
         if ($overlap) {
             return response()->json([
                 'message' => 'Vacation overlaps with an already approved vacation.',
+            ], 422);
+        }
+
+        $hasFreeze = BlackoutPeriod::query()
+            ->where('type', 'freeze')
+            ->whereDate('start_date', '<=', $request->end_date)
+            ->whereDate('end_date', '>=', $request->start_date)
+            ->exists();
+
+        if ($hasFreeze) {
+            return response()->json([
+                'message' => 'Vacation request falls within a vacation freeze.',
+            ], 422);
+        }
+
+        $hasCompanyHoliday = BlackoutPeriod::query()
+            ->where('type', 'company_holiday')
+            ->whereDate('start_date', '<=', $request->end_date)
+            ->whereDate('end_date', '>=', $request->start_date)
+            ->exists();
+
+        if ($hasCompanyHoliday) {
+            return response()->json([
+                'message' => 'Vacation request overlaps with a company holiday.',
             ], 422);
         }
 

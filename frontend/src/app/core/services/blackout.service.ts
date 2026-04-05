@@ -34,11 +34,17 @@ export class BlackoutService {
     return this.http.delete<void>(`/api/admin/blackouts/${id}`);
   }
 
-  checkDate(startDate: string, endDate: string): Observable<BlackoutPeriod | null> {
+  getMatchingBlackouts(startDate: string, endDate: string): Observable<BlackoutPeriod[]> {
     return this.http.get<ApiResponse<BlackoutPeriod[]>>('/api/blackouts/check', {
       params: { start_date: startDate, end_date: endDate }
     }).pipe(
-      map(r => r.data.length > 0 ? r.data[0] : null)
+      map(r => r.data)
+    );
+  }
+
+  checkDate(startDate: string, endDate: string): Observable<BlackoutPeriod | null> {
+    return this.getMatchingBlackouts(startDate, endDate).pipe(
+      map(r => r.length > 0 ? r[0] : null)
     );
   }
 }

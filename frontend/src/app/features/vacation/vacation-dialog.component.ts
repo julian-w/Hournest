@@ -85,7 +85,7 @@ import { VacationScope } from '../../core/models/vacation.model';
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>{{ 'vacation_dialog.cancel' | translate }}</button>
       <button mat-raised-button color="primary" (click)="submit()"
-              [disabled]="form.invalid || submitting || holidayWarning() || (blackoutWarning() && blackoutType() === 'freeze')">
+              [disabled]="form.invalid || submitting || holidayWarning() || blackoutWarning()">
         {{ 'vacation_dialog.submit' | translate }}
       </button>
     </mat-dialog-actions>
@@ -179,7 +179,7 @@ export class VacationDialogComponent implements OnInit {
   }
 
   submit(): void {
-    if (this.form.invalid || this.holidayWarning() || (this.blackoutWarning() && this.blackoutType() === 'freeze')) return;
+    if (this.form.invalid || this.holidayWarning() || this.blackoutWarning()) return;
 
     this.submitting = true;
     this.error = '';
@@ -195,6 +195,10 @@ export class VacationDialogComponent implements OnInit {
         this.submitting = false;
         if (err.error?.errors?.year?.[0] === 'holidays_incomplete') {
           this.error = this.translate.instant('vacation_dialog.error_holidays_incomplete');
+        } else if (err.error?.message === 'Vacation request falls within a vacation freeze.') {
+          this.error = this.translate.instant('vacation_dialog.error_blackout_freeze', { reason: this.blackoutReason() });
+        } else if (err.error?.message === 'Vacation request overlaps with a company holiday.') {
+          this.error = this.translate.instant('vacation_dialog.error_blackout_company_holiday', { reason: this.blackoutReason() });
         } else if (err.error?.message?.includes('overlap')) {
           this.error = this.translate.instant('vacation_dialog.error_overlap');
         } else {

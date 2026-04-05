@@ -119,7 +119,7 @@
     "error_generic": "Ein Fehler ist aufgetreten.",
     "error_holidays_incomplete": "Für dieses Jahr sind noch nicht alle Feiertage bestätigt. Urlaubsbuchung ist noch nicht möglich.",
     "error_blackout_freeze": "In diesem Zeitraum gilt eine Urlaubssperre: {{reason}}",
-    "error_blackout_company_holiday": "In diesem Zeitraum sind Betriebsferien: {{reason}} (Urlaubstage werden automatisch abgezogen)"
+    "error_blackout_company_holiday": "In diesem Zeitraum sind Betriebsferien: {{reason}} (Urlaub wird automatisch berücksichtigt, zusätzlicher Antrag ist nicht nötig)"
   },
   "admin_requests": {
     "title": "Offene Urlaubsanträge",
@@ -220,7 +220,7 @@
     "type_freeze": "Urlaubssperre",
     "type_freeze_desc": "Kein Urlaub erlaubt, keine Tage werden abgezogen",
     "type_company_holiday": "Betriebsferien",
-    "type_company_holiday_desc": "Zwangsurlaub, Tage werden automatisch abgezogen",
+    "type_company_holiday_desc": "Firmenweiter Zwangsurlaub mit automatischer Urlaubswirkung",
     "no_blackouts": "Keine Einträge vorhanden.",
     "created": "Eintrag erstellt.",
     "updated": "Eintrag aktualisiert.",
@@ -277,7 +277,8 @@
     "week_delta": "Differenz",
     "absence_illness": "Krankheit",
     "absence_special_leave": "Sonderurlaub",
-    "absence_vacation": "Urlaub"
+    "absence_vacation": "Urlaub",
+    "absence_company_holiday": "Betriebsferien"
   },
   "my_absences": {
     "title": "Meine Abwesenheiten",

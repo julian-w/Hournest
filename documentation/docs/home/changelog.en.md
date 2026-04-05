@@ -8,7 +8,7 @@ All notable changes to Hournest are documented on this page.
 
 ### Tests & Quality Assurance
 
-- Backend coverage expanded to **357 tests / 996 assertions**
+- Backend coverage expanded to **368 tests / 1031 assertions**
 - New feature tests for OIDC login, favorites, admin absence management, admin time bookings, yearly maintenance, and cross-system rules
 - Frontend specs added for all core services
 - Feature components now covered with specs: Login, My Vacations, and Time Tracking
@@ -29,6 +29,7 @@ All notable changes to Hournest are documented on this page.
 - Favorite reordering now has stricter validation
 - Admin time booking endpoints now return clean `404` responses for unknown users
 - New admin reports for aggregated time bookings, missing entries, and CSV export
+- Blackouts/company holidays now have real backend CRUD, server-side freeze validation, and automatic effects in the vacation ledger and time tracking
 - Additional negative-path and auto-lock overlap rules are now covered by tests
 
 ---
