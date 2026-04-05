@@ -11,6 +11,7 @@ use App\Enums\UserRole;
 use App\Enums\VacationScope;
 use App\Enums\VacationStatus;
 use App\Models\Absence;
+use App\Models\BlackoutPeriod;
 use App\Models\CostCenter;
 use App\Models\TimeBooking;
 use App\Models\TimeEntry;
@@ -221,6 +222,73 @@ class AdminReportTest extends TestCase
         );
     }
 
+    public function test_company_holiday_is_not_reported_as_missing_entry(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+        $employee = User::factory()->create();
+
+        BlackoutPeriod::create([
+            'type' => 'company_holiday',
+            'start_date' => '2026-04-06',
+            'end_date' => '2026-04-06',
+            'reason' => 'Shutdown',
+        ]);
+
+        $response = $this->actingAs($admin)->getJson('/api/admin/reports/missing-entries?from=2026-04-06&to=2026-04-06');
+
+        $response->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    public function test_system_bookings_without_time_entry_use_daily_target_minutes_in_reports_and_export(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+        $employee = User::factory()->create(['display_name' => 'Holiday User', 'email' => 'holiday@example.com']);
+        $vacationCostCenter = CostCenter::query()->where('code', 'VACATION')->firstOrFail();
+
+        TimeBooking::create([
+            'user_id' => $employee->id,
+            'date' => '2026-04-06',
+            'cost_center_id' => $vacationCostCenter->id,
+            'percentage' => 100,
+        ]);
+
+        $summary = $this->actingAs($admin)->getJson('/api/admin/reports/time-bookings?from=2026-04-06&to=2026-04-06&group_by=user');
+        $summary->assertOk()
+            ->assertJsonPath('data.0.booked_minutes', 480);
+
+        $export = $this->actingAs($admin)->get('/api/admin/reports/export?format=csv&from=2026-04-06&to=2026-04-06');
+        $this->assertStringContainsString(
+            '2026-04-06,"Holiday User",holiday@example.com,VACATION,Vacation,100,480,',
+            $export->streamedContent()
+        );
+    }
+
+    public function test_admin_can_filter_absence_report(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+        $employee = User::factory()->create(['display_name' => 'Ada']);
+
+        Absence::create([
+            'user_id' => $employee->id,
+            'start_date' => '2026-04-10',
+            'end_date' => '2026-04-10',
+            'type' => AbsenceType::SpecialLeave,
+            'scope' => AbsenceScope::Morning,
+            'status' => AbsenceStatus::Approved,
+            'comment' => 'Personal',
+        ]);
+
+        $response = $this->actingAs($admin)->getJson("/api/admin/reports/absences?from=2026-04-01&to=2026-04-30&user_id={$employee->id}&type=special_leave&status=approved");
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.user_name', 'Ada')
+            ->assertJsonPath('data.0.type', 'special_leave')
+            ->assertJsonPath('data.0.scope', 'morning')
+            ->assertJsonPath('data.0.status', 'approved');
+    }
+
     public function test_employee_cannot_access_admin_reports(): void
     {
         $employee = User::factory()->create();
@@ -229,6 +297,9 @@ class AdminReportTest extends TestCase
             ->assertForbidden();
 
         $this->actingAs($employee)->getJson('/api/admin/reports/missing-entries?from=2026-04-06&to=2026-04-06')
+            ->assertForbidden();
+
+        $this->actingAs($employee)->getJson('/api/admin/reports/absences?from=2026-04-06&to=2026-04-06')
             ->assertForbidden();
     }
 }

@@ -10,6 +10,7 @@ describe('AdminReportsComponent', () => {
   let adminServiceStub: {
     getTimeBookingReport: jasmine.Spy;
     getMissingEntriesReport: jasmine.Spy;
+    getAbsenceReport: jasmine.Spy;
     exportTimeBookingsCsv: jasmine.Spy;
   };
   let snackBarStub: {
@@ -39,6 +40,7 @@ describe('AdminReportsComponent', () => {
           has_time_entry: true,
         },
       ])),
+      getAbsenceReport: jasmine.createSpy('getAbsenceReport').and.returnValue(of([])),
       exportTimeBookingsCsv: jasmine.createSpy('exportTimeBookingsCsv').and.returnValue(
         of(new Blob(['csv'], { type: 'text/csv' })),
       ),
@@ -76,6 +78,7 @@ describe('AdminReportsComponent', () => {
 
     expect(adminServiceStub.getTimeBookingReport).toHaveBeenCalled();
     expect(adminServiceStub.getMissingEntriesReport).toHaveBeenCalled();
+    expect(adminServiceStub.getAbsenceReport).toHaveBeenCalled();
     expect(component.timeBookingRows()[0].label).toBe('Ada Lovelace');
     expect(component.missingEntries()[0].reason).toBe('incomplete_booking');
   });

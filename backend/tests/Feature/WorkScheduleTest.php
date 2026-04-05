@@ -22,6 +22,7 @@ class WorkScheduleTest extends TestCase
             'start_date' => '2026-01-01',
             'end_date' => null,
             'work_days' => [1, 2, 3, 4, 5],
+            'weekly_target_minutes' => 2400,
         ]);
 
         $response = $this->actingAs($admin)->getJson("/api/admin/users/{$user->id}/work-schedules");
@@ -39,10 +40,12 @@ class WorkScheduleTest extends TestCase
             'start_date' => '2026-04-01',
             'end_date' => null,
             'work_days' => [1, 2, 3],
+            'weekly_target_minutes' => 1440,
         ]);
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.work_days', [1, 2, 3]);
+            ->assertJsonPath('data.work_days', [1, 2, 3])
+            ->assertJsonPath('data.weekly_target_minutes', 1440);
 
         $this->assertDatabaseHas('work_schedules', [
             'user_id' => $user->id,
@@ -58,6 +61,7 @@ class WorkScheduleTest extends TestCase
             'start_date' => '2026-01-01',
             'end_date' => '2026-06-30',
             'work_days' => [1, 2, 3, 4],
+            'weekly_target_minutes' => 1920,
         ]);
 
         $response->assertStatus(201);
@@ -72,14 +76,17 @@ class WorkScheduleTest extends TestCase
             'start_date' => '2026-01-01',
             'end_date' => null,
             'work_days' => [1, 2, 3, 4, 5],
+            'weekly_target_minutes' => 2400,
         ]);
 
         $response = $this->actingAs($admin)->patchJson("/api/admin/work-schedules/{$schedule->id}", [
             'work_days' => [1, 3, 5],
+            'weekly_target_minutes' => 1440,
         ]);
 
         $response->assertOk()
-            ->assertJsonPath('data.work_days', [1, 3, 5]);
+            ->assertJsonPath('data.work_days', [1, 3, 5])
+            ->assertJsonPath('data.weekly_target_minutes', 1440);
     }
 
     public function test_admin_can_delete_work_schedule(): void
@@ -90,6 +97,7 @@ class WorkScheduleTest extends TestCase
             'start_date' => '2026-01-01',
             'end_date' => null,
             'work_days' => [1, 2, 3, 4, 5],
+            'weekly_target_minutes' => 2400,
         ]);
 
         $response = $this->actingAs($admin)->deleteJson("/api/admin/work-schedules/{$schedule->id}");
@@ -105,6 +113,26 @@ class WorkScheduleTest extends TestCase
 
         $this->actingAs($employee)->getJson("/api/admin/users/{$user->id}/work-schedules")
             ->assertStatus(403);
+    }
+
+    public function test_employee_can_view_own_work_schedules(): void
+    {
+        $employee = User::factory()->create();
+
+        WorkSchedule::create([
+            'user_id' => $employee->id,
+            'start_date' => '2026-01-01',
+            'end_date' => null,
+            'work_days' => [1, 2, 3, 4],
+            'weekly_target_minutes' => 1920,
+        ]);
+
+        $response = $this->actingAs($employee)->getJson('/api/work-schedules/mine');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.user_id', $employee->id)
+            ->assertJsonPath('data.0.weekly_target_minutes', 1920);
     }
 
     public function test_create_work_schedule_validates_required_fields(): void
@@ -126,6 +154,7 @@ class WorkScheduleTest extends TestCase
         $response = $this->actingAs($admin)->postJson("/api/admin/users/{$user->id}/work-schedules", [
             'start_date' => '2026-01-01',
             'work_days' => [0, 8],
+            'weekly_target_minutes' => 2400,
         ]);
 
         $response->assertStatus(422)
@@ -141,6 +170,7 @@ class WorkScheduleTest extends TestCase
             'start_date' => '2026-06-01',
             'end_date' => '2026-01-01',
             'work_days' => [1, 2, 3],
+            'weekly_target_minutes' => 1440,
         ]);
 
         $response->assertStatus(422)
@@ -152,8 +182,8 @@ class WorkScheduleTest extends TestCase
         $admin = User::factory()->admin()->create();
         $user = User::factory()->create();
 
-        WorkSchedule::create(['user_id' => $user->id, 'start_date' => '2026-01-01', 'end_date' => '2026-06-30', 'work_days' => [1, 2, 3, 4, 5]]);
-        WorkSchedule::create(['user_id' => $user->id, 'start_date' => '2026-07-01', 'end_date' => null, 'work_days' => [1, 2, 3]]);
+        WorkSchedule::create(['user_id' => $user->id, 'start_date' => '2026-01-01', 'end_date' => '2026-06-30', 'work_days' => [1, 2, 3, 4, 5], 'weekly_target_minutes' => 2400]);
+        WorkSchedule::create(['user_id' => $user->id, 'start_date' => '2026-07-01', 'end_date' => null, 'work_days' => [1, 2, 3], 'weekly_target_minutes' => 1440]);
 
         $response = $this->actingAs($admin)->getJson("/api/admin/users/{$user->id}/work-schedules");
 
@@ -172,6 +202,7 @@ class WorkScheduleTest extends TestCase
         $response = $this->actingAs($employee)->postJson("/api/admin/users/{$user->id}/work-schedules", [
             'start_date' => '2026-01-01',
             'work_days' => [1, 2, 3],
+            'weekly_target_minutes' => 1440,
         ]);
 
         $response->assertStatus(403);
@@ -185,6 +216,7 @@ class WorkScheduleTest extends TestCase
             'start_date' => '2026-01-01',
             'end_date' => null,
             'work_days' => [1, 2, 3, 4, 5],
+            'weekly_target_minutes' => 2400,
         ]);
 
         $response = $this->actingAs($employee)->patchJson("/api/admin/work-schedules/{$schedule->id}", [
@@ -202,6 +234,7 @@ class WorkScheduleTest extends TestCase
             'start_date' => '2026-01-01',
             'end_date' => null,
             'work_days' => [1, 2, 3, 4, 5],
+            'weekly_target_minutes' => 2400,
         ]);
 
         $response = $this->actingAs($employee)->deleteJson("/api/admin/work-schedules/{$schedule->id}");
@@ -217,6 +250,7 @@ class WorkScheduleTest extends TestCase
         $response = $this->actingAs($admin)->postJson("/api/admin/users/{$user->id}/work-schedules", [
             'start_date' => '2026-01-01',
             'work_days' => [],
+            'weekly_target_minutes' => 0,
         ]);
 
         $response->assertStatus(422)
@@ -231,11 +265,13 @@ class WorkScheduleTest extends TestCase
             'start_date' => '2026-01-01',
             'end_date' => null,
             'work_days' => [1, 2, 3, 4, 5],
+            'weekly_target_minutes' => 2400,
         ]);
 
         $response = $this->actingAs($admin)->patchJson("/api/admin/work-schedules/{$schedule->id}", [
             'start_date' => '2026-03-01',
             'end_date' => '2026-12-31',
+            'weekly_target_minutes' => 2400,
         ]);
 
         $response->assertOk();
@@ -252,11 +288,12 @@ class WorkScheduleTest extends TestCase
         $response = $this->actingAs($admin)->postJson("/api/admin/users/{$user->id}/work-schedules", [
             'start_date' => '2026-01-01',
             'work_days' => [1, 2, 3, 4, 5],
+            'weekly_target_minutes' => 2400,
         ]);
 
         $response->assertStatus(201)
             ->assertJsonStructure([
-                'data' => ['id', 'start_date', 'end_date', 'work_days'],
+                'data' => ['id', 'start_date', 'end_date', 'work_days', 'weekly_target_minutes'],
                 'message',
             ]);
     }
@@ -287,13 +324,28 @@ class WorkScheduleTest extends TestCase
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
 
-        WorkSchedule::create(['user_id' => $user1->id, 'start_date' => '2026-01-01', 'end_date' => null, 'work_days' => [1, 2, 3]]);
-        WorkSchedule::create(['user_id' => $user2->id, 'start_date' => '2026-01-01', 'end_date' => null, 'work_days' => [4, 5]]);
+        WorkSchedule::create(['user_id' => $user1->id, 'start_date' => '2026-01-01', 'end_date' => null, 'work_days' => [1, 2, 3], 'weekly_target_minutes' => 1440]);
+        WorkSchedule::create(['user_id' => $user2->id, 'start_date' => '2026-01-01', 'end_date' => null, 'work_days' => [4, 5], 'weekly_target_minutes' => 960]);
 
         $response = $this->actingAs($admin)->getJson("/api/admin/users/{$user1->id}/work-schedules");
 
         $response->assertOk();
         $this->assertCount(1, $response->json('data'));
         $this->assertEquals([1, 2, 3], $response->json('data.0.work_days'));
+    }
+
+    public function test_weekly_target_minutes_must_not_be_negative(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($admin)->postJson("/api/admin/users/{$user->id}/work-schedules", [
+            'start_date' => '2026-01-01',
+            'work_days' => [1, 2, 3],
+            'weekly_target_minutes' => -1,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['weekly_target_minutes']);
     }
 }

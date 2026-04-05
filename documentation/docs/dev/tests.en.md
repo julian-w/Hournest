@@ -117,7 +117,7 @@ frontend/src/app/
 
 ## Current Status
 
-- Backend suite: **368 tests / 1031 assertions**
+- Backend suite: **376 tests / 1062 assertions**
 - Frontend: every service under `frontend/src/app/core/services` has a matching spec file
 - Feature components with specs: Login, My Vacations, and Time Tracking
 
@@ -153,7 +153,7 @@ frontend/src/app/
 | `UserGroupTest` | Group management, member assignment, cost center assignment |
 | `AbsenceTest` | Illness, special leave, half-day rules, overlap validation |
 | `AbsenceAdminManagementTest` | Admin filters, review, and deletion of absences |
-| `AdminReportTest` | Aggregated time bookings, missing entries, and CSV export |
+| `AdminReportTest` | Aggregated time bookings, missing entries, absence reporting, and CSV export |
 | `BlackoutTest` | Blackout CRUD, check endpoint, freeze blocking, and automatic company-holiday effects in ledger/time tracking |
 | `TimeEntryTest` | Time recording, holidays, locking, auto-lock, half-day vacation, and company-holiday locks |
 | `TimeBookingTest` | Percentage booking, 100%/50% rules, system cost center protection, auto-lock, half-day vacation, and company-holiday locks |
@@ -175,7 +175,7 @@ frontend/src/app/
 | `app.component.spec.ts` | Language initialization and switching |
 | `core/services/*.spec.ts` | Request URLs, payloads, and response mapping for all core services |
 | `features/login/login.component.spec.ts` | Login flow, error states, forced password change |
-| `features/time-tracking/time-tracking.component.spec.ts` | Applying, saving, updating, and deleting templates, plus half-day vacation and company holidays in the weekly grid |
+| `features/time-tracking/time-tracking.component.spec.ts` | Applying, saving, updating, and deleting templates, plus half-day vacation, company holidays, and personal weekly targets in the weekly grid |
 | `features/admin/reports/admin-reports.component.spec.ts` | Loading reports, switching grouping, and CSV export |
 | `features/vacation/my-vacations.component.spec.ts` | Loading, cancelling, dialog refresh, ledger year switching |
 

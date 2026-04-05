@@ -84,17 +84,21 @@ class SystemTimeBookingService
         }
 
         foreach (User::all() as $user) {
-            $days = $this->calculateCompanyHolidayDaysForUser($blackout, $user);
+            $daysByYear = $this->calculateCompanyHolidayDaysByYearForUser($blackout, $user);
 
             VacationLedgerEntry::query()
                 ->where('user_id', $user->id)
                 ->where('blackout_period_id', $blackout->id)
                 ->delete();
 
-            if ($days > 0) {
+            foreach ($daysByYear as $year => $days) {
+                if ($days <= 0) {
+                    continue;
+                }
+
                 VacationLedgerEntry::create([
                     'user_id' => $user->id,
-                    'year' => $blackout->start_date->year,
+                    'year' => $year,
                     'type' => LedgerEntryType::Taken,
                     'days' => -$days,
                     'comment' => sprintf(
@@ -295,9 +299,12 @@ class SystemTimeBookingService
         return true;
     }
 
-    private function calculateCompanyHolidayDaysForUser(BlackoutPeriod $blackout, User $user): float
+    /**
+     * @return array<int, float>
+     */
+    private function calculateCompanyHolidayDaysByYearForUser(BlackoutPeriod $blackout, User $user): array
     {
-        $days = 0.0;
+        $daysByYear = [];
 
         foreach ($this->dateRange($blackout->start_date, $blackout->end_date) as $date) {
             if (!$user->isWorkDay($date)) {
@@ -346,9 +353,15 @@ class SystemTimeBookingService
                 $fraction -= $approvedVacation->scope === VacationScope::FullDay ? 1.0 : 0.5;
             }
 
-            $days += max(0.0, $fraction);
+            $effectiveFraction = max(0.0, $fraction);
+            if ($effectiveFraction <= 0.0) {
+                continue;
+            }
+
+            $year = (int) $date->year;
+            $daysByYear[$year] = ($daysByYear[$year] ?? 0.0) + $effectiveFraction;
         }
 
-        return $days;
+        return $daysByYear;
     }
 }

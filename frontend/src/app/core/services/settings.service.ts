@@ -12,6 +12,12 @@ interface ApiResponse<T> {
 export class SettingsService {
   constructor(private http: HttpClient) {}
 
+  getPublicSettings(): Observable<AppSetting[]> {
+    return this.http.get<ApiResponse<AppSetting[]>>('/api/settings').pipe(
+      map((response) => response.data)
+    );
+  }
+
   getSettings(): Observable<AppSetting[]> {
     return this.http.get<ApiResponse<AppSetting[]>>('/api/admin/settings').pipe(
       map((response) => response.data)

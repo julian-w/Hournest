@@ -65,6 +65,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Settings (read for everyone)
     Route::get('/settings', [SettingController::class, 'index']);
 
+    // Own work schedules
+    Route::get('/work-schedules/mine', [WorkScheduleController::class, 'mine']);
+
     // Time Tracking
     Route::get('/time-entries', [TimeEntryController::class, 'index']);
     Route::put('/time-entries/{date}', [TimeEntryController::class, 'store']);
@@ -165,6 +168,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Reports
         Route::get('/reports/time-bookings', [AdminReportController::class, 'timeBookings']);
         Route::get('/reports/missing-entries', [AdminReportController::class, 'missingEntries']);
+        Route::get('/reports/absences', [AdminReportController::class, 'absences']);
         Route::get('/reports/export', [AdminReportController::class, 'export']);
     });
 

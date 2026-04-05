@@ -24,6 +24,8 @@ Je nach Gruppierung zeigt sie:
 
 Die gebuchten Minuten werden aus dem Zeiteintrag des Tages und der jeweiligen Prozentverteilung abgeleitet.
 
+Für automatische Systembuchungen ohne separaten Zeiteintrag, z. B. Urlaub, Krankheit oder Betriebsferien, verwendet der Report die Soll-Minuten des Tages aus Arbeitszeitmodell oder Standard-Einstellung.
+
 ---
 
 ## Fehlende Einträge
@@ -37,7 +39,7 @@ Dabei gelten die aktuellen Fachregeln:
 
 - normale Arbeitstage erwarten **100 %**
 - halbtägige Abwesenheiten oder halbtägiger Urlaub erwarten **50 %**
-- ganztägige Abwesenheiten und ganztägiger Urlaub erscheinen nicht als fehlender Eintrag
+- ganztägige Abwesenheiten, ganztägiger Urlaub und **Betriebsferien (`company_holiday`)** erscheinen nicht als fehlender Eintrag
 
 ---
 

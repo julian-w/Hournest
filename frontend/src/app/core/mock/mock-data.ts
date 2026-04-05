@@ -217,6 +217,7 @@ export const MOCK_VARIABLE_DATES: Record<number, Record<number, string>> = {
 
 export const MOCK_SETTINGS: AppSetting[] = [
   { key: 'default_work_days', value: '[1,2,3,4,5]' },
+  { key: 'default_weekly_target_minutes', value: '2400' },
   { key: 'weekend_is_free', value: 'true' },
   { key: 'carryover_enabled', value: 'true' },
   { key: 'carryover_expiry_date', value: '31.03' },
@@ -293,5 +294,6 @@ export const MOCK_WORK_SCHEDULES: WorkSchedule[] = [
     start_date: '2026-07-01',
     end_date: '2026-12-31',
     work_days: [3, 4],
+    weekly_target_minutes: 960,
   },
 ];

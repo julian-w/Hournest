@@ -11,6 +11,7 @@ import { TimeEntry } from '../models/time-entry.model';
 import { TimeBooking } from '../models/time-booking.model';
 import { TimeLock } from '../models/time-lock.model';
 import { MissingEntryReportRow, TimeBookingReportRow } from '../models/admin-report.model';
+import { AbsenceReportRow } from '../models/absence-report.model';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -73,6 +74,7 @@ describe('AdminService', () => {
     start_date: '2026-01-01',
     end_date: null,
     work_days: [1, 2, 3, 4, 5],
+    weekly_target_minutes: 2400,
   };
 
   const timeEntry: TimeEntry = {
@@ -122,6 +124,19 @@ describe('AdminService', () => {
     expected_percentage: 100,
     actual_percentage: 60,
     has_time_entry: true,
+  };
+
+  const absenceReportRow: AbsenceReportRow = {
+    id: 17,
+    user_id: 9,
+    user_name: 'Ada Lovelace',
+    type: 'special_leave',
+    scope: 'morning',
+    status: 'approved',
+    start_date: '2026-04-07',
+    end_date: '2026-04-07',
+    comment: 'Family event',
+    admin_comment: 'Approved',
   };
 
   beforeEach(() => {
@@ -403,6 +418,31 @@ describe('AdminService', () => {
 
     expect(summary).toEqual([timeBookingReportRow]);
     expect(missing).toEqual([missingEntryReportRow]);
+  });
+
+  it('should fetch absence reports with optional filters', () => {
+    let result: AbsenceReportRow[] | undefined;
+
+    service.getAbsenceReport('2026-04-01', '2026-04-30', {
+      user_id: 9,
+      type: 'special_leave',
+      status: 'approved',
+    }).subscribe(data => {
+      result = data;
+    });
+
+    const req = httpMock.expectOne(r =>
+      r.url === '/api/admin/reports/absences'
+      && r.params.get('from') === '2026-04-01'
+      && r.params.get('to') === '2026-04-30'
+      && r.params.get('user_id') === '9'
+      && r.params.get('type') === 'special_leave'
+      && r.params.get('status') === 'approved'
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: [absenceReportRow] });
+
+    expect(result).toEqual([absenceReportRow]);
   });
 
   it('should request a csv export as blob', () => {

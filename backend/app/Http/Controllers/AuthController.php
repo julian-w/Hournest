@@ -29,7 +29,7 @@ class AuthController extends Controller
         return Socialite::driver('openid-connect')->redirect();
     }
 
-    public function callback(): RedirectResponse
+    public function callback(Request $request): RedirectResponse
     {
         $oidcUser = Socialite::driver('openid-connect')->user();
 
@@ -43,6 +43,7 @@ class AuthController extends Controller
             $user->update([
                 'email' => $oidcUser->getEmail(),
                 'display_name' => $oidcUser->getName() ?? $oidcUser->getEmail(),
+                'role' => $role,
             ]);
         } else {
             // Check if a pre-provisioned user exists with this email (created by admin before first SSO login)
@@ -52,6 +53,7 @@ class AuthController extends Controller
                 $preProvisioned->update([
                     'oidc_id' => $oidcUser->getId(),
                     'display_name' => $oidcUser->getName() ?? $oidcUser->getEmail(),
+                    'role' => $role,
                 ]);
                 $user = $preProvisioned;
             } else {
@@ -65,6 +67,9 @@ class AuthController extends Controller
         }
 
         auth()->login($user);
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
 
         return redirect(config('app.frontend_url', 'http://localhost:4200'));
     }
@@ -110,6 +115,9 @@ class AuthController extends Controller
                 }
 
                 auth()->login($user);
+                if ($request->hasSession()) {
+                    $request->session()->regenerate();
+                }
 
                 return response()->json([
                     'data' => new UserResource($user),
@@ -124,6 +132,9 @@ class AuthController extends Controller
 
             if ($user && $user->password && Hash::check($request->password, $user->password)) {
                 auth()->login($user);
+                if ($request->hasSession()) {
+                    $request->session()->regenerate();
+                }
 
                 return response()->json([
                     'data' => new UserResource($user),

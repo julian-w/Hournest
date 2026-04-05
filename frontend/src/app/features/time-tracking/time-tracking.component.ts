@@ -25,6 +25,8 @@ import { CostCenterService } from '../../core/services/cost-center.service';
 import { TimeBookingTemplateService } from '../../core/services/time-booking-template.service';
 import { TimeTrackingService } from '../../core/services/time-tracking.service';
 import { VacationService } from '../../core/services/vacation.service';
+import { SettingsService } from '../../core/services/settings.service';
+import { WorkScheduleService } from '../../core/services/work-schedule.service';
 import { TimeBookingTemplateDialogComponent } from './time-booking-template-dialog.component';
 
 interface DayData {
@@ -440,13 +442,17 @@ export class TimeTrackingComponent implements OnInit {
   private absenceService = inject(AbsenceService);
   private blackoutService = inject(BlackoutService);
   private vacationService = inject(VacationService);
+  private settingsService = inject(SettingsService);
+  private workScheduleService = inject(WorkScheduleService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
 
   private weekOffset = signal(0);
   private targetMinutesPerDay = signal(480);
+  private defaultWeeklyTargetMinutes = signal(2400);
   private weekBookings = signal<TimeBooking[]>([]);
+  private workSchedules = signal<{ start_date: string; end_date: string | null; work_days: number[]; weekly_target_minutes: number }[]>([]);
 
   days = signal<DayData[]>([]);
   costCenters = signal<CostCenter[]>([]);
@@ -474,14 +480,14 @@ export class TimeTrackingComponent implements OnInit {
   });
 
   weekTarget = computed(() => {
-    const workDays = this.days().filter(day => !day.isWeekend).length;
-    return this.formatMinutes(workDays * this.targetMinutesPerDay());
+    const total = this.days().reduce((sum, day) => sum + this.getDayTargetMinutes(day), 0);
+    return this.formatMinutes(total);
   });
 
   weekDeltaMinutes = computed(() => {
     const actual = this.days().reduce((sum, day) => sum + (day.timeEntry?.net_working_minutes ?? 0), 0);
-    const workDays = this.days().filter(day => !day.isWeekend).length;
-    return actual - workDays * this.targetMinutesPerDay();
+    const target = this.days().reduce((sum, day) => sum + this.getDayTargetMinutes(day), 0);
+    return actual - target;
   });
 
   weekDelta = computed(() => {
@@ -827,6 +833,15 @@ export class TimeTrackingComponent implements OnInit {
       this.buildBookingRows();
     });
 
+    this.settingsService.getPublicSettings().subscribe(settings => {
+      const defaultWeeklyTarget = settings.find(setting => setting.key === 'default_weekly_target_minutes')?.value;
+      this.defaultWeeklyTargetMinutes.set(defaultWeeklyTarget ? parseInt(defaultWeeklyTarget, 10) || 2400 : 2400);
+    });
+
+    this.workScheduleService.getMyWorkSchedules().subscribe(schedules => {
+      this.workSchedules.set(schedules);
+    });
+
     this.timeService.getTimeEntries(from, to).subscribe(entries => {
       this.applyTimeEntries(entries);
     });
@@ -989,6 +1004,37 @@ export class TimeTrackingComponent implements OnInit {
       !(day.absence && day.absence.scope === 'full_day') &&
       !(day.vacation && day.vacation.scope === 'full_day') &&
       !day.companyHoliday;
+  }
+
+  private getDayTargetMinutes(day: DayData): number {
+    const dailyTarget = this.getConfiguredDailyTargetMinutes(day.date);
+
+    if (day.isWeekend || day.companyHoliday) {
+      return 0;
+    }
+
+    if ((day.absence && day.absence.scope === 'full_day') || (day.vacation && day.vacation.scope === 'full_day')) {
+      return 0;
+    }
+
+    if ((day.absence && day.absence.scope !== 'full_day') || (day.vacation && day.vacation.scope !== 'full_day')) {
+      return Math.round(dailyTarget / 2);
+    }
+
+    return dailyTarget;
+  }
+
+  private getConfiguredDailyTargetMinutes(date: string): number {
+    const schedule = this.workSchedules().find(entry =>
+      entry.start_date <= date && (!entry.end_date || entry.end_date >= date)
+    );
+
+    if (schedule) {
+      const workDaysCount = schedule.work_days.length || 1;
+      return Math.round(schedule.weekly_target_minutes / workDaysCount);
+    }
+
+    return Math.round(this.defaultWeeklyTargetMinutes() / 5);
   }
 
   private syncTemplateDateSelection(): void {

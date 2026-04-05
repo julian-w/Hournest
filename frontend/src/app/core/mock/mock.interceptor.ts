@@ -454,15 +454,23 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
     return of(jsonResponse({ data: userSchedules })).pipe(delay(MOCK_DELAY));
   }
 
+  // GET /api/work-schedules/mine
+  if (method === 'GET' && url.endsWith('/api/work-schedules/mine')) {
+    const userId = mockService.currentUser().id;
+    const userSchedules = workSchedules.filter(ws => ws.user_id === userId);
+    return of(jsonResponse({ data: userSchedules })).pipe(delay(MOCK_DELAY));
+  }
+
   // POST /api/admin/users/:id/work-schedules
   if (method === 'POST' && workScheduleUserId !== null) {
-    const body = parseBody<{ start_date: string; end_date: string | null; work_days: number[] }>(req);
+    const body = parseBody<{ start_date: string; end_date: string | null; work_days: number[]; weekly_target_minutes?: number }>(req);
     const newSchedule: WorkSchedule = {
       id: nextWorkScheduleId++,
       user_id: workScheduleUserId,
       start_date: body.start_date,
       end_date: body.end_date,
       work_days: body.work_days,
+      weekly_target_minutes: body.weekly_target_minutes ?? body.work_days.length * 480,
     };
     workSchedules.push(newSchedule);
     return of(jsonResponse({ data: newSchedule, message: 'Work schedule created' }, 201)).pipe(delay(MOCK_DELAY));
@@ -471,12 +479,13 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
   // PATCH /api/admin/work-schedules/:id
   const patchWorkScheduleId = extractIdFromUrl(url, /\/api\/admin\/work-schedules\/(\d+)$/);
   if (method === 'PATCH' && patchWorkScheduleId !== null) {
-    const body = parseBody<{ start_date: string; end_date: string | null; work_days: number[] }>(req);
+    const body = parseBody<{ start_date: string; end_date: string | null; work_days: number[]; weekly_target_minutes?: number }>(req);
     const schedule = workSchedules.find(ws => ws.id === patchWorkScheduleId);
     if (schedule) {
       schedule.start_date = body.start_date;
       schedule.end_date = body.end_date;
       schedule.work_days = body.work_days;
+      schedule.weekly_target_minutes = body.weekly_target_minutes ?? body.work_days.length * 480;
       return of(jsonResponse({ data: schedule, message: 'Work schedule updated' })).pipe(delay(MOCK_DELAY));
     }
     return of(jsonResponse({ message: 'Not found' }, 404)).pipe(delay(MOCK_DELAY));

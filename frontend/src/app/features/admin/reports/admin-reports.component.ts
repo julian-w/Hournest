@@ -11,6 +11,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MissingEntryReportRow, TimeBookingReportRow } from '../../../core/models/admin-report.model';
+import { AbsenceReportRow } from '../../../core/models/absence-report.model';
 import { AdminService } from '../../../core/services/admin.service';
 
 @Component({
@@ -180,6 +181,7 @@ export class AdminReportsComponent implements OnInit {
 
   timeBookingRows = signal<TimeBookingReportRow[]>([]);
   missingEntries = signal<MissingEntryReportRow[]>([]);
+  absences = signal<AbsenceReportRow[]>([]);
   summaryColumns = ['label', 'code', 'percentage_points', 'booked_minutes'];
   missingColumns = ['user_name', 'date', 'reason', 'expected_percentage', 'actual_percentage'];
 
@@ -194,6 +196,10 @@ export class AdminReportsComponent implements OnInit {
 
     this.adminService.getMissingEntriesReport(this.from, this.to).subscribe(rows => {
       this.missingEntries.set(rows);
+    });
+
+    this.adminService.getAbsenceReport(this.from, this.to).subscribe(rows => {
+      this.absences.set(rows);
     });
   }
 

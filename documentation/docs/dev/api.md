@@ -486,6 +486,7 @@ Gibt alle globalen Einstellungen zurück.
 {
   "data": [
     { "key": "default_work_days", "value": "[1,2,3,4,5]" },
+    { "key": "default_weekly_target_minutes", "value": "2400" },
     { "key": "weekend_is_free", "value": "true" },
     { "key": "carryover_enabled", "value": "true" },
     { "key": "carryover_expiry_date", "value": "03-31" }
@@ -896,11 +897,20 @@ Gibt die Arbeitszeitmodelle eines Benutzers zurück.
       "user_id": 5,
       "start_date": "2026-07-01",
       "end_date": "2026-12-31",
-      "work_days": [3, 4]
+      "work_days": [3, 4],
+      "weekly_target_minutes": 960
     }
   ]
 }
 ```
+
+---
+
+### GET /api/work-schedules/mine
+
+Gibt die eigenen Arbeitszeitmodelle des angemeldeten Benutzers zurück.
+
+**Auth:** Sanctum
 
 ---
 
@@ -916,7 +926,8 @@ Erstellt ein neues Arbeitszeitmodell für einen Benutzer.
 {
   "start_date": "2026-07-01",
   "end_date": "2026-12-31",
-  "work_days": [3, 4]
+  "work_days": [3, 4],
+  "weekly_target_minutes": 960
 }
 ```
 
@@ -929,7 +940,8 @@ Erstellt ein neues Arbeitszeitmodell für einen Benutzer.
     "user_id": 5,
     "start_date": "2026-07-01",
     "end_date": "2026-12-31",
-    "work_days": [3, 4]
+    "work_days": [3, 4],
+    "weekly_target_minutes": 960
   },
   "message": "Work schedule created."
 }
@@ -949,7 +961,8 @@ Aktualisiert ein Arbeitszeitmodell.
 {
   "start_date": "2026-07-01",
   "end_date": null,
-  "work_days": [1, 2, 3]
+  "work_days": [1, 2, 3],
+  "weekly_target_minutes": 1440
 }
 ```
 
@@ -962,7 +975,8 @@ Aktualisiert ein Arbeitszeitmodell.
     "user_id": 5,
     "start_date": "2026-07-01",
     "end_date": null,
-    "work_days": [1, 2, 3]
+    "work_days": [1, 2, 3],
+    "weekly_target_minutes": 1440
   },
   "message": "Work schedule updated."
 }
@@ -1078,6 +1092,23 @@ Liefert Arbeitstage mit fehlendem Zeiteintrag oder unvollständiger manueller Pr
 - `to` -- Enddatum
 - `user_id` (optional) -- nur einen Benutzer auswerten
 
+!!! info "Aktuelles Verhalten"
+    Ganztägige Abwesenheiten, ganztägiger Urlaub und `company_holiday`-Tage werden nicht als fehlende Einträge gemeldet. Halbtägige Abwesenheiten oder halbtägiger Urlaub erwarten 50 % manuelle Buchung.
+
+### GET /api/admin/reports/absences
+
+Liefert Abwesenheiten im Zeitraum als filterbaren Admin-Report.
+
+**Auth:** Sanctum + Admin
+
+**Query-Parameter:**
+
+- `from` -- Startdatum
+- `to` -- Enddatum
+- `user_id` (optional) -- nur einen Benutzer auswerten
+- `type` (optional) -- `illness` oder `special_leave`
+- `status` (optional) -- z. B. `pending`, `approved`, `acknowledged`, `admin_created`
+
 ### GET /api/admin/reports/export?format=csv
 
 Exportiert Zeitbuchungen im Zeitraum als CSV-Download.
@@ -1089,3 +1120,6 @@ Exportiert Zeitbuchungen im Zeitraum als CSV-Download.
 - `format=csv`
 - `from` -- Startdatum
 - `to` -- Enddatum
+
+!!! info "Gebuchte Minuten"
+    Für Systembuchungen ohne separaten Zeiteintrag verwendet der Export die aus Arbeitszeitmodell bzw. Standard-Einstellung abgeleiteten Soll-Minuten des Tages.

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { MissingEntryReportRow, TimeBookingReportRow } from '../models/admin-report.model';
+import { AbsenceReportRow } from '../models/absence-report.model';
 import { Absence, AbsenceType, AbsenceScope } from '../models/absence.model';
 import { CostCenter } from '../models/cost-center.model';
 import { TimeLock } from '../models/time-lock.model';
@@ -73,13 +74,13 @@ export class AdminService {
     );
   }
 
-  createWorkSchedule(userId: number, data: { start_date: string; end_date: string | null; work_days: number[] }): Observable<WorkSchedule> {
+  createWorkSchedule(userId: number, data: { start_date: string; end_date: string | null; work_days: number[]; weekly_target_minutes?: number }): Observable<WorkSchedule> {
     return this.http.post<ApiResponse<WorkSchedule>>(`/api/admin/users/${userId}/work-schedules`, data).pipe(
       map((response) => response.data)
     );
   }
 
-  updateWorkSchedule(id: number, data: { start_date: string; end_date: string | null; work_days: number[] }): Observable<WorkSchedule> {
+  updateWorkSchedule(id: number, data: { start_date?: string; end_date?: string | null; work_days?: number[]; weekly_target_minutes?: number }): Observable<WorkSchedule> {
     return this.http.patch<ApiResponse<WorkSchedule>>(`/api/admin/work-schedules/${id}`, data).pipe(
       map((response) => response.data)
     );
@@ -224,6 +225,23 @@ export class AdminService {
 
     return this.http.get<ApiResponse<MissingEntryReportRow[]>>('/api/admin/reports/missing-entries', {
       params,
+    }).pipe(map((response) => response.data));
+  }
+
+  getAbsenceReport(from: string, to: string, params?: { user_id?: number; type?: string; status?: string }): Observable<AbsenceReportRow[]> {
+    const query: Record<string, string> = { from, to };
+    if (params?.user_id !== undefined) {
+      query['user_id'] = params.user_id.toString();
+    }
+    if (params?.type) {
+      query['type'] = params.type;
+    }
+    if (params?.status) {
+      query['status'] = params.status;
+    }
+
+    return this.http.get<ApiResponse<AbsenceReportRow[]>>('/api/admin/reports/absences', {
+      params: query,
     }).pipe(map((response) => response.data));
   }
 

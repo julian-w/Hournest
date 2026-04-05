@@ -231,4 +231,76 @@ class AuthOidcTest extends TestCase
         $this->assertSame('renamed@example.com', $existing->email);
         $this->assertSame('renamed@example.com', $existing->display_name);
     }
+
+    public function test_oidc_callback_reapplies_admin_role_for_existing_user(): void
+    {
+        config([
+            'auth.admin_emails' => 'boss@example.com',
+            'app.frontend_url' => 'http://frontend.test',
+        ]);
+
+        $existing = User::factory()->create([
+            'email' => 'boss@example.com',
+            'display_name' => 'Boss',
+            'oidc_id' => 'oidc-admin-refresh',
+            'role' => UserRole::Employee,
+        ]);
+
+        $oidcUser = Mockery::mock();
+        $oidcUser->shouldReceive('getId')->andReturn('oidc-admin-refresh');
+        $oidcUser->shouldReceive('getEmail')->andReturn('boss@example.com');
+        $oidcUser->shouldReceive('getName')->andReturn('Boss User');
+
+        $provider = Mockery::mock();
+        $provider->shouldReceive('user')->once()->andReturn($oidcUser);
+
+        $factory = Mockery::mock(SocialiteFactory::class);
+        $factory->shouldReceive('driver')
+            ->once()
+            ->with('openid-connect')
+            ->andReturn($provider);
+
+        $this->app->instance(SocialiteFactory::class, $factory);
+
+        $this->get('/api/auth/callback')->assertRedirect('http://frontend.test');
+
+        $existing->refresh();
+        $this->assertSame(UserRole::Admin, $existing->role);
+    }
+
+    public function test_oidc_callback_removes_admin_role_when_email_is_no_longer_listed(): void
+    {
+        config([
+            'auth.admin_emails' => '',
+            'app.frontend_url' => 'http://frontend.test',
+        ]);
+
+        $existing = User::factory()->create([
+            'email' => 'boss@example.com',
+            'display_name' => 'Boss',
+            'oidc_id' => 'oidc-admin-demotion',
+            'role' => UserRole::Admin,
+        ]);
+
+        $oidcUser = Mockery::mock();
+        $oidcUser->shouldReceive('getId')->andReturn('oidc-admin-demotion');
+        $oidcUser->shouldReceive('getEmail')->andReturn('boss@example.com');
+        $oidcUser->shouldReceive('getName')->andReturn('Boss User');
+
+        $provider = Mockery::mock();
+        $provider->shouldReceive('user')->once()->andReturn($oidcUser);
+
+        $factory = Mockery::mock(SocialiteFactory::class);
+        $factory->shouldReceive('driver')
+            ->once()
+            ->with('openid-connect')
+            ->andReturn($provider);
+
+        $this->app->instance(SocialiteFactory::class, $factory);
+
+        $this->get('/api/auth/callback')->assertRedirect('http://frontend.test');
+
+        $existing->refresh();
+        $this->assertSame(UserRole::Employee, $existing->role);
+    }
 }

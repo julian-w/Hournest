@@ -115,7 +115,7 @@ frontend/src/app/
 
 ## Aktueller Stand
 
-- Backend-Suite: **368 Tests / 1031 Assertions**
+- Backend-Suite: **376 Tests / 1062 Assertions**
 - Frontend: alle Services unter `frontend/src/app/core/services` haben Spec-Dateien
 - Feature-Komponenten mit Specs: Login, Mein Urlaub und Zeiterfassung
 
@@ -151,7 +151,7 @@ frontend/src/app/
 | `UserGroupTest` | Gruppenverwaltung, Mitglieder- und Kostenstellenzuordnung |
 | `AbsenceTest` | Krankheit, Sonderurlaub, Halbtag-Regeln, Überschneidungen |
 | `AbsenceAdminManagementTest` | Admin-Filter, Review und Löschen von Abwesenheiten |
-| `AdminReportTest` | Aggregierte Zeitbuchungen, fehlende Einträge und CSV-Export |
+| `AdminReportTest` | Aggregierte Zeitbuchungen, fehlende Einträge, Abwesenheitsreport und CSV-Export |
 | `BlackoutTest` | Blackout-CRUD, Check-Endpunkt, Freeze-Blockierung und automatische Betriebsferien-Wirkung in Urlaubskonto/Zeiterfassung |
 | `TimeEntryTest` | Arbeitszeiterfassung, Feiertage, Sperren, Auto-Lock, Halbtags-Urlaub und Betriebsferien-Sperren |
 | `TimeBookingTest` | Prozentbuchungen, 100-%-/50-%-Regeln, Systemkostenstellen-Schutz, Auto-Lock, Halbtags-Urlaub und Betriebsferien-Sperren |
@@ -173,7 +173,7 @@ frontend/src/app/
 | `app.component.spec.ts` | Sprachinitialisierung und Sprachwechsel |
 | `core/services/*.spec.ts` | Request-URLs, Payloads und Response-Mapping aller Core-Services |
 | `features/login/login.component.spec.ts` | Login-Flow, Fehlerzustände, erzwungener Passwortwechsel |
-| `features/time-tracking/time-tracking.component.spec.ts` | Vorlagen anwenden, speichern, aktualisieren, löschen sowie Halbtags-Urlaub und Betriebsferien im Wochengrid |
+| `features/time-tracking/time-tracking.component.spec.ts` | Vorlagen anwenden, speichern, aktualisieren, löschen sowie Halbtags-Urlaub, Betriebsferien und persönliche Wochenziele im Wochengrid |
 | `features/admin/reports/admin-reports.component.spec.ts` | Laden von Reports, Gruppierungswechsel und CSV-Export |
 | `features/vacation/my-vacations.component.spec.ts` | Laden, Stornieren, Dialog-Refresh und Ledger-Jahreswechsel |
 

@@ -238,4 +238,33 @@ class BlackoutTest extends TestCase
             ->whereDate('date', '2026-12-28')
             ->count());
     }
+
+    public function test_company_holiday_spanning_new_year_creates_ledger_entries_per_year(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $employee = User::factory()->create();
+
+        $response = $this->actingAs($admin)->postJson('/api/admin/blackouts', [
+            'type' => 'company_holiday',
+            'start_date' => '2026-12-31',
+            'end_date' => '2027-01-02',
+            'reason' => 'New year shutdown',
+        ])->assertCreated();
+
+        $blackoutId = $response->json('data.id');
+
+        $this->assertDatabaseHas('vacation_ledger_entries', [
+            'user_id' => $employee->id,
+            'blackout_period_id' => $blackoutId,
+            'year' => 2026,
+            'days' => '-1.0',
+        ]);
+
+        $this->assertDatabaseHas('vacation_ledger_entries', [
+            'user_id' => $employee->id,
+            'blackout_period_id' => $blackoutId,
+            'year' => 2027,
+            'days' => '-1.0',
+        ]);
+    }
 }

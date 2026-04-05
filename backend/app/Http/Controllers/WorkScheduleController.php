@@ -10,10 +10,21 @@ use App\Http\Resources\WorkScheduleResource;
 use App\Models\User;
 use App\Models\WorkSchedule;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class WorkScheduleController extends Controller
 {
+    public function mine(Request $request): AnonymousResourceCollection
+    {
+        $schedules = $request->user()
+            ->workSchedules()
+            ->orderByDesc('start_date')
+            ->get();
+
+        return WorkScheduleResource::collection($schedules);
+    }
+
     public function index(User $user): AnonymousResourceCollection
     {
         $schedules = $user->workSchedules()

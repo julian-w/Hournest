@@ -7,9 +7,11 @@ import { of } from 'rxjs';
 import { AbsenceService } from '../../core/services/absence.service';
 import { BlackoutService } from '../../core/services/blackout.service';
 import { CostCenterService } from '../../core/services/cost-center.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { TimeBookingTemplateService } from '../../core/services/time-booking-template.service';
 import { TimeTrackingService } from '../../core/services/time-tracking.service';
 import { VacationService } from '../../core/services/vacation.service';
+import { WorkScheduleService } from '../../core/services/work-schedule.service';
 import { TimeTrackingComponent } from './time-tracking.component';
 
 describe('TimeTrackingComponent', () => {
@@ -37,6 +39,12 @@ describe('TimeTrackingComponent', () => {
   };
   let vacationServiceStub: {
     getMyVacations: jasmine.Spy;
+  };
+  let settingsServiceStub: {
+    getPublicSettings: jasmine.Spy;
+  };
+  let workScheduleServiceStub: {
+    getMyWorkSchedules: jasmine.Spy;
   };
   let dialogStub: {
     open: jasmine.Spy;
@@ -100,6 +108,16 @@ describe('TimeTrackingComponent', () => {
       getMyVacations: jasmine.createSpy('getMyVacations').and.returnValue(of([])),
     };
 
+    settingsServiceStub = {
+      getPublicSettings: jasmine.createSpy('getPublicSettings').and.returnValue(of([
+        { key: 'default_weekly_target_minutes', value: '2400' },
+      ])),
+    };
+
+    workScheduleServiceStub = {
+      getMyWorkSchedules: jasmine.createSpy('getMyWorkSchedules').and.returnValue(of([])),
+    };
+
     dialogStub = {
       open: jasmine.createSpy('open').and.returnValue({
         afterClosed: () => of('Focus Day'),
@@ -123,6 +141,8 @@ describe('TimeTrackingComponent', () => {
         { provide: AbsenceService, useValue: absenceServiceStub },
         { provide: BlackoutService, useValue: blackoutServiceStub },
         { provide: VacationService, useValue: vacationServiceStub },
+        { provide: SettingsService, useValue: settingsServiceStub },
+        { provide: WorkScheduleService, useValue: workScheduleServiceStub },
         { provide: MatDialog, useValue: dialogStub },
         { provide: MatSnackBar, useValue: snackBarStub },
         {
@@ -288,5 +308,75 @@ describe('TimeTrackingComponent', () => {
     expect(blackoutServiceStub.getMatchingBlackouts).toHaveBeenCalled();
     expect(holidayDay?.companyHoliday?.type).toBe('company_holiday');
     expect(holidayDay ? component['canEditBookingsForDay'](holidayDay) : true).toBeFalse();
+  });
+
+  it('should exclude company holidays from weekly target and delta', () => {
+    blackoutServiceStub.getMatchingBlackouts.and.returnValue(of([
+      {
+        id: 15,
+        type: 'company_holiday',
+        start_date: '2026-04-06',
+        end_date: '2026-04-06',
+        reason: 'Shutdown',
+        created_at: '2026-04-01T12:00:00Z',
+      },
+    ]));
+
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+
+    expect(component.weekTarget()).toBe('32:00');
+    expect(component.weekDelta()).toBe('-32:00');
+  });
+
+  it('should halve the weekly target for half-day absences', () => {
+    absenceServiceStub.getMyAbsences.and.returnValue(of([
+      {
+        id: 5,
+        user_id: 3,
+        start_date: '2026-04-06',
+        end_date: '2026-04-06',
+        type: 'illness',
+        scope: 'morning',
+        status: 'acknowledged',
+        comment: null,
+        admin_comment: null,
+        reviewed_by: 1,
+        reviewed_at: '2026-04-01T12:00:00Z',
+        created_at: '2026-04-01T12:00:00Z',
+      },
+    ]));
+
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+
+    expect(component.weekTarget()).toBe('36:00');
+    expect(component.weekDelta()).toBe('-36:00');
+  });
+
+  it('should use the matching personal work schedule for weekly target and delta', () => {
+    workScheduleServiceStub.getMyWorkSchedules.and.returnValue(of([
+      {
+        id: 11,
+        user_id: 3,
+        start_date: '2026-04-01',
+        end_date: null,
+        work_days: [1, 2, 3, 4],
+        weekly_target_minutes: 1920,
+      },
+    ]));
+
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+
+    expect(workScheduleServiceStub.getMyWorkSchedules).toHaveBeenCalled();
+    expect(component.weekTarget()).toBe('32:00');
+    expect(component.weekDelta()).toBe('-32:00');
   });
 });

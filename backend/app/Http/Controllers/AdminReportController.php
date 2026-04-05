@@ -7,12 +7,13 @@ namespace App\Http\Controllers;
 use App\Enums\VacationScope;
 use App\Enums\UserRole;
 use App\Models\Absence;
-use App\Models\CostCenter;
-use App\Models\TimeBooking;
-use App\Models\TimeEntry;
-use App\Models\User;
-use App\Models\Vacation;
-use Carbon\Carbon;
+    use App\Models\CostCenter;
+    use App\Models\TimeBooking;
+    use App\Models\TimeEntry;
+    use App\Models\User;
+    use App\Models\Vacation;
+    use App\Models\BlackoutPeriod;
+    use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -34,13 +35,8 @@ class AdminReportController extends Controller
             ->whereDate('date', '<=', $validated['to'])
             ->get()
             ->map(function (TimeBooking $booking): array {
-                $entry = TimeEntry::query()
-                    ->where('user_id', $booking->user_id)
-                    ->whereDate('date', $booking->date)
-                    ->first();
-                $netMinutes = $entry ? $this->calculateNetMinutes($entry) : 0;
-
-                $derivedMinutes = (int) round($netMinutes * ($booking->percentage / 100));
+                $baseMinutes = $this->resolveBaseMinutesForBooking($booking);
+                $derivedMinutes = (int) round($baseMinutes * ($booking->percentage / 100));
 
                 return [
                     'user_id' => $booking->user_id,
@@ -97,7 +93,11 @@ class AdminReportController extends Controller
                     continue;
                 }
 
-                if ($this->hasFullDayEffectiveAbsence($user->id, $date) || $this->hasFullDayApprovedVacation($user->id, $date)) {
+                if (
+                    $this->hasFullDayEffectiveAbsence($user->id, $date) ||
+                    $this->hasFullDayApprovedVacation($user->id, $date) ||
+                    $this->hasCompanyHoliday($date)
+                ) {
                     continue;
                 }
 
@@ -167,11 +167,7 @@ class AdminReportController extends Controller
             fputcsv($handle, ['date', 'user_name', 'user_email', 'cost_center_code', 'cost_center_name', 'percentage', 'booked_minutes', 'comment']);
 
             foreach ($rows as $booking) {
-                $entry = TimeEntry::query()
-                    ->where('user_id', $booking->user_id)
-                    ->whereDate('date', $booking->date)
-                    ->first();
-                $netMinutes = $entry ? $this->calculateNetMinutes($entry) : 0;
+                $baseMinutes = $this->resolveBaseMinutesForBooking($booking);
 
                 fputcsv($handle, [
                     $booking->date->toDateString(),
@@ -180,7 +176,7 @@ class AdminReportController extends Controller
                     $booking->costCenter?->code,
                     $booking->costCenter?->name,
                     $booking->percentage,
-                    (int) round($netMinutes * ($booking->percentage / 100)),
+                    (int) round($baseMinutes * ($booking->percentage / 100)),
                     $booking->comment,
                 ]);
             }
@@ -189,6 +185,44 @@ class AdminReportController extends Controller
         }, $filename, [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    public function absences(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'from' => ['required', 'date'],
+            'to' => ['required', 'date', 'after_or_equal:from'],
+            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'type' => ['nullable', 'in:illness,special_leave'],
+            'status' => ['nullable', 'in:reported,acknowledged,pending,approved,rejected,admin_created'],
+        ]);
+
+        $rows = Absence::query()
+            ->with('user:id,display_name')
+            ->whereDate('start_date', '<=', $validated['to'])
+            ->whereDate('end_date', '>=', $validated['from'])
+            ->when(isset($validated['user_id']), fn ($query) => $query->where('user_id', $validated['user_id']))
+            ->when(isset($validated['type']), fn ($query) => $query->where('type', $validated['type']))
+            ->when(isset($validated['status']), fn ($query) => $query->where('status', $validated['status']))
+            ->orderBy('start_date')
+            ->orderBy('user_id')
+            ->get()
+            ->map(fn (Absence $absence): array => [
+                'id' => $absence->id,
+                'user_id' => $absence->user_id,
+                'user_name' => $absence->user?->display_name,
+                'type' => $absence->type->value,
+                'scope' => $absence->scope->value,
+                'status' => $absence->status->value,
+                'start_date' => $absence->start_date->toDateString(),
+                'end_date' => $absence->end_date->toDateString(),
+                'comment' => $absence->comment,
+                'admin_comment' => $absence->admin_comment,
+            ])
+            ->values()
+            ->all();
+
+        return response()->json(['data' => $rows]);
     }
 
     private function hasFullDayEffectiveAbsence(int $userId, Carbon $date): bool
@@ -241,5 +275,33 @@ class AdminReportController extends Controller
         $totalMinutes = (int) round(($end - $start) / 60);
 
         return max(0, $totalMinutes - (int) $entry->break_minutes);
+    }
+
+    private function hasCompanyHoliday(Carbon $date): bool
+    {
+        return BlackoutPeriod::query()
+            ->where('type', 'company_holiday')
+            ->whereDate('start_date', '<=', $date->toDateString())
+            ->whereDate('end_date', '>=', $date->toDateString())
+            ->exists();
+    }
+
+    private function resolveBaseMinutesForBooking(TimeBooking $booking): int
+    {
+        $entry = TimeEntry::query()
+            ->where('user_id', $booking->user_id)
+            ->whereDate('date', $booking->date)
+            ->first();
+
+        if ($entry !== null) {
+            return $this->calculateNetMinutes($entry);
+        }
+
+        $user = $booking->relationLoaded('user') ? $booking->user : User::find($booking->user_id);
+        if ($user === null) {
+            return 0;
+        }
+
+        return $user->getDailyTargetMinutes(Carbon::parse($booking->date));
     }
 }

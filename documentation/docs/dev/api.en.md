@@ -486,6 +486,7 @@ Returns all global settings.
 {
   "data": [
     { "key": "default_work_days", "value": "[1,2,3,4,5]" },
+    { "key": "default_weekly_target_minutes", "value": "2400" },
     { "key": "weekend_is_free", "value": "true" },
     { "key": "carryover_enabled", "value": "true" },
     { "key": "carryover_expiry_date", "value": "03-31" }
@@ -876,11 +877,20 @@ Returns work schedules for a user.
       "user_id": 5,
       "start_date": "2026-07-01",
       "end_date": "2026-12-31",
-      "work_days": [3, 4]
+      "work_days": [3, 4],
+      "weekly_target_minutes": 960
     }
   ]
 }
 ```
+
+---
+
+### GET /api/work-schedules/mine
+
+Returns the authenticated user's own work schedules.
+
+**Auth:** Sanctum
 
 ---
 
@@ -896,7 +906,8 @@ Creates a new work schedule for a user.
 {
   "start_date": "2026-07-01",
   "end_date": "2026-12-31",
-  "work_days": [3, 4]
+  "work_days": [3, 4],
+  "weekly_target_minutes": 960
 }
 ```
 
@@ -909,7 +920,8 @@ Creates a new work schedule for a user.
     "user_id": 5,
     "start_date": "2026-07-01",
     "end_date": "2026-12-31",
-    "work_days": [3, 4]
+    "work_days": [3, 4],
+    "weekly_target_minutes": 960
   },
   "message": "Work schedule created."
 }
@@ -932,7 +944,8 @@ Updates a work schedule.
     "user_id": 5,
     "start_date": "2026-07-01",
     "end_date": null,
-    "work_days": [1, 2, 3]
+    "work_days": [1, 2, 3],
+    "weekly_target_minutes": 1440
   },
   "message": "Work schedule updated."
 }
@@ -1048,6 +1061,23 @@ Returns workdays with missing time entries or incomplete manual percentage booki
 - `to` -- end date
 - `user_id` (optional) -- limit the report to one user
 
+!!! info "Current behavior"
+    Full-day absences, full-day vacation, and `company_holiday` days are excluded from missing-entry results. Half-day absences or half-day vacation expect 50% manual booking.
+
+### GET /api/admin/reports/absences
+
+Returns absences in the selected range as a filterable admin report.
+
+**Auth:** Sanctum + Admin
+
+**Query Parameters:**
+
+- `from` -- start date
+- `to` -- end date
+- `user_id` (optional) -- limit the report to one user
+- `type` (optional) -- `illness` or `special_leave`
+- `status` (optional) -- e.g. `pending`, `approved`, `acknowledged`, `admin_created`
+
 ### GET /api/admin/reports/export?format=csv
 
 Exports time bookings for the selected period as a CSV download.
@@ -1059,3 +1089,6 @@ Exports time bookings for the selected period as a CSV download.
 - `format=csv`
 - `from` -- start date
 - `to` -- end date
+
+!!! info "Booked minutes"
+    For system bookings without a separate time entry, the export uses the day's target minutes derived from the user's work schedule or the default setting.

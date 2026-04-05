@@ -4,4 +4,5 @@ export interface WorkSchedule {
   start_date: string;
   end_date: string | null;
   work_days: number[];
+  weekly_target_minutes: number;
 }

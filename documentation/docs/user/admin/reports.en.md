@@ -24,6 +24,8 @@ Depending on the selected grouping, it shows:
 
 Booked minutes are derived from the day's time entry and the booking percentage.
 
+For automatic system bookings without a separate time entry, such as vacation, illness, or company holidays, the report uses the day's target minutes from the work schedule or the default setting.
+
 ---
 
 ## Missing Entries
@@ -37,7 +39,7 @@ The current business rules apply:
 
 - regular workdays expect **100%**
 - half-day absences or half-day vacation expect **50%**
-- full-day absences and full-day vacation are not listed as missing entries
+- full-day absences, full-day vacation, and **company holidays (`company_holiday`)** are not listed as missing entries
 
 ---
 
