@@ -172,7 +172,7 @@ The admin check is handled in the backend via the `EnsureAdmin` middleware, whic
 | Component         | Technology             | Version  |
 |-------------------|------------------------|----------|
 | Backend framework | Laravel                | 11+      |
-| PHP               | PHP                    | 8.4+     |
+| PHP               | PHP                    | 8.5+     |
 | Frontend framework| Angular                | 18+      |
 | UI library        | Angular Material       | 18+      |
 | CSS preprocessor  | SCSS                   |          |

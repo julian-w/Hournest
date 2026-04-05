@@ -6,9 +6,9 @@ Diese Seite listet alle Software-Anforderungen auf, die für die Entwicklung und
 
 ## Backend-Anforderungen
 
-### PHP 8.4+
+### PHP 8.5+
 
-PHP 8.4 oder höher ist erforderlich. Folgende PHP-Extensions müssen aktiviert sein:
+PHP 8.5 oder höher ist erforderlich. Folgende PHP-Extensions müssen aktiviert sein:
 
 | Extension    | Zweck                              |
 |--------------|------------------------------------|

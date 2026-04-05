@@ -66,7 +66,7 @@ Hournest ist eine interne Webanwendung für **Urlaubsverwaltung** mit bereits au
 | Bereich    | Technologie                                  |
 |------------|----------------------------------------------|
 | Frontend   | Angular 18+, Angular Material, SCSS, ngx-translate |
-| Backend    | Laravel 11+, PHP 8.4+                        |
+| Backend    | Laravel 11+, PHP 8.5+                        |
 | Datenbank  | SQLite (Entwicklung), MySQL/PostgreSQL (Produktion) |
 | Auth       | OIDC (beliebiger Provider) oder lokales Login, Laravel Sanctum |
 | API-Doku   | Scramble (auto-generierte OpenAPI-Spec)       |
