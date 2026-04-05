@@ -2,6 +2,8 @@
 
 Diese Seite beschreibt die Admin-Reports für Zeiterfassung und Kostenstellen.
 
+Zusätzlich enthält die Seite jetzt auch einen **Abwesenheits-Report** für Krankheit und Sonderurlaub im gewählten Zeitraum.
+
 ---
 
 ## Report-Seite öffnen
@@ -55,3 +57,25 @@ Der Export enthält pro Buchung u.a.:
 - Prozentwert
 - abgeleitete gebuchte Minuten
 - Kommentar
+
+---
+
+## Abwesenheits-Report
+
+Die dritte Tabelle zeigt Abwesenheiten im gewählten Zeitraum.
+
+Über die zusätzlichen Filter kannst du den Report gezielt einschränken nach:
+
+- Mitarbeiter
+- Art der Abwesenheit
+- Status
+
+Mit **"Filter zurücksetzen"** wird wieder der gesamte Zeitraum ohne diese Zusatzfilter geladen.
+
+Sie enthält u. a.:
+
+- Mitarbeiter
+- Art der Abwesenheit
+- Umfang
+- Status
+- Zeitraum

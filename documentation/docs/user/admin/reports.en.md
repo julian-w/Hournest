@@ -2,6 +2,8 @@
 
 This page explains the admin reports for time tracking and cost centers.
 
+The page now also includes an **absence report** for illness and special leave within the selected period.
+
 ---
 
 ## Opening the Reports Page
@@ -55,3 +57,25 @@ Each booking row includes fields such as:
 - percentage
 - derived booked minutes
 - comment
+
+---
+
+## Absence Report
+
+The third table shows absences within the selected period.
+
+Additional filters let you narrow the report by:
+
+- employee
+- absence type
+- status
+
+Use **"Reset filters"** to load the full period again without those extra filters.
+
+It includes fields such as:
+
+- employee
+- absence type
+- scope
+- status
+- period
