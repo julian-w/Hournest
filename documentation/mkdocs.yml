@@ -1,6 +1,15 @@
 site_name: Hournest Dokumentation
 site_description: Team-Urlaubsverwaltung - Dokumentation
-site_url: ""
+site_url: "https://julian-w.github.io/Hournest/"
+
+extra:
+  alternate:
+    - name: Deutsch
+      link: https://julian-w.github.io/Hournest/
+      lang: de
+    - name: English
+      link: https://julian-w.github.io/Hournest/en/
+      lang: en
 
 theme:
   name: material

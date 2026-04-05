@@ -206,6 +206,10 @@ In mock mode:
 
 Documentation is bilingual (German + English) with MkDocs Material.
 
+Published documentation:
+- German: `https://julian-w.github.io/Hournest/`
+- English: `https://julian-w.github.io/Hournest/en/`
+
 ```bash
 # Build documentation
 ./scripts/build-docs.sh
