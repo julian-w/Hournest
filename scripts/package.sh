@@ -42,6 +42,7 @@ else
 fi
 
 # Create required storage directories
+mkdir -p "$PACKAGE_DIR/backend/bootstrap/cache"
 mkdir -p "$PACKAGE_DIR/backend/storage/logs"
 mkdir -p "$PACKAGE_DIR/backend/storage/framework/cache"
 mkdir -p "$PACKAGE_DIR/backend/storage/framework/sessions"

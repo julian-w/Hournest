@@ -16,6 +16,7 @@ info "[1/6] Running backend tests..."
 cd "$PROJECT_ROOT/backend"
 
 setup_php_tooling || { err "PHP tooling not found"; exit 1; }
+mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
 
 if [ ! -d "vendor" ]; then
     info "Installing Composer dependencies..."

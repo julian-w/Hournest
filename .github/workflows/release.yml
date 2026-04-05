@@ -35,6 +35,14 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Prepare Laravel directories
+        run: |
+          mkdir -p backend/bootstrap/cache
+          mkdir -p backend/storage/logs
+          mkdir -p backend/storage/framework/cache
+          mkdir -p backend/storage/framework/sessions
+          mkdir -p backend/storage/framework/views
+
       # Backend Tests (with dev dependencies)
       - name: Install PHP dependencies (with dev)
         run: |
@@ -101,6 +109,7 @@ jobs:
             backend/ "$PACKAGE_DIR/backend/"
 
           # Storage directories
+          mkdir -p "$PACKAGE_DIR/backend/bootstrap/cache"
           mkdir -p "$PACKAGE_DIR/backend/storage/logs"
           mkdir -p "$PACKAGE_DIR/backend/storage/framework/"{cache,sessions,views}
 
