@@ -18,6 +18,7 @@ use App\Models\TimeEntry;
 use App\Models\User;
 use App\Models\Vacation;
 use App\Models\VacationLedgerEntry;
+use App\Notifications\VacationRequestReviewedNotification;
 use App\Services\SystemTimeBookingService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -82,6 +83,7 @@ class AdminController extends Controller
         }
 
         $vacation->load(['user', 'reviewer']);
+        $vacation->user?->notify(new VacationRequestReviewedNotification($vacation));
 
         return response()->json([
             'data' => new VacationResource($vacation),

@@ -4,6 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from '../../core/services/auth.service';
 import { VacationService } from '../../core/services/vacation.service';
 import { HolidayService } from '../../core/services/holiday.service';
 import { Vacation } from '../../core/models/vacation.model';
@@ -34,6 +35,11 @@ interface CalendarDay {
         <mat-icon>chevron_right</mat-icon>
       </button>
       <button mat-stroked-button (click)="goToToday()">{{ 'calendar.today' | translate }}</button>
+    </div>
+
+    <div class="calendar-info">
+      <mat-icon>info</mat-icon>
+      <span>{{ visibilityHintKey() | translate }}</span>
     </div>
 
     <mat-card class="calendar-card">
@@ -97,6 +103,23 @@ interface CalendarDay {
     }
     .calendar-card {
       overflow: auto;
+    }
+    .calendar-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background-color: #fff8e1;
+      color: #8d5a00;
+      font-size: 14px;
+    }
+    .calendar-info mat-icon {
+      color: #ff8f00;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
     }
     .calendar-grid {
       display: grid;
@@ -184,9 +207,23 @@ interface CalendarDay {
       height: 12px;
       border-radius: 50%;
     }
+    @media (max-width: 700px) {
+      .calendar-header {
+        flex-wrap: wrap;
+      }
+      .calendar-header h2 {
+        min-width: 0;
+        flex: 1 1 100%;
+        order: -1;
+      }
+      .calendar-info {
+        align-items: flex-start;
+      }
+    }
   `],
 })
 export class CalendarComponent implements OnInit {
+  auth = inject(AuthService);
   private vacationService = inject(VacationService);
   private holidayService = inject(HolidayService);
   private vacations = signal<Vacation[]>([]);
@@ -242,6 +279,10 @@ export class CalendarComponent implements OnInit {
     });
     return Array.from(map.entries()).map(([userId, name]) => ({ userId, name }));
   });
+
+  visibilityHintKey = computed(() =>
+    this.auth.isAdmin() ? 'calendar.visibility.admin' : 'calendar.visibility.employee'
+  );
 
   ngOnInit(): void {
     this.loadVacations();

@@ -186,14 +186,22 @@ export class AdminAbsencesComponent implements OnInit {
 
   reviewAbsence(absence: Absence, status: string): void {
     this.adminService.reviewAbsence(absence.id, status).subscribe(() => {
-      this.snackBar.open(this.translate.instant('admin_absences.reviewed'), 'OK', { duration: 3000 });
+      this.snackBar.open(
+        this.translate.instant('admin_absences.reviewed'),
+        this.translate.instant('common.ok'),
+        { duration: 3000 },
+      );
       this.loadPending();
     });
   }
 
   deleteAbsence(absence: Absence): void {
     this.adminService.deleteAbsence(absence.id).subscribe(() => {
-      this.snackBar.open(this.translate.instant('admin_absences.deleted'), 'OK', { duration: 3000 });
+      this.snackBar.open(
+        this.translate.instant('admin_absences.deleted'),
+        this.translate.instant('common.ok'),
+        { duration: 3000 },
+      );
       this.loadAll();
     });
   }

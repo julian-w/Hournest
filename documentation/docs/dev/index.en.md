@@ -64,7 +64,7 @@ The **superadmin login** bypasses the OIDC flow:
 
 | Role         | Value        | Assignment                                 | Permissions |
 |--------------|--------------|---------------------------------------------|-------------|
-| Employee     | `employee`   | Automatically on SSO login                  | Own vacations, calendar (own), dashboard |
+| Employee     | `employee`   | Automatically on SSO login                  | Own vacations, shared-group calendar, dashboard |
 | Admin        | `admin`      | SSO login with email in `ADMIN_EMAILS`      | Everything from Employee + all vacations, user management, holidays, settings |
 | Superadmin   | `superadmin` | Login with local credentials                | Same permissions as Admin             |
 

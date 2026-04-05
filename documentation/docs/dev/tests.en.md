@@ -37,6 +37,41 @@ cd frontend
 npm test
 ```
 
+Frontend coverage report:
+
+```bash
+cd frontend
+npm run test:coverage
+```
+
+Headless frontend coverage report:
+
+```bash
+cd frontend
+npm run test:coverage:ci
+```
+
+Backend coverage report:
+
+```bash
+cd backend
+composer test:coverage
+```
+
+Backend HTML coverage report:
+
+```bash
+cd backend
+composer test:coverage:html
+```
+
+Note:
+
+- frontend coverage uses Karma/Istanbul
+- backend coverage typically needs `Xdebug` or `PCOV`
+- backend coverage scripts now live directly in `composer.json`
+- percentages are a useful technical signal, but they should be read together with the [Feature Inventory](feature-inventory.md) and the [Test Matrix](test-matrix.md)
+
 ### Filtering Test Output
 
 ```bash
@@ -118,9 +153,10 @@ frontend/src/app/
 
 ## Current Status
 
-- Backend suite: **400 tests / 1166 assertions**
+- Backend suite: **402 tests / 1172 assertions**
 - Frontend: every service under `frontend/src/app/core/services` has a matching spec file
-- Feature components with specs: Login, My Vacations, and Time Tracking
+- Feature components with specs: Dashboard, Calendar, Login, My Vacations, My Absences, Time Tracking, Admin Absences, Vacation Request Review, Cost Center Administration, User Group Administration, User Management, Holiday Administration, Blackout Administration, and Settings
+- Supporting overviews: [Feature Inventory](feature-inventory.md) and [Test Matrix](test-matrix.md)
 
 ---
 
@@ -176,8 +212,28 @@ frontend/src/app/
 |-----------|-------------|
 | `app.component.spec.ts` | Language initialization and switching |
 | `core/services/*.spec.ts` | Request URLs, payloads, and response mapping for all core services |
+| `features/calendar/calendar.component.spec.ts` | Loading calendar data plus visibility hints for employees and admins |
+| `features/dashboard/dashboard.component.spec.ts` | Loading dashboard KPIs plus admin cards for open requests and current absences |
+| `features/admin/requests/admin-requests.component.spec.ts` | Loading, approve/reject with comment, and error feedback in the vacation request review UI |
+| `features/admin/cost-centers/admin-cost-centers.component.spec.ts` | Loading, dialog refresh, and archiving in the cost center administration UI |
+| `features/admin/cost-centers/cost-center-dialog.component.spec.ts` | Creating/editing cost centers, optional description handling, and update payloads without code changes |
+| `features/admin/absences/admin-absences.component.spec.ts` | Loading and filtering open cases, review/delete actions, and dialog refresh in the admin absence management UI |
+| `features/admin/absences/create-absence-dialog.component.spec.ts` | Direct admin creation, required-field guards, and correct payload mapping |
+| `features/admin/user-groups/admin-user-groups.component.spec.ts` | Loading, dialog-based refresh, and deletion in the user group administration UI |
+| `features/admin/user-groups/user-group-dialogs.spec.ts` | Group create/edit flows, member selection, and active cost-center assignment |
+| `features/admin/users/admin-users.component.spec.ts` | Loading, role updates, dialog-based creation, and deletion in the user management UI |
+| `features/admin/users/create-user-dialog.component.spec.ts` | Password rules for local/OAuth accounts, generation, successful creation, and backend error feedback |
+| `features/admin/users/reset-password-dialog.component.spec.ts` | Minimum-length validation, invalid-form guard, and returning the new password |
+| `features/admin/users/ledger-adjustment-dialog.component.spec.ts` | Loading the ledger, running balance, manual entries, and delete/reload feedback |
+| `features/admin/users/time-account-adjustment-dialog.component.spec.ts` | Loading the working time account, add/delete flows, non-numeric delete guard, and minute formatting |
+| `features/admin/holidays/admin-holidays.component.spec.ts` | Loading, year switching, edit flow, and deletion in the holiday administration UI |
+| `features/admin/holidays/holiday-dialog.component.spec.ts` | Creating/editing holidays, payload mapping, and the save error path |
+| `features/admin/holidays/holiday-date-dialog.component.spec.ts` | Confirming variable holiday dates including invalid-form guard and error handling |
+| `features/admin/blackouts/admin-blackouts.component.spec.ts` | Loading, create/edit dialog flows, and deletion in the blackout administration UI |
+| `features/admin/settings/admin-settings.component.spec.ts` | Loading, mapping, and saving the global settings |
 | `features/login/login.component.spec.ts` | Login flow, error states, forced password change |
-| `features/time-tracking/time-tracking.component.spec.ts` | Applying, saving, updating, and deleting templates, plus half-day vacation, company holidays, personal weekly targets, and the working time account in the weekly grid |
+| `features/absences/my-absences.component.spec.ts` | Loading, dialog refresh, and cancellation in the personal absences view |
+| `features/time-tracking/time-tracking.component.spec.ts` | Applying, saving, updating, and deleting templates, plus favorite ordering, save/empty-day error paths, half-day vacation, company holidays, personal weekly targets, and the working time account in the weekly grid |
 | `features/admin/reports/admin-reports.component.spec.ts` | Loading reports, switching grouping, and CSV export |
 | `features/vacation/my-vacations.component.spec.ts` | Loading, cancelling, dialog refresh, ledger year switching |
 

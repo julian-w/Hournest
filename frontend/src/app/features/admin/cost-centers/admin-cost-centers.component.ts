@@ -120,7 +120,11 @@ export class AdminCostCentersComponent implements OnInit {
 
   deleteCostCenter(cc: CostCenter): void {
     this.adminService.deleteCostCenter(cc.id).subscribe(() => {
-      this.snackBar.open(this.translate.instant('admin_cost_centers.archived'), 'OK', { duration: 3000 });
+      this.snackBar.open(
+        this.translate.instant('admin_cost_centers.archived'),
+        this.translate.instant('common.ok'),
+        { duration: 3000 },
+      );
       this.load();
     });
   }

@@ -86,7 +86,10 @@ plugins:
             Frontend: Frontend
             API-Referenz: API Reference
             Mock-Modus: Mock Mode
+            E2E-Tests: E2E Tests
             Tests: Tests
+            Feature-Inventar: Feature Inventory
+            Test-Matrix: Test Matrix
             Deployment: Deployment
             Zeiterfassung: Time Tracking
             Abwesenheiten: Absences
@@ -123,5 +126,8 @@ nav:
       - Frontend: dev/frontend.md
       - API-Referenz: dev/api.md
       - Mock-Modus: dev/mock-mode.md
+      - E2E-Tests: dev/e2e.md
       - Tests: dev/tests.md
+      - Feature-Inventar: dev/feature-inventory.md
+      - Test-Matrix: dev/test-matrix.md
       - Deployment: dev/deployment.md

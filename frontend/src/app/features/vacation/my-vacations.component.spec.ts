@@ -2,11 +2,13 @@ import { Signal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog } from '@angular/material/dialog';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateLoader, TranslateModule, TranslateNoOpLoader, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { MyVacationsComponent } from './my-vacations.component';
+import { BlackoutService } from '../../core/services/blackout.service';
 import { VacationService } from '../../core/services/vacation.service';
 import { VacationLedgerService } from '../../core/services/vacation-ledger.service';
+import { HolidayService } from '../../core/services/holiday.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Vacation } from '../../core/models/vacation.model';
 import { VacationLedgerEntry } from '../../core/models/vacation-ledger-entry.model';
@@ -23,10 +25,6 @@ describe('MyVacationsComponent', () => {
     user: Signal<unknown>;
     loadUser: jasmine.Spy;
   };
-  let dialogStub: {
-    open: jasmine.Spy;
-  };
-
   const vacations: Vacation[] = [
     {
       id: 11,
@@ -80,32 +78,29 @@ describe('MyVacationsComponent', () => {
       loadUser: jasmine.createSpy('loadUser'),
     };
 
-    dialogStub = {
-      open: jasmine.createSpy('open').and.returnValue({
-        afterClosed: () => of(true),
-      }),
-    };
-
     await TestBed.configureTestingModule({
       imports: [
         MyVacationsComponent,
         NoopAnimationsModule,
-        TranslateModule.forRoot(),
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useClass: TranslateNoOpLoader,
+          },
+        }),
       ],
       providers: [
         { provide: VacationService, useValue: vacationServiceStub },
         { provide: VacationLedgerService, useValue: ledgerServiceStub },
+        { provide: HolidayService, useValue: { getHolidays: () => of([]) } },
+        { provide: BlackoutService, useValue: { checkDate: () => of(null) } },
         { provide: AuthService, useValue: authServiceStub },
-        { provide: MatDialog, useValue: dialogStub },
-        {
-          provide: TranslateService,
-          useValue: {
-            instant: (key: string) => key,
-            use: jasmine.createSpy('use'),
-          },
-        },
       ],
     }).compileComponents();
+
+    const translate = TestBed.inject(TranslateService);
+    translate.setTranslation('en', {});
+    translate.use('en');
   });
 
   it('should load vacations and ledger entries on init', () => {
@@ -125,6 +120,9 @@ describe('MyVacationsComponent', () => {
   it('should reload vacations, ledger, and user after a successful request dialog close', () => {
     const fixture = TestBed.createComponent(MyVacationsComponent);
     fixture.detectChanges();
+    const dialogOpenSpy = spyOn((fixture.componentInstance as never as { dialog: MatDialog }).dialog, 'open').and.returnValue({
+      afterClosed: () => of(true),
+    } as never);
 
     vacationServiceStub.getMyVacations.calls.reset();
     ledgerServiceStub.getMyLedger.calls.reset();
@@ -132,19 +130,18 @@ describe('MyVacationsComponent', () => {
 
     fixture.componentInstance.openRequestDialog();
 
-    expect(dialogStub.open).toHaveBeenCalled();
+    expect(dialogOpenSpy).toHaveBeenCalled();
     expect(vacationServiceStub.getMyVacations).toHaveBeenCalled();
     expect(ledgerServiceStub.getMyLedger).toHaveBeenCalled();
     expect(authServiceStub.loadUser).toHaveBeenCalled();
   });
 
   it('should not reload data when the request dialog closes without a result', () => {
-    dialogStub.open.and.returnValue({
-      afterClosed: () => of(false),
-    });
-
     const fixture = TestBed.createComponent(MyVacationsComponent);
     fixture.detectChanges();
+    const dialogOpenSpy = spyOn((fixture.componentInstance as never as { dialog: MatDialog }).dialog, 'open').and.returnValue({
+      afterClosed: () => of(false),
+    } as never);
 
     vacationServiceStub.getMyVacations.calls.reset();
     ledgerServiceStub.getMyLedger.calls.reset();
@@ -152,6 +149,7 @@ describe('MyVacationsComponent', () => {
 
     fixture.componentInstance.openRequestDialog();
 
+    expect(dialogOpenSpy).toHaveBeenCalled();
     expect(vacationServiceStub.getMyVacations).not.toHaveBeenCalled();
     expect(ledgerServiceStub.getMyLedger).not.toHaveBeenCalled();
     expect(authServiceStub.loadUser).not.toHaveBeenCalled();

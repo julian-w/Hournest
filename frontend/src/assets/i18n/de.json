@@ -63,6 +63,10 @@
   "calendar": {
     "title": "Kalender",
     "today": "Heute",
+    "visibility": {
+      "admin": "Admins sehen im Kalender alle genehmigten Urlaube.",
+      "employee": "Du siehst hier deine genehmigten Urlaube sowie genehmigte Urlaube von Kolleg:innen aus gemeinsamen Benutzergruppen."
+    },
     "weekdays": {
       "mon": "Mo",
       "tue": "Di",

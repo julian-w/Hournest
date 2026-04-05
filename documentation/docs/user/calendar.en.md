@@ -37,14 +37,11 @@ The days in the calendar are color-coded:
 
 ### Employee
 
-Employees see **only their own vacations** in the calendar. Holidays and weekends are visible to everyone.
+Employees see their **own approved vacations** in the calendar, plus the **approved vacations of colleagues who share a user group with them**. Holidays and weekends are visible to everyone.
 
 ### Admin (Administrator)
 
 Admins see the **vacations of all employees** in the calendar. Each vacation entry shows the employee's name, making it easy to see who is absent when.
-
-!!! note "Planned: Group Visibility"
-    Group-based visibility is planned for Phase 2. This will allow employees within a group to also see the vacations of their colleagues.
 
 ---
 

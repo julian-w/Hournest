@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateLoader, TranslateModule, TranslateNoOpLoader, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { AbsenceService } from '../../core/services/absence.service';
 import { BlackoutService } from '../../core/services/blackout.service';
@@ -140,7 +140,12 @@ describe('TimeTrackingComponent', () => {
       imports: [
         TimeTrackingComponent,
         NoopAnimationsModule,
-        TranslateModule.forRoot(),
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useClass: TranslateNoOpLoader,
+          },
+        }),
       ],
       providers: [
         { provide: TimeTrackingService, useValue: timeServiceStub },
@@ -154,15 +159,12 @@ describe('TimeTrackingComponent', () => {
         { provide: WorkTimeAccountService, useValue: workTimeAccountServiceStub },
         { provide: MatDialog, useValue: dialogStub },
         { provide: MatSnackBar, useValue: snackBarStub },
-        {
-          provide: TranslateService,
-          useValue: {
-            instant: (key: string, params?: Record<string, string>) => params?.['date'] ? `${key}:${params['date']}` : key,
-            use: jasmine.createSpy('use'),
-          },
-        },
       ],
     }).compileComponents();
+
+    const translate = TestBed.inject(TranslateService);
+    translate.setTranslation('en', {});
+    translate.use('en');
   });
 
   it('should load templates and apply the selected template to the chosen day', () => {
@@ -181,6 +183,21 @@ describe('TimeTrackingComponent', () => {
     expect(component.templates()).toEqual([template]);
     expect(firstRow.percentages[date]).toBe(60);
     expect(secondRow.percentages[date]).toBe(40);
+  });
+
+  it('should place favorite cost centers first and mark them as favorites in the booking rows', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const rows = component.bookingRows();
+
+    expect(costCenterServiceStub.getAvailableCostCenters).toHaveBeenCalled();
+    expect(costCenterServiceStub.getFavorites).toHaveBeenCalled();
+    expect(rows.map(row => row.costCenter.id)).toEqual([21, 22]);
+    expect(rows[0].isFavorite).toBeTrue();
+    expect(rows[0].costCenter.name).toBe('Project Alpha');
+    expect(rows[1].isFavorite).toBeFalse();
   });
 
   it('should create a template from the selected day bookings', () => {
@@ -204,6 +221,42 @@ describe('TimeTrackingComponent', () => {
     });
   });
 
+  it('should show a message instead of saving when no day has a valid total', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const snackBarOpenSpy = spyOn((component as never as { snackBar: MatSnackBar }).snackBar, 'open');
+    const date = component.selectedTemplateDate();
+
+    component.onPercentageChange(component.bookingRows()[0], date, 70);
+
+    component.saveAll();
+
+    expect(timeServiceStub.saveTimeBookings).not.toHaveBeenCalled();
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('time_tracking.nothing_to_save', 'common.ok', { duration: 3000 });
+  });
+
+  it('should show an error message when saving bookings fails', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const snackBarOpenSpy = spyOn((component as never as { snackBar: MatSnackBar }).snackBar, 'open');
+    const date = component.selectedTemplateDate();
+
+    component.onPercentageChange(component.bookingRows()[0], date, 60);
+    component.onPercentageChange(component.bookingRows()[1], date, 40);
+    timeServiceStub.saveTimeBookings.and.returnValue({
+      subscribe: ({ error }: { error: () => void }) => error(),
+    } as never);
+
+    component.saveAll();
+
+    expect(timeServiceStub.saveTimeBookings).toHaveBeenCalled();
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('time_tracking.save_error', 'common.ok', { duration: 3000 });
+  });
+
   it('should update the selected template with the selected day bookings', () => {
     const fixture = TestBed.createComponent(TimeTrackingComponent);
     fixture.detectChanges();
@@ -224,6 +277,34 @@ describe('TimeTrackingComponent', () => {
     });
   });
 
+  it('should not open the save-template dialog for an empty day', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const snackBarOpenSpy = spyOn((component as never as { snackBar: MatSnackBar }).snackBar, 'open');
+
+    component.openSaveTemplateDialog();
+
+    expect(dialogStub.open).not.toHaveBeenCalled();
+    expect(templateServiceStub.createTemplate).not.toHaveBeenCalled();
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('time_tracking.template_empty_day', 'common.ok', { duration: 3000 });
+  });
+
+  it('should not open the update-template dialog for an empty day', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const snackBarOpenSpy = spyOn((component as never as { snackBar: MatSnackBar }).snackBar, 'open');
+
+    component.openUpdateTemplateDialog();
+
+    expect(dialogStub.open).not.toHaveBeenCalled();
+    expect(templateServiceStub.updateTemplate).not.toHaveBeenCalled();
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('time_tracking.template_empty_day', 'common.ok', { duration: 3000 });
+  });
+
   it('should delete the selected template and remove it from the local state', () => {
     const fixture = TestBed.createComponent(TimeTrackingComponent);
     fixture.detectChanges();
@@ -242,10 +323,16 @@ describe('TimeTrackingComponent', () => {
 
     const component = fixture.componentInstance;
     const targetDate = component.selectedTemplateDate();
+    const sourceDate = new Date(`${targetDate}T00:00:00`);
+    sourceDate.setDate(sourceDate.getDate() - 1);
+    const olderDate = new Date(`${targetDate}T00:00:00`);
+    olderDate.setDate(olderDate.getDate() - 3);
+    const sourceDateString = sourceDate.toISOString().split('T')[0];
+    const olderDateString = olderDate.toISOString().split('T')[0];
     timeServiceStub.getTimeBookings.and.returnValue(of([
-      { id: 1, user_id: 3, date: '2026-03-31', cost_center_id: 21, percentage: 80, comment: null },
-      { id: 2, user_id: 3, date: '2026-03-31', cost_center_id: 22, percentage: 20, comment: null },
-      { id: 3, user_id: 3, date: '2026-03-28', cost_center_id: 21, percentage: 100, comment: null },
+      { id: 1, user_id: 3, date: sourceDateString, cost_center_id: 21, percentage: 80, comment: null },
+      { id: 2, user_id: 3, date: sourceDateString, cost_center_id: 22, percentage: 20, comment: null },
+      { id: 3, user_id: 3, date: olderDateString, cost_center_id: 21, percentage: 100, comment: null },
     ]));
 
     component.copyPreviousDay();
@@ -260,20 +347,26 @@ describe('TimeTrackingComponent', () => {
     fixture.detectChanges();
 
     const component = fixture.componentInstance;
+    const snackBarOpenSpy = spyOn((component as never as { snackBar: MatSnackBar }).snackBar, 'open');
     timeServiceStub.getTimeBookings.and.returnValue(of([]));
 
     component.copyPreviousDay();
 
-    expect(snackBarStub.open).toHaveBeenCalledWith('time_tracking.copy_prev_day_empty', 'common.ok', { duration: 2500 });
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('time_tracking.copy_prev_day_empty', 'common.ok', { duration: 2500 });
   });
 
   it('should reduce the expected booking total to 50 percent on a half-day vacation', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    const targetDate = component.days().find(day => !day.isWeekend)?.date ?? component.days()[0].date;
+
     vacationServiceStub.getMyVacations.and.returnValue(of([
       {
         id: 9,
         user_id: 3,
-        start_date: '2026-04-06',
-        end_date: '2026-04-06',
+        start_date: targetDate,
+        end_date: targetDate,
         status: 'approved',
         comment: null,
         admin_comment: null,
@@ -285,11 +378,8 @@ describe('TimeTrackingComponent', () => {
       },
     ]));
 
-    const fixture = TestBed.createComponent(TimeTrackingComponent);
-    fixture.detectChanges();
-
-    const component = fixture.componentInstance;
-    const vacationDay = component.days().find(day => day.date === '2026-04-06');
+    component['loadWeek']();
+    const vacationDay = component.days().find(day => day.date === targetDate);
 
     expect(vacationServiceStub.getMyVacations).toHaveBeenCalled();
     expect(vacationDay?.vacation?.scope).toBe('morning');
@@ -297,22 +387,24 @@ describe('TimeTrackingComponent', () => {
   });
 
   it('should treat company holidays as locked days in the weekly grid', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    const targetDate = component.days().find(day => !day.isWeekend)?.date ?? component.days()[0].date;
+
     blackoutServiceStub.getMatchingBlackouts.and.returnValue(of([
       {
         id: 15,
         type: 'company_holiday',
-        start_date: '2026-04-06',
-        end_date: '2026-04-06',
+        start_date: targetDate,
+        end_date: targetDate,
         reason: 'Shutdown',
         created_at: '2026-04-01T12:00:00Z',
       },
     ]));
 
-    const fixture = TestBed.createComponent(TimeTrackingComponent);
-    fixture.detectChanges();
-
-    const component = fixture.componentInstance;
-    const holidayDay = component.days().find(day => day.date === '2026-04-06');
+    component['loadWeek']();
+    const holidayDay = component.days().find(day => day.date === targetDate);
 
     expect(blackoutServiceStub.getMatchingBlackouts).toHaveBeenCalled();
     expect(holidayDay?.companyHoliday?.type).toBe('company_holiday');
@@ -320,33 +412,40 @@ describe('TimeTrackingComponent', () => {
   });
 
   it('should exclude company holidays from weekly target and delta', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    const targetDate = component.days().find(day => !day.isWeekend)?.date ?? component.days()[0].date;
+
     blackoutServiceStub.getMatchingBlackouts.and.returnValue(of([
       {
         id: 15,
         type: 'company_holiday',
-        start_date: '2026-04-06',
-        end_date: '2026-04-06',
+        start_date: targetDate,
+        end_date: targetDate,
         reason: 'Shutdown',
         created_at: '2026-04-01T12:00:00Z',
       },
     ]));
 
-    const fixture = TestBed.createComponent(TimeTrackingComponent);
-    fixture.detectChanges();
-
-    const component = fixture.componentInstance;
+    component['loadWeek']();
 
     expect(component.weekTarget()).toBe('32:00');
     expect(component.weekDelta()).toBe('-32:00');
   });
 
   it('should halve the weekly target for half-day absences', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    const targetDate = component.days().find(day => !day.isWeekend)?.date ?? component.days()[0].date;
+
     absenceServiceStub.getMyAbsences.and.returnValue(of([
       {
         id: 5,
         user_id: 3,
-        start_date: '2026-04-06',
-        end_date: '2026-04-06',
+        start_date: targetDate,
+        end_date: targetDate,
         type: 'illness',
         scope: 'morning',
         status: 'acknowledged',
@@ -358,31 +457,31 @@ describe('TimeTrackingComponent', () => {
       },
     ]));
 
-    const fixture = TestBed.createComponent(TimeTrackingComponent);
-    fixture.detectChanges();
-
-    const component = fixture.componentInstance;
+    component['loadWeek']();
 
     expect(component.weekTarget()).toBe('36:00');
     expect(component.weekDelta()).toBe('-36:00');
   });
 
   it('should use the matching personal work schedule for weekly target and delta', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    const weekDays = component.days();
+    const monday = weekDays[0].date;
+
     workScheduleServiceStub.getMyWorkSchedules.and.returnValue(of([
       {
         id: 11,
         user_id: 3,
-        start_date: '2026-04-01',
+        start_date: monday,
         end_date: null,
         work_days: [1, 2, 3, 4],
         weekly_target_minutes: 1920,
       },
     ]));
 
-    const fixture = TestBed.createComponent(TimeTrackingComponent);
-    fixture.detectChanges();
-
-    const component = fixture.componentInstance;
+    component['loadWeek']();
 
     expect(workScheduleServiceStub.getMyWorkSchedules).toHaveBeenCalled();
     expect(component.weekTarget()).toBe('32:00');

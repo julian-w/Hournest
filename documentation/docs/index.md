@@ -18,7 +18,7 @@ Hournest ist eine interne Webanwendung für **Urlaubsverwaltung** mit bereits au
 ### Teamkalender
 - Monatsansicht mit Navigation (vor/zurück, Heute-Button)
 - Farbliche Unterscheidung: Wochenenden (grau), Feiertage (markiert), Urlaube nach Status
-- Mitarbeiter sehen eigene Urlaube, Admins sehen alle
+- Mitarbeiter sehen eigene Urlaube plus Urlaube aus gemeinsamen Benutzergruppen, Admins sehen alle
 
 ### Urlaubsanträge
 - Antrag stellen mit Von-/Bis-Datum und optionalem Kommentar

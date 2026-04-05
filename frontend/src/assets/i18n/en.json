@@ -63,6 +63,10 @@
   "calendar": {
     "title": "Calendar",
     "today": "Today",
+    "visibility": {
+      "admin": "Admins can see all approved vacations in the calendar.",
+      "employee": "You can see your approved vacations here, plus approved vacations of colleagues who share a user group with you."
+    },
     "weekdays": {
       "mon": "Mon",
       "tue": "Tue",

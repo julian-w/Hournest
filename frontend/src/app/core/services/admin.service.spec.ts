@@ -329,11 +329,15 @@ describe('AdminService', () => {
       updated = data;
     });
 
-    const getReq = httpMock.expectOne('/api/admin/users/9/cost-centers');
+    const getReq = httpMock.expectOne(req =>
+      req.url === '/api/admin/users/9/cost-centers' && req.method === 'GET'
+    );
     expect(getReq.request.method).toBe('GET');
     getReq.flush({ data: [costCenter] });
 
-    const putReq = httpMock.expectOne('/api/admin/users/9/cost-centers');
+    const putReq = httpMock.expectOne(req =>
+      req.url === '/api/admin/users/9/cost-centers' && req.method === 'PUT'
+    );
     expect(putReq.request.method).toBe('PUT');
     expect(putReq.request.body).toEqual({ cost_center_ids: [12, 13] });
     putReq.flush({ data: [costCenter] });

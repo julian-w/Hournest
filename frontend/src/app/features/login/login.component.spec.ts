@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateLoader, TranslateModule, TranslateNoOpLoader, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../core/services/auth.service';
@@ -19,9 +19,6 @@ describe('LoginComponent', () => {
   let configServiceStub: {
     isOAuthEnabled: jasmine.Spy;
   };
-  let dialogStub: {
-    open: jasmine.Spy;
-  };
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
@@ -36,12 +33,6 @@ describe('LoginComponent', () => {
       isOAuthEnabled: jasmine.createSpy('isOAuthEnabled').and.returnValue(true),
     };
 
-    dialogStub = {
-      open: jasmine.createSpy('open').and.returnValue({
-        afterClosed: () => of(true),
-      }),
-    };
-
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
     router.navigate.and.returnValue(Promise.resolve(true));
 
@@ -49,23 +40,24 @@ describe('LoginComponent', () => {
       imports: [
         LoginComponent,
         NoopAnimationsModule,
-        TranslateModule.forRoot(),
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useClass: TranslateNoOpLoader,
+          },
+        }),
       ],
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: authServiceStub },
         { provide: ConfigService, useValue: configServiceStub },
-        { provide: MatDialog, useValue: dialogStub },
         { provide: Router, useValue: router },
-        {
-          provide: TranslateService,
-          useValue: {
-            instant: (key: string) => key,
-            use: jasmine.createSpy('use'),
-          },
-        },
       ],
     }).compileComponents();
+
+    const translate = TestBed.inject(TranslateService);
+    translate.setTranslation('en', {});
+    translate.use('en');
   });
 
   it('should not submit credentials when username or password is missing', async () => {
@@ -83,6 +75,9 @@ describe('LoginComponent', () => {
   it('should submit credentials successfully without opening the password dialog', async () => {
     const fixture = TestBed.createComponent(LoginComponent);
     const component = fixture.componentInstance;
+    const dialogOpenSpy = spyOn((component as never as { dialog: MatDialog }).dialog, 'open').and.returnValue({
+      afterClosed: () => of(true),
+    } as never);
 
     component.username = 'user@example.com';
     component.password = 'secret123';
@@ -90,7 +85,7 @@ describe('LoginComponent', () => {
     await component.submitCredentials();
 
     expect(authServiceStub.loginWithCredentials).toHaveBeenCalledWith('user@example.com', 'secret123');
-    expect(dialogStub.open).not.toHaveBeenCalled();
+    expect(dialogOpenSpy).not.toHaveBeenCalled();
     expect(component.error()).toBe('');
     expect(component.submitting()).toBeFalse();
   });
@@ -115,13 +110,16 @@ describe('LoginComponent', () => {
 
     const fixture = TestBed.createComponent(LoginComponent);
     const component = fixture.componentInstance;
+    const dialogOpenSpy = spyOn((component as never as { dialog: MatDialog }).dialog, 'open').and.returnValue({
+      afterClosed: () => of(true),
+    } as never);
 
     component.username = 'user@example.com';
     component.password = 'secret123';
 
     await component.submitCredentials();
 
-    expect(dialogStub.open).toHaveBeenCalled();
+    expect(dialogOpenSpy).toHaveBeenCalled();
     expect(authServiceStub.clearPasswordChangeRequired).toHaveBeenCalled();
     expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
     expect(component.submitting()).toBeFalse();
@@ -129,19 +127,19 @@ describe('LoginComponent', () => {
 
   it('should keep password change state when the forced dialog closes without success', async () => {
     authServiceStub.needsPasswordChange.and.returnValue(true);
-    dialogStub.open.and.returnValue({
-      afterClosed: () => of(false),
-    });
 
     const fixture = TestBed.createComponent(LoginComponent);
     const component = fixture.componentInstance;
+    const dialogOpenSpy = spyOn((component as never as { dialog: MatDialog }).dialog, 'open').and.returnValue({
+      afterClosed: () => of(false),
+    } as never);
 
     component.username = 'user@example.com';
     component.password = 'secret123';
 
     await component.submitCredentials();
 
-    expect(dialogStub.open).toHaveBeenCalled();
+    expect(dialogOpenSpy).toHaveBeenCalled();
     expect(authServiceStub.clearPasswordChangeRequired).not.toHaveBeenCalled();
     expect(router.navigate).not.toHaveBeenCalled();
   });

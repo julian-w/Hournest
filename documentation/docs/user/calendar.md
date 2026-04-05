@@ -37,14 +37,11 @@ Die Tage im Kalender sind farblich gekennzeichnet:
 
 ### Employee (Mitarbeiter)
 
-Mitarbeiter sehen im Kalender **nur ihre eigenen Urlaube**. Die Feiertage und Wochenenden sind für alle sichtbar.
+Mitarbeiter sehen im Kalender ihre **eigenen genehmigten Urlaube** sowie die **genehmigten Urlaube von Kolleg:innen aus gemeinsamen Benutzergruppen**. Feiertage und Wochenenden sind für alle sichtbar.
 
 ### Admin (Administrator)
 
 Admins sehen die **Urlaube aller Mitarbeiter** im Kalender. Jeder Urlaubseintrag zeigt den Namen des Mitarbeiters, sodass leicht erkennbar ist, wer wann abwesend ist.
-
-!!! note "Geplant: Gruppen-Sichtbarkeit"
-    In Phase 2 ist eine gruppenbasierte Sichtbarkeit geplant. Dann können Mitarbeiter innerhalb ihrer Gruppe auch die Urlaube der Kollegen sehen.
 
 ---
 

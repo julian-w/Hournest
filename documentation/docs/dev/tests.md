@@ -37,6 +37,41 @@ cd frontend
 npm test
 ```
 
+Frontend-Coverage-Report:
+
+```bash
+cd frontend
+npm run test:coverage
+```
+
+Headless Frontend-Coverage-Report:
+
+```bash
+cd frontend
+npm run test:coverage:ci
+```
+
+Backend-Coverage-Report:
+
+```bash
+cd backend
+composer test:coverage
+```
+
+Backend-Coverage-HTML-Report:
+
+```bash
+cd backend
+composer test:coverage:html
+```
+
+Hinweis:
+
+- Frontend-Coverage nutzt Karma/Istanbul
+- Backend-Coverage benötigt in der Regel `Xdebug` oder `PCOV`
+- Backend-Coverage-Skripte liegen jetzt direkt in `composer.json`
+- Prozentwerte sind ein guter technischer Hinweis, sollten aber zusammen mit [Feature-Inventar](feature-inventory.md) und [Test-Matrix](test-matrix.md) gelesen werden
+
 ### Test-Ausgabe filtern
 
 ```bash
@@ -116,9 +151,10 @@ frontend/src/app/
 
 ## Aktueller Stand
 
-- Backend-Suite: **400 Tests / 1166 Assertions**
+- Backend-Suite: **402 Tests / 1172 Assertions**
 - Frontend: alle Services unter `frontend/src/app/core/services` haben Spec-Dateien
-- Feature-Komponenten mit Specs: Login, Mein Urlaub und Zeiterfassung
+- Feature-Komponenten mit Specs: Dashboard, Kalender, Login, Mein Urlaub, Meine Abwesenheiten, Zeiterfassung, Admin-Abwesenheiten, Urlaubsantrags-Review, Kostenstellen-Verwaltung, Benutzergruppen-Administration, Benutzerverwaltung, Feiertagsverwaltung, Blackout-Verwaltung und Einstellungen
+- Ergänzende Übersichten: [Feature-Inventar](feature-inventory.md) und [Test-Matrix](test-matrix.md)
 
 ---
 
@@ -174,8 +210,28 @@ frontend/src/app/
 |-----------|-------------|
 | `app.component.spec.ts` | Sprachinitialisierung und Sprachwechsel |
 | `core/services/*.spec.ts` | Request-URLs, Payloads und Response-Mapping aller Core-Services |
+| `features/calendar/calendar.component.spec.ts` | Laden der Kalenderdaten sowie Sichtbarkeitshinweise für Mitarbeiter und Admins |
+| `features/dashboard/dashboard.component.spec.ts` | Laden der Startseiten-Kennzahlen sowie Admin-Karten für offene Anträge und aktuelle Abwesenheiten |
+| `features/admin/requests/admin-requests.component.spec.ts` | Laden, Approve/Reject mit Kommentar sowie Fehler-Feedback in der Urlaubsantrags-Prüfung |
+| `features/admin/cost-centers/admin-cost-centers.component.spec.ts` | Laden, Dialog-Refresh und Archivieren in der Kostenstellen-Verwaltung |
+| `features/admin/cost-centers/cost-center-dialog.component.spec.ts` | Erstellen/Bearbeiten von Kostenstellen, optionales Beschreibungsfeld und Update-Payload ohne Code-Änderung |
+| `features/admin/absences/admin-absences.component.spec.ts` | Laden und Filtern offener Fälle, Review/Delete sowie Dialog-Refresh in der Admin-Abwesenheitsverwaltung |
+| `features/admin/absences/create-absence-dialog.component.spec.ts` | Direktes Anlegen durch Admin, Required-Guards und korrektes Payload-Mapping |
+| `features/admin/user-groups/admin-user-groups.component.spec.ts` | Laden, Dialog-basierter Refresh und Löschen in der Benutzergruppen-Verwaltung |
+| `features/admin/user-groups/user-group-dialogs.spec.ts` | Erstellen/Bearbeiten von Gruppen, Mitglieder-Selektion sowie aktive Kostenstellen-Zuordnung |
+| `features/admin/users/admin-users.component.spec.ts` | Laden, Rollenänderung, Erstellung per Dialog und Löschen in der Benutzerverwaltung |
+| `features/admin/users/create-user-dialog.component.spec.ts` | Passwortregeln für lokale/OAuth-Accounts, Generierung, erfolgreiches Anlegen und Fehler-Feedback |
+| `features/admin/users/reset-password-dialog.component.spec.ts` | Mindestlänge, Invalid-Guard und Rückgabe des neuen Passworts |
+| `features/admin/users/ledger-adjustment-dialog.component.spec.ts` | Ledger-Laden, Running-Balance, manuelle Einträge und Löschen mit Reload/Feedback |
+| `features/admin/users/time-account-adjustment-dialog.component.spec.ts` | Arbeitszeitkonto-Laden, Add/Delete-Pfade, Guard für nicht numerische IDs und Minutenformatierung |
+| `features/admin/holidays/admin-holidays.component.spec.ts` | Laden, Jahreswechsel, Edit-Pfad und Löschen in der Feiertagsverwaltung |
+| `features/admin/holidays/holiday-dialog.component.spec.ts` | Erstellen/Bearbeiten von Feiertagen, Payload-Mapping und Fehlerpfad beim Speichern |
+| `features/admin/holidays/holiday-date-dialog.component.spec.ts` | Bestätigen variabler Feiertagsdaten inklusive Invalid-Guard und Fehlerpfad |
+| `features/admin/blackouts/admin-blackouts.component.spec.ts` | Laden, Create-/Edit-Dialogpfade und Löschen in der Blackout-Verwaltung |
+| `features/admin/settings/admin-settings.component.spec.ts` | Laden, Mapping und Speichern der globalen Einstellungen |
 | `features/login/login.component.spec.ts` | Login-Flow, Fehlerzustände, erzwungener Passwortwechsel |
-| `features/time-tracking/time-tracking.component.spec.ts` | Vorlagen anwenden, speichern, aktualisieren, löschen sowie Halbtags-Urlaub, Betriebsferien, persönliche Wochenziele und Arbeitszeitkonto im Wochengrid |
+| `features/absences/my-absences.component.spec.ts` | Laden, Dialog-Refresh und Storno in der persönlichen Abwesenheitsübersicht |
+| `features/time-tracking/time-tracking.component.spec.ts` | Vorlagen anwenden, speichern, aktualisieren, löschen sowie Favoriten-Reihenfolge, Save-/Leerlauf-Fehlerpfade, Halbtags-Urlaub, Betriebsferien, persönliche Wochenziele und Arbeitszeitkonto im Wochengrid |
 | `features/admin/reports/admin-reports.component.spec.ts` | Laden von Reports, Gruppierungswechsel und CSV-Export |
 | `features/vacation/my-vacations.component.spec.ts` | Laden, Stornieren, Dialog-Refresh und Ledger-Jahreswechsel |
 

@@ -9,17 +9,23 @@ use App\Enums\VacationScope;
 use App\Http\Requests\StoreVacationRequest;
 use App\Http\Resources\VacationResource;
 use App\Models\BlackoutPeriod;
+use App\Models\User;
 use App\Models\Vacation;
 use App\Models\VacationLedgerEntry;
+use App\Notifications\VacationRequestSubmittedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Notification;
 
 class VacationController extends Controller
 {
     public function index(): AnonymousResourceCollection
     {
+        $visibleUserIds = request()->user()->visibleCalendarUserIds();
+
         $vacations = Vacation::with('user')
+            ->whereIn('user_id', $visibleUserIds)
             ->where('status', VacationStatus::Approved)
             ->orderBy('start_date')
             ->get();
@@ -88,6 +94,17 @@ class VacationController extends Controller
             'comment' => $request->comment,
             'status' => VacationStatus::Pending,
         ]);
+
+        $vacation->load('user');
+
+        $admins = User::query()
+            ->whereIn('role', ['admin', 'superadmin'])
+            ->whereKeyNot($user->id)
+            ->get();
+
+        if ($admins->isNotEmpty()) {
+            Notification::send($admins, new VacationRequestSubmittedNotification($vacation));
+        }
 
         return response()->json([
             'data' => new VacationResource($vacation),

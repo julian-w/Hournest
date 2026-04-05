@@ -18,7 +18,7 @@ Hournest is an internal web application for **vacation management** with an alre
 ### Team Calendar
 - Monthly view with navigation (forward/back, Today button)
 - Color coding: weekends (gray), holidays (highlighted), vacations by status
-- Employees see their own vacations, admins see all
+- Employees see their own vacations plus vacations from shared user groups, admins see all
 
 ### Vacation Requests
 - Submit requests with from/to date and optional comment

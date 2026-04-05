@@ -32,7 +32,6 @@
 
 ## Planned Features (Phase 2 / Remaining Work)
 
-- Group visibility in calendar
 - Additional notification channels (WhatsApp, etc.)
 - Shift planning
 - Advanced reports & analytics

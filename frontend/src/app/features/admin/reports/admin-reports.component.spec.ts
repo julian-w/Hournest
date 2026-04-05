@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateLoader, TranslateModule, TranslateNoOpLoader, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { AdminService } from '../../../core/services/admin.service';
 import { AdminReportsComponent } from './admin-reports.component';
@@ -90,20 +90,22 @@ describe('AdminReportsComponent', () => {
       imports: [
         AdminReportsComponent,
         NoopAnimationsModule,
-        TranslateModule.forRoot(),
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useClass: TranslateNoOpLoader,
+          },
+        }),
       ],
       providers: [
         { provide: AdminService, useValue: adminServiceStub },
         { provide: MatSnackBar, useValue: snackBarStub },
-        {
-          provide: TranslateService,
-          useValue: {
-            instant: (key: string) => key,
-            use: jasmine.createSpy('use'),
-          },
-        },
       ],
     }).compileComponents();
+
+    const translate = TestBed.inject(TranslateService);
+    translate.setTranslation('en', {});
+    translate.use('en');
   });
 
   it('should load summary, missing entry, and absence reports on init', () => {
@@ -185,6 +187,7 @@ describe('AdminReportsComponent', () => {
     fixture.detectChanges();
 
     const component = fixture.componentInstance;
+    const snackBarOpenSpy = spyOn((component as never as { snackBar: MatSnackBar }).snackBar, 'open');
     const createObjectUrlSpy = spyOn(URL, 'createObjectURL').and.returnValue('blob:mock');
     const revokeObjectUrlSpy = spyOn(URL, 'revokeObjectURL');
     const clickSpy = jasmine.createSpy('click');
@@ -197,6 +200,6 @@ describe('AdminReportsComponent', () => {
     expect(createObjectUrlSpy).toHaveBeenCalled();
     expect(clickSpy).toHaveBeenCalled();
     expect(revokeObjectUrlSpy).toHaveBeenCalledWith('blob:mock');
-    expect(snackBarStub.open).toHaveBeenCalledWith('admin_reports.export_started', 'common.ok', { duration: 2500 });
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('admin_reports.export_started', 'common.ok', { duration: 2500 });
   });
 });

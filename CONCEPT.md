@@ -51,8 +51,8 @@ Controlled via `AUTH_OAUTH_ENABLED` in `.env`:
   - **Vacations:** Color-coded by status (Pending, Approved, Rejected)
 
 ### Visibility
-- **Phase 1:** Employee sees only own vacations, admin sees all
-- **Phase 2:** Groups -- within a group, everyone sees vacations of other group members
+- **Employee:** sees own approved vacations plus approved vacations of users from shared groups
+- **Admin:** sees all approved vacations
 
 ---
 
@@ -171,7 +171,7 @@ Per employee and year, a complete list of all bookings:
 ## 9. Notifications
 
 ### Phase 1: Email
-- Employee is notified on: approval, rejection
+- Employee is notified on: approval, rejection of vacation requests
 - Admin is notified on: new vacation request
 
 ### Phase 2: Additional Channels
@@ -218,9 +218,7 @@ Per employee and year, a complete list of all bookings:
 - i18n (DE/EN)
 
 ### Phase 2 (Planned)
-- Group visibility in calendar
 - Additional notification channels (WhatsApp, etc.)
-- Time tracking & cost center booking (see below)
 - Shift planning
 - Reports & analytics
 
@@ -538,7 +536,7 @@ Time bookings become **locked** after a configurable period to ensure data integ
 - **Missing entries:** List of employees with incomplete days (no time entry or percentage ≠ 100%)
 - **Absence overview:** Illness and special leave per employee, per period
 - **CSV export:** For accounting / payroll systems
-- Current implementation note: aggregated time-booking reports by employee or cost center, missing-entry reports, and CSV export are implemented; a dedicated absence report and broader analytics remain planned
+- Current implementation note: aggregated time-booking reports by employee or cost center, missing-entry reports, absence reports, and CSV export are implemented; broader analytics remain planned
 
 ### 13.13 Dashboard Integration
 

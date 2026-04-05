@@ -8,7 +8,9 @@ use App\Enums\VacationStatus;
 use App\Models\User;
 use App\Models\Vacation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Hash;
+use App\Notifications\VacationRequestReviewedNotification;
 use Tests\TestCase;
 
 class AdminTest extends TestCase
@@ -44,6 +46,25 @@ class AdminTest extends TestCase
             'status' => 'approved',
             'reviewed_by' => $admin->id,
         ]);
+    }
+
+    public function test_reviewing_vacation_notifies_employee(): void
+    {
+        Notification::fake();
+
+        $admin = User::factory()->admin()->create();
+        $employee = User::factory()->create();
+        $vacation = Vacation::factory()->create([
+            'user_id' => $employee->id,
+        ]);
+
+        $this->actingAs($admin)->patchJson("/api/admin/vacations/{$vacation->id}", [
+            'status' => 'approved',
+            'comment' => 'Approved for your trip.',
+        ])->assertOk();
+
+        Notification::assertSentTo($employee, VacationRequestReviewedNotification::class);
+        Notification::assertNotSentTo($admin, VacationRequestReviewedNotification::class);
     }
 
     public function test_admin_can_reject_vacation_with_comment(): void

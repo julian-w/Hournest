@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -67,6 +68,7 @@ interface BookingRow {
     MatInputModule,
     MatSelectModule,
     MatSnackBarModule,
+    MatTableModule,
     MatTooltipModule,
     MatExpansionModule,
     TranslateModule,
@@ -591,7 +593,7 @@ export class TimeTrackingComponent implements OnInit {
 
   weekDelta = computed(() => {
     const delta = this.weekDeltaMinutes();
-    const sign = delta >= 0 ? '+' : '';
+    const sign = delta > 0 ? '+' : delta < 0 ? '-' : '';
     return sign + this.formatMinutes(Math.abs(delta));
   });
 
@@ -1136,9 +1138,17 @@ export class TimeTrackingComponent implements OnInit {
 
   private getDayTargetMinutes(day: DayData): number {
     const dailyTarget = this.getConfiguredDailyTargetMinutes(day.date);
+    const daySchedule = this.getScheduleForDate(day.date);
 
     if (day.isWeekend || day.companyHoliday) {
       return 0;
+    }
+
+    if (daySchedule) {
+      const jsDay = new Date(`${day.date}T00:00:00`).getDay();
+      if (!daySchedule.work_days.includes(jsDay)) {
+        return 0;
+      }
     }
 
     if ((day.absence && day.absence.scope === 'full_day') || (day.vacation && day.vacation.scope === 'full_day')) {
@@ -1153,9 +1163,7 @@ export class TimeTrackingComponent implements OnInit {
   }
 
   private getConfiguredDailyTargetMinutes(date: string): number {
-    const schedule = this.workSchedules().find(entry =>
-      entry.start_date <= date && (!entry.end_date || entry.end_date >= date)
-    );
+    const schedule = this.getScheduleForDate(date);
 
     if (schedule) {
       const workDaysCount = schedule.work_days.length || 1;
@@ -1163,6 +1171,12 @@ export class TimeTrackingComponent implements OnInit {
     }
 
     return Math.round(this.defaultWeeklyTargetMinutes() / 5);
+  }
+
+  private getScheduleForDate(date: string) {
+    return this.workSchedules().find(entry =>
+      entry.start_date <= date && (!entry.end_date || entry.end_date >= date)
+    );
   }
 
   private syncTemplateDateSelection(): void {

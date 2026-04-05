@@ -64,7 +64,7 @@ Der **Superadmin-Login** umgeht den OIDC-Fluss:
 
 | Rolle        | Wert         | Zuweisung                                  | Berechtigungen |
 |--------------|--------------|---------------------------------------------|----------------|
-| Employee     | `employee`   | Automatisch bei SSO-Login                   | Eigene Urlaube, Kalender (eigene), Dashboard |
+| Employee     | `employee`   | Automatisch bei SSO-Login                   | Eigene Urlaube, Kalender über eigene und gemeinsame Gruppen, Dashboard |
 | Admin        | `admin`      | SSO-Login mit Email in `ADMIN_EMAILS`       | Alles von Employee + alle Urlaube, Benutzerverwaltung, Feiertage, Einstellungen |
 | Superadmin   | `superadmin` | Login mit lokalen Credentials               | Gleiche Berechtigungen wie Admin             |
 
