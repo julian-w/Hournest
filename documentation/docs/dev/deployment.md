@@ -10,7 +10,7 @@ Diese Seite beschreibt das Deployment von Hournest auf einer Synology NAS (prim�
 
 - NAS mit Webserver-Unterstützung (z.B. Synology DSM 7.x)
 - **Web Station** (aus dem Package Center installieren)
-- **PHP 8.2** (über Web Station installierbar)
+- **PHP 8.4** (über Web Station installierbar)
 - **SSO Server** (aus dem Package Center, für OIDC)
 - SSH-Zugang zur NAS (empfohlen)
 
@@ -144,7 +144,7 @@ Hournest kann auch auf klassischem PHP-Hosting (Shared Hosting, VPS, etc.) betri
 
 ### Voraussetzungen
 
-- PHP 8.2+ mit den erforderlichen Extensions
+- PHP 8.4+ mit den erforderlichen Extensions
 - Composer
 - SSH-Zugang (empfohlen)
 - MySQL oder PostgreSQL (alternativ SQLite)

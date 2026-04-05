@@ -6,9 +6,9 @@ This page lists all software requirements needed for developing and running Hour
 
 ## Backend Requirements
 
-### PHP 8.2+
+### PHP 8.4+
 
-PHP 8.2 or higher is required. The following PHP extensions must be enabled:
+PHP 8.4 or higher is required. The following PHP extensions must be enabled:
 
 | Extension    | Purpose                            |
 |--------------|------------------------------------|

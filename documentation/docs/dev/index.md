@@ -172,7 +172,7 @@ Die Admin-Prüfung erfolgt im Backend über die Middleware `EnsureAdmin`, die so
 | Komponente        | Technologie            | Version  |
 |-------------------|------------------------|----------|
 | Backend-Framework | Laravel                | 11+      |
-| PHP               | PHP                    | 8.2+     |
+| PHP               | PHP                    | 8.4+     |
 | Frontend-Framework| Angular                | 18+      |
 | UI-Bibliothek     | Angular Material       | 18+      |
 | CSS-Präprozessor | SCSS                   |          |

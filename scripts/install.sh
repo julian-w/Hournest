@@ -21,7 +21,7 @@ echo ""
 # --- Pre-flight checks ---
 info "Checking prerequisites..."
 
-check_command php || { err "PHP not found. Install PHP 8.2+ first."; exit 1; }
+check_command php || { err "PHP not found. Install PHP 8.4+ first."; exit 1; }
 
 PHP_VERSION=$(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;')
 info "PHP version: $PHP_VERSION"

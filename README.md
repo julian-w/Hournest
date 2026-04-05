@@ -68,7 +68,7 @@
 | Area      | Technology                           |
 |-----------|--------------------------------------|
 | Frontend  | Angular 18, Angular Material, SCSS   |
-| Backend   | Laravel 11, PHP 8.2+                 |
+| Backend   | Laravel 11, PHP 8.4+                 |
 | Database  | SQLite (dev), MySQL/PostgreSQL (prod) |
 | Auth      | OIDC (any provider) or local email+password, Sanctum |
 | Docs      | MkDocs Material (DE + EN)            |
@@ -93,7 +93,7 @@ hournest/
 
 ### Prerequisites
 
-- PHP 8.2+ with extensions: sqlite3, mbstring, openssl, tokenizer, xml, curl, fileinfo
+- PHP 8.4+ with extensions: sqlite3, mbstring, openssl, tokenizer, xml, curl, fileinfo
 - Composer
 - Node.js 18+ & npm
 - Python 3 + pip (for documentation)
