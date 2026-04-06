@@ -100,7 +100,7 @@ hournest/
 ## Further Reading
 
 - **[Prerequisites](home/prerequisites.md)** -- What is needed?
-- **[Installation](home/installation.md)** -- Set up local development
+- **[Installation](home/installation.md)** -- Install the release package on a server or NAS
 - **[Configuration](home/configuration.md)** -- All environment variables explained
 - **[End User Guide](user/index.md)** -- Guide for users and admins
 - **[Developer Documentation](dev/index.md)** -- Architecture, API, tests, deployment

@@ -1,228 +1,171 @@
-# Installation for Development
+# Installation
 
-This page describes how to set up Hournest for **local development**.
+This page describes the **normal installation from the release package** on a server, web host, or NAS.
 
-!!! info "Only deploying?"
-    If you only want to copy Hournest to a server or NAS and run it there, use [Deployment](../dev/deployment.md) instead. The release package already contains the frontend in `public/` and the PHP dependencies in `vendor/`.
+For end users or administrators: you do **not** need to clone the repository, build Angular, or run `composer install` when using the finished release package.
 
----
-
-## Clone the Repository
-
-```bash
-git clone <repository-url> hournest
-cd hournest
-```
+If you want to work on the project itself, use [Local Development](../dev/local-setup.md) instead.
 
 ---
 
-## Backend Setup
+## Quick Overview
 
-### 1. Install Dependencies
+The standard flow is:
 
-```bash
-cd backend
-composer install
+1. Download the release package or take the provided ZIP
+2. Extract it and copy the full folder to the server
+3. Point the document root to `public/`
+4. Copy `.env.example` to `.env` and adjust it
+5. Run `php install.php`
+
+The release package already contains:
+
+- the frontend in `public/`
+- the PHP dependencies in `vendor/`
+- the installer `install.php`
+
+---
+
+## Target System Requirements
+
+Only the following are required:
+
+- PHP 8.5+
+- Web server or PHP hosting with `public/` as document root
+- required PHP extensions:
+  - always: `mbstring`, `openssl`, `tokenizer`, `xml`, `curl`, `fileinfo`
+  - plus depending on the database:
+    - `pdo_sqlite`
+    - `pdo_mysql`
+    - or `pdo_pgsql`
+
+Not required on the target system:
+
+- Git
+- Node.js
+- npm
+- Angular CLI
+- MkDocs
+- Composer, as long as `vendor/` is included in the release package
+
+---
+
+## 1. Extract and Upload the Release Package
+
+1. Download the release archive or use the provided package
+2. Extract it locally
+3. Copy the entire extracted folder to the target server
+
+Example:
+
+```text
+/var/www/hournest/
 ```
 
-### 2. Configure Environment Variables
+or on a Synology, for example:
 
-Copy the template and adjust the values:
-
-```bash
-cp ../.env.example .env
+```text
+/volume1/web/hournest/
 ```
 
-!!! warning "Important"
-    The `.env` file contains sensitive data and must **never** be committed to the Git repository.
+---
 
-The most important settings for local development:
+## 2. Point the Document Root to `public/`
+
+The web server must point to the `public/` folder inside the package.
+
+Example:
+
+```text
+/var/www/hournest/public/
+```
+
+Without this step, Laravel will not work correctly.
+
+---
+
+## 3. Create `.env`
+
+Go into the uploaded folder and copy the template:
+
+```bash
+cp .env.example .env
+```
+
+Then adjust `.env`.
+
+A simple SQLite example:
 
 ```ini
-APP_ENV=local
-APP_DEBUG=true
-APP_URL=http://localhost:8000
-FRONTEND_URL=http://localhost:4200
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://example.com
+FRONTEND_URL=https://example.com
+
 DB_CONNECTION=sqlite
-DB_DATABASE=/absolute/path/to/backend/database/database.sqlite
+DB_DATABASE=/absolute/path/to/database.sqlite
+
+AUTH_OAUTH_ENABLED=true
+
+SANCTUM_STATEFUL_DOMAINS=example.com
+
+SUPERADMIN_USERNAME=superadmin
+SUPERADMIN_PASSWORD=$2y$12$replace-with-bcrypt-hash
 ```
 
-All variables are described in detail on the [Configuration](configuration.md) page.
-
-### 3. Generate Application Key
-
-```bash
-php artisan key:generate
-```
-
-### 4. Create and Migrate the Database
-
-For SQLite, create the database file first:
-
-```bash
-touch database/database.sqlite
-php artisan migrate
-```
-
-### 5. Optional Seeder
-
-If you need test data:
-
-```bash
-php artisan db:seed
-```
-
-### 6. Start the Backend
-
-```bash
-php artisan serve
-```
-
-The backend is now available at `http://localhost:8000`.
-
-!!! tip "API Documentation"
-    After startup, the auto-generated API documentation is available at `http://localhost:8000/docs/api`.
+If MySQL or PostgreSQL is used, set the respective database credentials instead.
 
 ---
 
-## Frontend Setup
+## 4. Optional: Generate a bcrypt Hash for the Superadmin
 
-### 1. Install Dependencies
+If you still need a hash for `SUPERADMIN_PASSWORD`, you can temporarily open:
 
-```bash
-cd frontend
-npm install
+```text
+public/superadmin-password-helper.php
 ```
 
-### 2. Start the Development Server
-
-A global Angular CLI is not required. Use the local project CLI:
-
-```bash
-npx ng serve --proxy-config proxy.conf.json
-```
-
-The frontend is now available at `http://localhost:4200`.
+in the browser, generate the hash, and then delete the file again.
 
 ---
 
-## Mock Mode (without Backend)
+## 5. Run the Installer
 
-Mock mode allows frontend development without a running backend. All API calls are replaced with realistic test data.
-
-### Start via Build Configuration
+Inside the package directory:
 
 ```bash
-cd frontend
-npx ng serve --configuration=mock
+php install.php
 ```
 
-### Start via URL Parameter
-
-Alternatively, mock mode can be activated with a URL parameter during a normal start:
-
-```
-http://localhost:4200?mock=true
-```
-
-!!! info "Mock Mode Details"
-    In mock mode, a toolbar appears at the bottom of the screen. More details are available in [Mock Mode](../dev/mock-mode.md).
-
----
-
-## First Start and Login
-
-### With SSO (OIDC)
-
-1. OIDC must be configured correctly in `.env`
-2. Open `http://localhost:4200` in the browser
-3. Click "Sign in with SSO"
-4. After successful authentication, the user is created automatically
-
-### With Superadmin (without SSO)
-
-1. Set superadmin credentials in `.env` (`SUPERADMIN_USERNAME`, `SUPERADMIN_PASSWORD`)
-2. `SUPERADMIN_PASSWORD` must be a bcrypt hash, not plaintext
-3. Optionally open `backend/public/superadmin-password-helper.php` once in the browser, generate a hash, and delete the file afterwards
-4. Open `http://localhost:4200` in the browser
-5. Click "Admin Login" below the SSO button
-6. Enter username and the plaintext password
-
-!!! note "Role Assignment"
-    - New users automatically receive the **Employee** role
-    - Users whose email is listed in `ADMIN_EMAILS` automatically receive the **Admin** role
-    - The superadmin account is created automatically on first login
-
----
-
-## Using Scripts
-
-The `scripts/` directory contains prepared scripts for local development, testing, and builds.
-
-### Development
-
-| Script | Description |
-|--------|-------------|
-| `./scripts/dev.sh` | Starts backend + frontend in parallel |
-| `./scripts/dev-mock.sh` | Starts the frontend in mock mode |
-| `./scripts/dev-docs.sh` | Starts the MkDocs dev server on port 8001 |
-
-### Build
-
-| Script | Description |
-|--------|-------------|
-| `./scripts/build-all.sh` | Builds frontend + backend + documentation |
-| `./scripts/build-frontend.sh` | Builds only the Angular frontend |
-| `./scripts/build-backend.sh` | Builds only the Laravel backend |
-| `./scripts/build-docs.sh` | Builds only the MkDocs documentation |
-
-### Test & CI
-
-| Script | Description |
-|--------|-------------|
-| `./scripts/test.sh` | Backend tests + frontend unit tests + frontend build check |
-| `./scripts/ci.sh` | Full local CI pipeline |
-| `./scripts/package.sh [version]` | Builds everything and creates a release archive |
-
-!!! tip "Quick start with scripts"
-    For local development, this is usually enough:
-    ```bash
-    cd backend && cp ../.env.example .env && composer install && php artisan key:generate && touch database/database.sqlite && php artisan migrate --seed && cd ..
-    ./scripts/dev.sh
-    ```
-
----
-
-## Running Tests
+Optionally with test data:
 
 ```bash
-# Backend tests only
-cd backend
-php artisan test
-
-# Backend tests + frontend unit tests + frontend build check
-./scripts/test.sh
-
-# Full CI pipeline (same as GitHub Actions)
-./scripts/ci.sh
-
-# Full CI pipeline including Playwright smoke test
-RUN_E2E_SMOKE=true ./scripts/ci.sh
+php install.php --seed
 ```
 
-The tests use an SQLite in-memory database and do not require a separate database installation.
+The installer:
+
+- checks the PHP version and extensions
+- only installs dependencies via Composer if `vendor/` is missing
+- creates the SQLite database file when needed
+- runs migrations
+- builds Laravel caches
 
 ---
 
-## Building Documentation
+## 6. Open the Application
 
-```bash
-# Build documentation (output in documentation/site/)
-./scripts/build-docs.sh
+After that, Hournest can be opened directly via the configured URL.
 
-# Dev server with live reload
-./scripts/dev-docs.sh              # http://localhost:8001
-```
+Recommended after setup:
 
-!!! note "Documentation prerequisites"
-    Python 3 and pip must be installed. Dependencies are installed from `documentation/requirements.txt`.
+1. Log in
+2. Delete `public/superadmin-password-helper.php` if it was used
+3. Verify `APP_DEBUG=false`
+4. Configure OIDC if SSO should be used
+
+---
+
+## Local Development
+
+If you want to develop Hournest locally, this is not the right guide. For that, use the developer page [Local Development](../dev/local-setup.md).

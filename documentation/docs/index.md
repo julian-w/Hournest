@@ -100,7 +100,7 @@ hournest/
 ## Weiterführende Links
 
 - **[Voraussetzungen](home/prerequisites.md)** -- Was wird benötigt?
-- **[Installation](home/installation.md)** -- Lokale Entwicklung einrichten
+- **[Installation](home/installation.md)** -- Release-Paket auf Server oder NAS installieren
 - **[Konfiguration](home/configuration.md)** -- Alle Umgebungsvariablen erklärt
 - **[Endanwender-Handbuch](user/index.md)** -- Anleitung für Benutzer und Admins
 - **[Entwickler-Dokumentation](dev/index.md)** -- Architektur, API, Tests, Deployment

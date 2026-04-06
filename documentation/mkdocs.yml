@@ -94,6 +94,7 @@ plugins:
             Backend: Backend
             Frontend: Frontend
             API-Referenz: API Reference
+            Lokale Entwicklung: Local Development
             Mock-Modus: Mock Mode
             E2E-Tests: E2E Tests
             Tests: Tests
@@ -133,6 +134,7 @@ nav:
           - Berichte: user/admin/reports.md
   - Entwickler:
       - Architektur: dev/index.md
+      - Lokale Entwicklung: dev/local-setup.md
       - Backend: dev/backend.md
       - Frontend: dev/frontend.md
       - API-Referenz: dev/api.md
