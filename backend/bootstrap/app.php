@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureDemoActionAllowed;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
@@ -17,10 +18,20 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('hournest:yearly-maintenance')->yearlyOn(1, 1, '00:30');
         // Run expiry check on the 1st of each month at 01:00
         $schedule->command('hournest:yearly-maintenance')->monthlyOn(1, '01:00');
+
+        $demoRefreshCron = config('demo.refresh_cron');
+        if (config('demo.enabled') && is_string($demoRefreshCron) && trim($demoRefreshCron) !== '') {
+            $schedule->command('hournest:demo:refresh')
+                ->cron(trim($demoRefreshCron))
+                ->withoutOverlapping();
+        }
     })
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->statefulApi();
         $middleware->append(SecurityHeaders::class);
+        $middleware->alias([
+            'demo' => EnsureDemoActionAllowed::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

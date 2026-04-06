@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Demo\DemoSafety;
 use App\Socialite\OpenIDConnectExtendSocialite;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Support\Facades\Gate;
@@ -19,6 +20,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        app(DemoSafety::class)->assertRuntimeSafety(app()->environment());
+
         if (config('auth.oauth_enabled')) {
             \Illuminate\Support\Facades\Event::listen(
                 SocialiteWasCalled::class,

@@ -81,6 +81,41 @@ import { ChangePasswordDialogComponent } from '../auth/change-password-dialog.co
           } @else {
             <p>{{ 'login.local_description' | translate }}</p>
 
+            @if (configService.isDemoEnabled() && configService.demoSharedPasswordValue()) {
+              <section class="demo-credentials" data-testid="demo-login-credentials">
+                <div class="demo-credentials-header">
+                  <mat-icon>visibility</mat-icon>
+                  <div>
+                    <div class="demo-credentials-title">{{ 'login.demo_title' | translate }}</div>
+                    <p>{{ 'login.demo_intro' | translate }}</p>
+                  </div>
+                </div>
+
+                <div class="demo-password-row">
+                  <span>{{ 'login.demo_password_label' | translate }}</span>
+                  <code>{{ configService.demoSharedPasswordValue() }}</code>
+                </div>
+
+                <p class="demo-password-note">{{ 'login.demo_password_public' | translate }}</p>
+
+                <div class="demo-user-list">
+                  @for (demoUser of configService.demoLoginUsersValue(); track demoUser.email) {
+                    <button
+                      type="button"
+                      mat-stroked-button
+                      class="demo-user-button"
+                      (click)="fillDemoLogin(demoUser.email)"
+                      [attr.data-testid]="'demo-user-' + demoUser.role"
+                    >
+                      <span class="demo-user-name">{{ demoUser.display_name }}</span>
+                      <span class="demo-user-email">{{ demoUser.email }}</span>
+                      <span class="demo-user-hint">{{ demoUser.login_hint }}</span>
+                    </button>
+                  }
+                </div>
+              </section>
+            }
+
             <form (ngSubmit)="submitCredentials()" class="login-form">
               <mat-form-field appearance="outline">
                 <mat-label>{{ 'login.email' | translate }}</mat-label>
@@ -110,7 +145,7 @@ import { ChangePasswordDialogComponent } from '../auth/change-password-dialog.co
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: calc(100dvh - var(--demo-banner-offset, 0px));
       background: linear-gradient(135deg, #fff8e1 0%, #ffe0b2 100%);
     }
     .login-card {
@@ -157,6 +192,87 @@ import { ChangePasswordDialogComponent } from '../auth/change-password-dialog.co
       gap: 8px;
       padding-top: 8px;
     }
+    .demo-credentials {
+      margin-top: 20px;
+      margin-bottom: 20px;
+      padding: 16px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #fff3cd 0%, #ffe0b2 100%);
+      border: 1px solid rgba(138, 59, 18, 0.18);
+    }
+    .demo-credentials-header {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .demo-credentials-header mat-icon {
+      margin-top: 2px;
+      color: #8a3b12;
+    }
+    .demo-credentials-title {
+      font-weight: 700;
+      color: #5d260c;
+    }
+    .demo-credentials-header p,
+    .demo-password-note {
+      margin: 6px 0 0;
+      color: rgba(0, 0, 0, 0.72);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .demo-password-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.72);
+      font-size: 14px;
+    }
+    .demo-password-row code {
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: #5d260c;
+      color: #fff7ed;
+      font-size: 13px;
+    }
+    .demo-user-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .demo-user-button {
+      justify-content: flex-start;
+      text-align: left;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border-color: rgba(138, 59, 18, 0.24);
+      background: rgba(255, 255, 255, 0.78);
+    }
+    .demo-user-name,
+    .demo-user-email,
+    .demo-user-hint {
+      display: block;
+      width: 100%;
+    }
+    .demo-user-name {
+      font-weight: 600;
+      color: #5d260c;
+    }
+    .demo-user-email {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.74);
+      margin-top: 2px;
+    }
+    .demo-user-hint {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.62);
+      margin-top: 6px;
+      white-space: normal;
+      line-height: 1.4;
+    }
     .login-btn {
       width: 100%;
       padding: 8px;
@@ -178,6 +294,11 @@ export class LoginComponent {
   password = '';
   submitting = signal(false);
   error = signal('');
+
+  fillDemoLogin(email: string): void {
+    this.username = email;
+    this.password = this.configService.demoSharedPasswordValue() ?? '';
+  }
 
   async submitCredentials(): Promise<void> {
     if (!this.username || !this.password) return;

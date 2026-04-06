@@ -12,6 +12,8 @@ const configuredWorkers = Number(process.env.E2E_WORKERS ?? (process.env.CI ? '1
 const backendRoot = path.resolve(__dirname, '../backend');
 const e2eDatabasePath = process.env.E2E_DB_DATABASE ?? path.join(backendRoot, 'database', 'e2e.sqlite');
 const reuseExistingServers = process.env.E2E_REUSE_EXISTING_SERVER === 'true';
+const backendBootstrapCommand = process.env.E2E_BACKEND_BOOTSTRAP_COMMAND
+  ?? 'php -r "file_exists(\'database/e2e.sqlite\') || touch(\'database/e2e.sqlite\');" && php artisan config:clear && php artisan route:clear && php artisan hournest:e2e-prepare';
 
 process.env.E2E_BASE_URL ??= frontendUrl;
 process.env.E2E_API_URL ??= backendUrl;
@@ -49,7 +51,7 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'php -r "file_exists(\'database/e2e.sqlite\') || touch(\'database/e2e.sqlite\');" && php artisan config:clear && php artisan route:clear && php artisan hournest:e2e-prepare && php artisan serve --host=127.0.0.1 --port=8000',
+      command: `${backendBootstrapCommand} && php artisan serve --host=127.0.0.1 --port=8000`,
       url: backendHealthUrl,
       cwd: '../backend',
       env: backendEnv,

@@ -2,6 +2,8 @@
 
 This page describes the technical architecture of Hournest for developers contributing to the project.
 
+Note: demo mode is documented separately in `dev/demo-mode.en.md` because it covers configuration, reset workflows, safety rules, and test-oriented seed data.
+
 ---
 
 ## Overview

@@ -175,6 +175,30 @@ OIDC_CLIENT_SECRET=your-client-secret
 OIDC_WELLKNOWN_URL=https://your-oidc-provider/.well-known/openid-configuration
 ```
 
+## Demo Mode
+
+Hournest includes a real backend demo mode with:
+
+- date-relative demo seed data
+- switchable dataset variants (`standard` and `full`)
+- one intentionally public shared demo password shown in the login UI
+- configurable server-side write protection for sensitive actions
+- a refresh command plus scheduler integration for periodic resets
+- frontend banner/config integration via `/api/auth/config`
+
+The detailed setup, safety rails, test coverage, and operating rules are documented in the developer documentation:
+
+- `documentation/docs/dev/demo-mode.md`
+- `documentation/docs/dev/demo-mode.en.md`
+
+Important for real demo deployments:
+
+- use `APP_ENV=demo`
+- use `AUTH_OAUTH_ENABLED=false`
+- use a dedicated demo database
+- set one shared demo password via `DEMO_LOGIN_PASSWORD`
+- keep `DEMO_ALLOW_DEFAULT_PASSWORDS=false`
+
 ## Scripts
 
 All scripts are in `scripts/` and work on Windows (Git Bash) and Linux.

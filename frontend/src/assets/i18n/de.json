@@ -32,7 +32,11 @@
     "error_invalid": "Ungültige Anmeldedaten.",
     "error_generic": "Ein Fehler ist aufgetreten.",
     "email": "E-Mail",
-    "local_description": "Melden Sie sich mit Ihrer E-Mail und Ihrem Passwort an."
+    "local_description": "Melden Sie sich mit Ihrer E-Mail und Ihrem Passwort an.",
+    "demo_title": "Öffentliche Demo-Zugänge",
+    "demo_intro": "Im Demo-Modus ist das Passwort absichtlich öffentlich. Wähle einfach einen Nutzer aus oder übernimm die Daten manuell.",
+    "demo_password_label": "Gemeinsames Demo-Passwort",
+    "demo_password_public": "Diese Zugangsdaten sind für Vorschau- und Testzwecke gedacht und dürfen offen im Web UI stehen."
   },
   "password": {
     "change_title": "Passwort ändern",

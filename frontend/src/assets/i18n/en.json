@@ -32,7 +32,11 @@
     "error_invalid": "Invalid credentials.",
     "error_generic": "An error occurred.",
     "email": "Email",
-    "local_description": "Sign in with your email and password."
+    "local_description": "Sign in with your email and password.",
+    "demo_title": "Public Demo Logins",
+    "demo_intro": "In demo mode the password is intentionally public. Just choose a user or copy the credentials manually.",
+    "demo_password_label": "Shared demo password",
+    "demo_password_public": "These credentials are meant for preview and test usage and may be shown openly in the web UI."
   },
   "password": {
     "change_title": "Change Password",

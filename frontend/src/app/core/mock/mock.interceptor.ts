@@ -118,6 +118,22 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
+  // GET /api/auth/config
+  if (method === 'GET' && url.endsWith('/api/auth/config')) {
+    return of(jsonResponse({
+      data: {
+        oauth_enabled: true,
+        demo: {
+          enabled: false,
+          notice: '',
+          reference_date: 'now',
+          password_change_allowed: true,
+          login: null,
+        },
+      },
+    })).pipe(delay(MOCK_DELAY));
+  }
+
   // GET /api/user
   if (method === 'GET' && url.endsWith('/api/user')) {
     return of(jsonResponse({ data: mockService.currentUser() })).pipe(delay(MOCK_DELAY));

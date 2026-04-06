@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Demo\DemoScenarioBuilder;
 use App\Enums\UserRole;
 use App\Http\Resources\UserResource;
 use App\Models\User;
@@ -17,20 +18,38 @@ class AuthController extends Controller
 {
     public function config(): JsonResponse
     {
+        $demoEnabled = (bool) config('demo.enabled');
+        $oauthEnabled = !$demoEnabled && (bool) config('auth.oauth_enabled');
+
         return response()->json([
             'data' => [
-                'oauth_enabled' => config('auth.oauth_enabled'),
+                'oauth_enabled' => $oauthEnabled,
+                'demo' => [
+                    'enabled' => $demoEnabled,
+                    'notice' => config('demo.notice'),
+                    'reference_date' => config('demo.reference_date'),
+                    'password_change_allowed' => !$demoEnabled || config('demo.capabilities.password_change', false),
+                    'login' => $demoEnabled ? [
+                        // Keep this payload derived from the same source as the demo seed users so UI and seed stay aligned.
+                        'shared_password' => config('demo.login_password'),
+                        'users' => DemoScenarioBuilder::documentedDemoUsers(),
+                    ] : null,
+                ],
             ],
         ]);
     }
 
     public function redirect(): RedirectResponse
     {
+        abort_if($this->usesLocalCredentialLogin(), 404);
+
         return Socialite::driver('openid-connect')->redirect();
     }
 
     public function callback(Request $request): RedirectResponse
     {
+        abort_if($this->usesLocalCredentialLogin(), 404);
+
         $oidcUser = Socialite::driver('openid-connect')->user();
 
         $adminEmails = array_filter(array_map('trim', explode(',', config('auth.admin_emails', ''))));
@@ -127,7 +146,7 @@ class AuthController extends Controller
         }
 
         // 2. Local user login (only when OAuth is disabled)
-        if (!config('auth.oauth_enabled')) {
+        if ($this->usesLocalCredentialLogin()) {
             $user = User::where('email', $request->username)->first();
 
             if ($user && $user->password && Hash::check($request->password, $user->password)) {
@@ -145,6 +164,11 @@ class AuthController extends Controller
         }
 
         return response()->json(['message' => 'Invalid credentials.'], 401);
+    }
+
+    private function usesLocalCredentialLogin(): bool
+    {
+        return (bool) config('demo.enabled') || !(bool) config('auth.oauth_enabled');
     }
 
     public function changePassword(Request $request): JsonResponse

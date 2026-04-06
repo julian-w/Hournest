@@ -18,6 +18,9 @@ describe('LoginComponent', () => {
   };
   let configServiceStub: {
     isOAuthEnabled: jasmine.Spy;
+    isDemoEnabled: jasmine.Spy;
+    demoSharedPasswordValue: jasmine.Spy;
+    demoLoginUsersValue: jasmine.Spy;
   };
   let router: jasmine.SpyObj<Router>;
 
@@ -31,6 +34,9 @@ describe('LoginComponent', () => {
 
     configServiceStub = {
       isOAuthEnabled: jasmine.createSpy('isOAuthEnabled').and.returnValue(true),
+      isDemoEnabled: jasmine.createSpy('isDemoEnabled').and.returnValue(false),
+      demoSharedPasswordValue: jasmine.createSpy('demoSharedPasswordValue').and.returnValue(null),
+      demoLoginUsersValue: jasmine.createSpy('demoLoginUsersValue').and.returnValue([]),
     };
 
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
@@ -142,5 +148,39 @@ describe('LoginComponent', () => {
     expect(dialogOpenSpy).toHaveBeenCalled();
     expect(authServiceStub.clearPasswordChangeRequired).not.toHaveBeenCalled();
     expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('should render public demo credentials when demo mode is enabled', () => {
+    configServiceStub.isOAuthEnabled.and.returnValue(false);
+    configServiceStub.isDemoEnabled.and.returnValue(true);
+    configServiceStub.demoSharedPasswordValue.and.returnValue('public-demo-password');
+    configServiceStub.demoLoginUsersValue.and.returnValue([
+      {
+        email: 'anna.admin@demo.hournest.local',
+        display_name: 'Anna Admin',
+        role: 'admin',
+        login_hint: 'Admin user',
+      },
+    ]);
+
+    const fixture = TestBed.createComponent(LoginComponent);
+    fixture.detectChanges();
+
+    const card = fixture.nativeElement.querySelector('[data-testid="demo-login-credentials"]');
+    expect(card).not.toBeNull();
+    expect(card.textContent).toContain('public-demo-password');
+    expect(card.textContent).toContain('anna.admin@demo.hournest.local');
+  });
+
+  it('should fill username and password when choosing a demo user', () => {
+    configServiceStub.demoSharedPasswordValue.and.returnValue('public-demo-password');
+
+    const fixture = TestBed.createComponent(LoginComponent);
+    const component = fixture.componentInstance;
+
+    component.fillDemoLogin('anna.admin@demo.hournest.local');
+
+    expect(component.username).toBe('anna.admin@demo.hournest.local');
+    expect(component.password).toBe('public-demo-password');
   });
 });

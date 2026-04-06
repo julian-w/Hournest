@@ -37,8 +37,14 @@ import { ChangePasswordDialogComponent } from './features/auth/change-password-d
     MockToolbarComponent,
   ],
   template: `
+    @if (configService.isDemoEnabled()) {
+      <div class="demo-banner" data-testid="demo-banner">
+        <mat-icon>campaign</mat-icon>
+        <span>{{ configService.demoNoticeText() }}</span>
+      </div>
+    }
     @if (auth.isLoggedIn()) {
-      <mat-sidenav-container class="app-container">
+      <mat-sidenav-container class="app-container" [class.with-demo-banner]="configService.isDemoEnabled()">
         <mat-sidenav #sidenav [mode]="isMobile() ? 'over' : 'side'"
                      [opened]="!isMobile()">
           <mat-nav-list>
@@ -126,8 +132,13 @@ import { ChangePasswordDialogComponent } from './features/auth/change-password-d
                 {{ 'language.de' | translate }}
               </button>
             </mat-menu>
-            @if (!configService.isOAuthEnabled()) {
-              <button mat-icon-button (click)="openChangePassword()" [matTooltip]="'password.change_title' | translate">
+            @if (!configService.isOAuthEnabled() && configService.isPasswordChangeAllowed()) {
+              <button
+                mat-icon-button
+                data-testid="change-password-button"
+                (click)="openChangePassword()"
+                [matTooltip]="'password.change_title' | translate"
+              >
                 <mat-icon>key</mat-icon>
               </button>
             }
@@ -142,7 +153,9 @@ import { ChangePasswordDialogComponent } from './features/auth/change-password-d
         </mat-sidenav-content>
       </mat-sidenav-container>
     } @else {
-      <router-outlet />
+      <div class="public-shell" [class.with-demo-banner]="configService.isDemoEnabled()">
+        <router-outlet />
+      </div>
     }
     @if (mockService.isActive()) {
       <app-mock-toolbar />
@@ -151,6 +164,43 @@ import { ChangePasswordDialogComponent } from './features/auth/change-password-d
   styles: [`
     .app-container {
       height: 100vh;
+      --demo-banner-offset: 0px;
+    }
+    .app-container.with-demo-banner {
+      --demo-banner-offset: 68px;
+      height: calc(100vh - var(--demo-banner-offset));
+      margin-top: var(--demo-banner-offset);
+    }
+    .public-shell.with-demo-banner {
+      --demo-banner-offset: 68px;
+      padding-top: var(--demo-banner-offset);
+    }
+    .demo-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+      min-height: 48px;
+      padding: 10px 16px;
+      background: #8a3b12;
+      color: #fff7ed;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .demo-banner mat-icon {
+      flex: 0 0 auto;
+    }
+    .demo-banner span {
+      flex: 1 1 auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     mat-sidenav {
       width: 240px;
@@ -214,6 +264,21 @@ import { ChangePasswordDialogComponent } from './features/auth/change-password-d
       padding: 24px;
       max-width: 1200px;
       margin: 0 auto;
+    }
+    @media (max-width: 599px) {
+      .app-container.with-demo-banner {
+        --demo-banner-offset: 76px;
+        height: calc(100vh - var(--demo-banner-offset));
+        margin-top: var(--demo-banner-offset);
+      }
+      .public-shell.with-demo-banner {
+        --demo-banner-offset: 76px;
+        padding-top: var(--demo-banner-offset);
+      }
+      .demo-banner {
+        min-height: 56px;
+        padding: 10px 12px;
+      }
     }
   `],
 })
