@@ -371,6 +371,19 @@ The script automatically:
 - Builds caches
 - Leaves the extracted folder ready so you can point the web root to `public/`
 
+### First Steps After Installation
+
+Recommended initial setup after the first successful install:
+
+1. Log in with the superadmin via **Admin Login**
+2. Verify the application is reachable
+3. Complete OIDC and `ADMIN_EMAILS` settings in `.env` if needed
+4. Replace `SUPERADMIN_PASSWORD` in `.env` with your own bcrypt hash if you used a temporary value
+5. Delete `public/superadmin-password-helper.php` afterwards
+6. Verify that `APP_DEBUG=false`
+
+The superadmin password is managed through `.env`, not through the normal user administration.
+
 ### Manual
 
 1. Unpack release archive or build locally with `./scripts/package.sh`

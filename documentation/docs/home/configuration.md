@@ -114,7 +114,7 @@ Der Superadmin-Zugang funktioniert ohne SSO und wird direkt über Benutzername u
 | `SUPERADMIN_PASSWORD` | bcrypt-Hash   | bcrypt-Hash für den Superadmin-Login, nicht das Klartext-Passwort |
 
 !!! danger "Passwort ändern"
-    Das Standard-Passwort `changeme` muss vor dem Produktiveinsatz **unbedingt** geändert werden.
+    Für `SUPERADMIN_PASSWORD` muss vor dem Produktiveinsatz ein eigener bcrypt-Hash gesetzt werden. Ein Klartext-Passwort oder Platzhalterwert ist nicht ausreichend.
 
 ---
 

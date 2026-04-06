@@ -163,12 +163,37 @@ Der Installer:
 
 Danach kann Hournest direkt über die konfigurierte URL geöffnet werden.
 
-Empfohlen nach der Einrichtung:
+---
 
-1. Einloggen
-2. `public/superadmin-password-helper.php` löschen, falls verwendet
-3. `APP_DEBUG=false` prüfen
-4. OIDC konfigurieren, falls SSO verwendet werden soll
+## Erste Schritte nach der Installation
+
+Empfohlener Ablauf direkt nach der ersten erfolgreichen Installation:
+
+1. Mit dem Superadmin über **"Admin Login"** anmelden
+2. Prüfen, ob die Anwendung grundsätzlich erreichbar ist
+3. Falls nötig, `ADMIN_EMAILS` und OIDC-Einstellungen in `.env` vervollständigen
+4. Falls der Superadmin-Hash nur provisorisch gesetzt wurde: `SUPERADMIN_PASSWORD` in `.env` auf einen neuen bcrypt-Hash ändern
+5. `public/superadmin-password-helper.php` löschen, falls verwendet
+6. `APP_DEBUG=false` prüfen
+
+### Superadmin-Passwort ändern
+
+Der Superadmin ist ein Notfallzugang und wird **nicht** über die normale Benutzerverwaltung verwaltet. Das Passwort wird über die `.env`-Datei gesteuert.
+
+Vorgehen:
+
+1. Temporär `public/superadmin-password-helper.php` im Browser öffnen
+2. Gewünschtes neues Passwort als bcrypt-Hash erzeugen
+3. Den Wert in `.env` bei `SUPERADMIN_PASSWORD=` ersetzen
+4. Danach `public/superadmin-password-helper.php` wieder löschen
+5. Erneut mit dem neuen Passwort testen
+
+Beispiel:
+
+```ini
+SUPERADMIN_USERNAME=superadmin
+SUPERADMIN_PASSWORD=$2y$12$your-generated-bcrypt-hash
+```
 
 ---
 
