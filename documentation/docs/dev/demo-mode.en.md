@@ -220,23 +220,134 @@ This minimum coverage is also enforced by backend tests.
 
 ### Scenario Lookup
 
-| Scenario | Person | Seed example | Visible in |
-|---|---|---|
-| Approved full-day vacation | Max, Tom | past and future vacation blocks | Calendar, vacation account |
-| Pending vacation | Max | future request with comment `Summer trip` | Employee view, admin review queue |
-| Rejected vacation | Sarah | rejection due to team coverage | Employee view, admin review |
-| Morning half-day vacation | Anna | `Family appointment` | Calendar, vacation account |
-| Afternoon half-day vacation | Mona | `Moving appointment` | Calendar, vacation account |
-| Acknowledged illness | Sarah | `Flu symptoms` | Absence module, admin review |
-| Admin-created illness | Tom | `Medical appointment confirmed by HR` | Absence module |
-| Pending special leave | Lisa | `Family ceremony` | Absence module, review queue |
-| Rejected special leave | Mona | `Requested bridge day` | Absence module |
-| Approved morning special leave | Max | `Parent-teacher conference` | Absence module |
-| Company holiday | everyone | Dec 24 to Dec 31 | Calendar, ledger, system bookings |
-| Freeze | everyone | `Quarter-end delivery freeze` | Vacation planning |
-| Weekend work | Lisa | weekend time entry | Time tracking, reports |
-| Part-time | Mona | 3-day week plus matching time entry | Work schedule, time tracking |
-| Holiday-exempt employee | Tom | `holidays_exempt=true` | User profile, calculations |
+<table>
+  <thead>
+    <tr>
+      <th>Scenario</th>
+      <th>Person</th>
+      <th>Seed example</th>
+      <th>Visible in</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Approved full-day vacation</td>
+      <td>Max, Tom</td>
+      <td>past and future vacation blocks</td>
+      <td>Calendar, vacation account</td>
+    </tr>
+    <tr>
+      <td>Pending vacation</td>
+      <td>Max</td>
+      <td>future request with comment <code>Summer trip</code></td>
+      <td>Employee view, admin review queue</td>
+    </tr>
+    <tr>
+      <td>Rejected vacation</td>
+      <td>Sarah</td>
+      <td>rejection due to team coverage</td>
+      <td>Employee view, admin review</td>
+    </tr>
+    <tr>
+      <td>Morning half-day vacation</td>
+      <td>Anna</td>
+      <td><code>Family appointment</code></td>
+      <td>Calendar, vacation account</td>
+    </tr>
+    <tr>
+      <td>Afternoon half-day vacation</td>
+      <td>Mona</td>
+      <td><code>Moving appointment</code></td>
+      <td>Calendar, vacation account</td>
+    </tr>
+    <tr>
+      <td>Acknowledged illness</td>
+      <td>Sarah</td>
+      <td><code>Flu symptoms</code></td>
+      <td>Absence module, admin review</td>
+    </tr>
+    <tr>
+      <td>Admin-created illness</td>
+      <td>Tom</td>
+      <td><code>Medical appointment confirmed by HR</code></td>
+      <td>Absence module</td>
+    </tr>
+    <tr>
+      <td>Pending special leave</td>
+      <td>Lisa</td>
+      <td><code>Family ceremony</code></td>
+      <td>Absence module, review queue</td>
+    </tr>
+    <tr>
+      <td>Rejected special leave</td>
+      <td>Mona</td>
+      <td><code>Requested bridge day</code></td>
+      <td>Absence module</td>
+    </tr>
+    <tr>
+      <td>Approved morning special leave</td>
+      <td>Max</td>
+      <td><code>Parent-teacher conference</code></td>
+      <td>Absence module</td>
+    </tr>
+    <tr>
+      <td>Company holiday</td>
+      <td>everyone</td>
+      <td>Dec 24 to Dec 31</td>
+      <td>Calendar, ledger, system bookings</td>
+    </tr>
+    <tr>
+      <td>Freeze</td>
+      <td>everyone</td>
+      <td><code>Quarter-end delivery freeze</code></td>
+      <td>Vacation planning</td>
+    </tr>
+    <tr>
+      <td>Weekend work</td>
+      <td>Lisa</td>
+      <td>weekend time entry</td>
+      <td>Time tracking, reports</td>
+    </tr>
+    <tr>
+      <td>Part-time</td>
+      <td>Mona</td>
+      <td>3-day week plus matching time entry</td>
+      <td>Work schedule, time tracking</td>
+    </tr>
+    <tr>
+      <td>Holiday-exempt employee</td>
+      <td>Tom</td>
+      <td><code>holidays_exempt=true</code></td>
+      <td>User profile, calculations</td>
+    </tr>
+  </tbody>
+</table>
+
+### Container Runtime
+
+The container setup intentionally uses the same image for demo and regular app mode.
+
+The switch is:
+
+```env
+HOURNEST_RUNTIME_MODE=demo
+```
+
+Supported values:
+
+- `demo`: enforces the demo runtime profile
+- `app`: starts the same container in normal application mode
+
+Important behavior in the demo path:
+
+- `HOURNEST_RUNTIME_MODE=demo` forces `DEMO_ENABLED=true`
+- `HOURNEST_RUNTIME_MODE=demo` forces `AUTH_OAUTH_ENABLED=false`
+- without an explicit database setup, the container defaults to `sqlite` at `/var/lib/hournest/database/demo.sqlite`
+- the persistent runtime `.env` lives at `/var/lib/hournest/env/.env`
+- a demo refresh runs on boot by default
+- the same container can also launch `php artisan schedule:work` in the background
+
+These rules intentionally keep demo deployment and later standard deployment on the same container path instead of drifting into two separate products.
 
 ### Overview Graphic
 
@@ -266,6 +377,7 @@ Extra density in "full"
 That means:
 
 - every change to generated personas, scenarios, statuses, or dataset variants must update the docs in the same change
+- changes to the demo container runtime profile and publicly documented login behavior must be updated in the docs and generator context in the same change as well
 - the tables and overview graphic here describe the real generator, not an aspirational target
 - the coverage tests must assert the same guarantees so generator, docs, and tests do not drift apart asynchronously
 

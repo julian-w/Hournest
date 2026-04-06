@@ -271,6 +271,8 @@ if (!is_dir($appRoot . '/vendor')) {
     runCommand('composer install --no-dev --optimize-autoloader --no-interaction', $appRoot);
 }
 
+// The installer owns APP_KEY bootstrap and writes the generated key into .env.
+// SUPERADMIN_PASSWORD remains operator-controlled: missing values only print a suggested hash above.
 runCommand($phpBinary . ' artisan key:generate --force', $appRoot);
 createSqliteDatabaseIfNeeded($appRoot, $packageRoot);
 runCommand($phpBinary . ' artisan migrate --force', $appRoot);

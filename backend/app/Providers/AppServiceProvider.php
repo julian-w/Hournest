@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Demo\DemoSafety;
 use App\Socialite\OpenIDConnectExtendSocialite;
+use App\System\SchemaCompatibilityGuard;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         app(DemoSafety::class)->assertRuntimeSafety(app()->environment());
+        app(SchemaCompatibilityGuard::class)->assertNoDowngradeRisk();
 
         if (config('auth.oauth_enabled')) {
             \Illuminate\Support\Facades\Event::listen(

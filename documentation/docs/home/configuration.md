@@ -13,12 +13,16 @@ Alle Einstellungen von Hournest werden über die `.env`-Datei gesteuert. Im Repo
 |---------------|------------------------|-------------------------------------------------|
 | `APP_NAME`    | `Hournest`             | Name der Anwendung                              |
 | `APP_ENV`     | `local`                | Umgebung: `local`, `staging`, `production`      |
-| `APP_KEY`     | *(leer)*               | Verschlüsselungskey, wird mit `php artisan key:generate` erzeugt |
+| `APP_KEY`     | *(leer)*               | Verschlüsselungskey. Wird bei klassischen Installationen von `php install.php` per `php artisan key:generate` in `.env` geschrieben; im Docker-Betrieb bei erstem Start in die persistente Runtime-`.env` erzeugt, falls er fehlt |
 | `APP_DEBUG`   | `true`                 | Debug-Modus: `true` für Entwicklung, `false` für Produktion |
+| `APP_ALLOW_SCHEMA_DOWNGRADE` | `false` | Notfall-Override für den Downgrade-Schutz. Sollte praktisch immer `false` bleiben |
 | `APP_URL`     | `http://localhost:8000`| URL des Backends                                |
 
 !!! danger "APP_DEBUG in Produktion"
     `APP_DEBUG` muss in Produktionsumgebungen **immer** auf `false` stehen. Andernfalls werden detaillierte Fehlermeldungen inklusive Stack-Traces an den Client gesendet.
+
+!!! note "Schreibzugriff auf .env"
+    Während der ersten Installation darf Hournest die `.env` gezielt ergänzen, um generierte Geheimnisse wie `APP_KEY` zu schreiben. Danach kann die Datei administrativ verwaltet und bei Bedarf schreibgeschützt betrieben werden.
 
 ---
 

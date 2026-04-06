@@ -178,6 +178,9 @@ Der Installer:
 - prüft PHP-Version und Extensions
 - prüft, ob `SUPERADMIN_PASSWORD` sicher gesetzt ist
 - stoppt bewusst, wenn der Superadmin-Hash fehlt oder ungültig ist, und gibt einen kopierbaren Ersatzwert aus
+- erstellt `.env` aus `.env.example`, falls sie noch fehlt
+- schreibt `APP_KEY` bewusst per `php artisan key:generate` in `.env`
+- schreibt **nicht** automatisch den Superadmin-Hash in `.env`, sondern verlangt eine bewusste Übernahme durch den Betreiber
 - installiert nur dann per Composer nach, wenn `vendor/` fehlen sollte
 - erzeugt bei SQLite die Datenbankdatei
 - führt Migrationen aus

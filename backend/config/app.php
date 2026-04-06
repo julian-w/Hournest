@@ -41,6 +41,8 @@ return [
 
     'debug' => (bool) env('APP_DEBUG', false),
 
+    'allow_schema_downgrade' => (bool) env('APP_ALLOW_SCHEMA_DOWNGRADE', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application URL

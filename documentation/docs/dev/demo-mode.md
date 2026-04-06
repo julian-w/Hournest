@@ -218,23 +218,134 @@ Diese Mindestabdeckung ist zusätzlich per Backend-Tests abgesichert.
 
 ### Wo welches Szenario steckt
 
-| Szenario | Person | Beispiel im Seed | Sichtbar in |
-|---|---|---|
-| Genehmigte Vollzeit-Vacation | Max, Tom | vergangene und zukünftige Vacation-Blöcke | Kalender, Vacation Account |
-| Offene Vacation | Max | zukünftiger Request mit Kommentar `Summer trip` | Mitarbeiteransicht, Admin Review Queue |
-| Abgelehnte Vacation | Sarah | Kommentar zur Teamabdeckung | Mitarbeiteransicht, Admin Review |
-| Halbtägige Vacation morgens | Anna | `Family appointment` | Kalender, Vacation Account |
-| Halbtägige Vacation nachmittags | Mona | `Moving appointment` | Kalender, Vacation Account |
-| Krankheit bestätigt | Sarah | `Flu symptoms` | Absence-Modul, Admin Review |
-| Krankheit admin-erfasst | Tom | `Medical appointment confirmed by HR` | Absence-Modul |
-| Sonderurlaub offen | Lisa | `Family ceremony` | Absence-Modul, Review Queue |
-| Sonderurlaub abgelehnt | Mona | `Requested bridge day` | Absence-Modul |
-| Sonderurlaub genehmigt morgens | Max | `Parent-teacher conference` | Absence-Modul |
-| Company Holiday | alle | 24.12. bis 31.12. | Kalender, Ledger, Systembuchungen |
-| Freeze | alle | `Quarter-end delivery freeze` | Vacation Planning |
-| Wochenendarbeit | Lisa | Wochenend-Time-Entry | Time Tracking, Reports |
-| Teilzeit | Mona | 3-Tage-Woche plus passende Zeitbuchung | Work Schedule, Time Tracking |
-| Holiday-Exempt | Tom | `holidays_exempt=true` | Benutzerprofil, Berechnungen |
+<table>
+  <thead>
+    <tr>
+      <th>Szenario</th>
+      <th>Person</th>
+      <th>Beispiel im Seed</th>
+      <th>Sichtbar in</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Genehmigte Vollzeit-Vacation</td>
+      <td>Max, Tom</td>
+      <td>vergangene und zukünftige Vacation-Blöcke</td>
+      <td>Kalender, Vacation Account</td>
+    </tr>
+    <tr>
+      <td>Offene Vacation</td>
+      <td>Max</td>
+      <td>zukünftiger Request mit Kommentar <code>Summer trip</code></td>
+      <td>Mitarbeiteransicht, Admin Review Queue</td>
+    </tr>
+    <tr>
+      <td>Abgelehnte Vacation</td>
+      <td>Sarah</td>
+      <td>Kommentar zur Teamabdeckung</td>
+      <td>Mitarbeiteransicht, Admin Review</td>
+    </tr>
+    <tr>
+      <td>Halbtägige Vacation morgens</td>
+      <td>Anna</td>
+      <td><code>Family appointment</code></td>
+      <td>Kalender, Vacation Account</td>
+    </tr>
+    <tr>
+      <td>Halbtägige Vacation nachmittags</td>
+      <td>Mona</td>
+      <td><code>Moving appointment</code></td>
+      <td>Kalender, Vacation Account</td>
+    </tr>
+    <tr>
+      <td>Krankheit bestätigt</td>
+      <td>Sarah</td>
+      <td><code>Flu symptoms</code></td>
+      <td>Absence-Modul, Admin Review</td>
+    </tr>
+    <tr>
+      <td>Krankheit admin-erfasst</td>
+      <td>Tom</td>
+      <td><code>Medical appointment confirmed by HR</code></td>
+      <td>Absence-Modul</td>
+    </tr>
+    <tr>
+      <td>Sonderurlaub offen</td>
+      <td>Lisa</td>
+      <td><code>Family ceremony</code></td>
+      <td>Absence-Modul, Review Queue</td>
+    </tr>
+    <tr>
+      <td>Sonderurlaub abgelehnt</td>
+      <td>Mona</td>
+      <td><code>Requested bridge day</code></td>
+      <td>Absence-Modul</td>
+    </tr>
+    <tr>
+      <td>Sonderurlaub genehmigt morgens</td>
+      <td>Max</td>
+      <td><code>Parent-teacher conference</code></td>
+      <td>Absence-Modul</td>
+    </tr>
+    <tr>
+      <td>Company Holiday</td>
+      <td>alle</td>
+      <td>24.12. bis 31.12.</td>
+      <td>Kalender, Ledger, Systembuchungen</td>
+    </tr>
+    <tr>
+      <td>Freeze</td>
+      <td>alle</td>
+      <td><code>Quarter-end delivery freeze</code></td>
+      <td>Vacation Planning</td>
+    </tr>
+    <tr>
+      <td>Wochenendarbeit</td>
+      <td>Lisa</td>
+      <td>Wochenend-Time-Entry</td>
+      <td>Time Tracking, Reports</td>
+    </tr>
+    <tr>
+      <td>Teilzeit</td>
+      <td>Mona</td>
+      <td>3-Tage-Woche plus passende Zeitbuchung</td>
+      <td>Work Schedule, Time Tracking</td>
+    </tr>
+    <tr>
+      <td>Holiday-Exempt</td>
+      <td>Tom</td>
+      <td><code>holidays_exempt=true</code></td>
+      <td>Benutzerprofil, Berechnungen</td>
+    </tr>
+  </tbody>
+</table>
+
+### Container-Laufzeit
+
+Die Container-Variante verwendet bewusst dasselbe Image für Demo und regulären Betrieb.
+
+Der Umschalter ist:
+
+```env
+HOURNEST_RUNTIME_MODE=demo
+```
+
+Mögliche Werte:
+
+- `demo`: setzt Demo-Modus als Laufzeitprofil durch
+- `app`: startet denselben Container im normalen Anwendungsmodus
+
+Wichtig für den Demo-Pfad:
+
+- `HOURNEST_RUNTIME_MODE=demo` erzwingt `DEMO_ENABLED=true`
+- `HOURNEST_RUNTIME_MODE=demo` erzwingt `AUTH_OAUTH_ENABLED=false`
+- ohne explizite DB-Konfiguration nutzt der Container standardmäßig `sqlite` unter `/var/lib/hournest/database/demo.sqlite`
+- die persistente Runtime-`.env` liegt unter `/var/lib/hournest/env/.env`
+- beim Start wird standardmäßig ein Demo-Refresh ausgeführt
+- derselbe Container kann zusätzlich `php artisan schedule:work` im Hintergrund mitstarten
+
+Diese Regeln sorgen bewusst dafür, dass Demo-Deployment und späteres Standard-Deployment denselben Containerpfad verwenden und nicht als zwei getrennte Produkte auseinanderdriften.
 
 ### Übersichtsgrafik
 
@@ -264,6 +375,7 @@ Zusätzliche Verdichtung in "full"
 Das bedeutet:
 
 - jede Änderung an generierten Personas, Szenarien, Stati oder Datensatzvarianten muss im selben Change auch in der Doku nachgezogen werden
+- Änderungen am Container-Laufzeitprofil für Demo und am öffentlich beschriebenen Login-Verhalten müssen im selben Change ebenfalls in Doku und Generator-Kontext aktualisiert werden
 - die Tabellen und Grafiken hier beschreiben den echten Generator und keine Wunschvorstellung
 - die Coverage-Tests müssen dieselben Aussagen absichern, damit Generator, Tests und Doku nicht asynchron auseinanderlaufen
 

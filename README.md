@@ -199,6 +199,48 @@ Important for real demo deployments:
 - set one shared demo password via `DEMO_LOGIN_PASSWORD`
 - keep `DEMO_ALLOW_DEFAULT_PASSWORDS=false`
 
+## Docker Runtime
+
+The repository now includes a shared container path for both demo and normal app mode:
+
+```bash
+cp docker/demo.env.example .env.docker
+docker compose --env-file .env.docker up --build -d
+```
+
+To switch the exact same image into normal app mode, use:
+
+```bash
+cp docker/app.env.example .env.docker
+docker compose --env-file .env.docker up --build -d
+```
+
+The runtime switch is `HOURNEST_RUNTIME_MODE=demo|app`. Details are documented in:
+
+- `documentation/docs/dev/demo-mode.md`
+- `documentation/docs/dev/deployment.md`
+
+For Docker, generated runtime state stays outside the image:
+
+- persistent `.env`: `/var/lib/hournest/env/.env`
+- SQLite files: `/var/lib/hournest/database/`
+- Laravel storage: `/var/www/html/storage`
+
+On first boot, the container generates a missing `APP_KEY` automatically. If `SUPERADMIN_PASSWORD` is missing or invalid, it generates an initial superadmin password once, stores only the bcrypt hash, and prints the plaintext password to the container logs.
+
+Useful Docker commands:
+
+```bash
+docker compose --env-file .env.docker logs -f hournest
+docker compose --env-file .env.docker ps
+```
+
+For schema changes, the paths differ:
+
+- classic release-package hosting: run `php artisan migrate --force` during updates
+- Docker: the entrypoint runs migrations automatically in `app` mode when `HOURNEST_AUTO_MIGRATE=true`
+- downgrades are blocked on startup if the database already contains migrations that are not present in the current code package
+
 ## Scripts
 
 All scripts are in `scripts/` and work on Windows (Git Bash) and Linux.
@@ -401,6 +443,22 @@ The script automatically:
 - Leaves the extracted folder ready so you can point the web root to `public/`
 
 `php test.php` is optional, but useful before and after installation. It checks PHP, required extensions, `.env`, the superadmin bcrypt hash, writable directories, and database connectivity when configured.
+
+### Updates
+
+With CLI access, the update path is:
+
+```bash
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+Without CLI access, Hournest currently has no `update.php` or web updater for general schema-changing releases. That mode is therefore only safe for releases that do not require database migrations. Details and tradeoffs are documented in:
+
+- `documentation/docs/dev/deployment.md`
+- `documentation/docs/dev/deployment.en.md`
 
 ### First Steps After Installation
 

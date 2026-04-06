@@ -149,6 +149,61 @@ php artisan route:cache
 php artisan view:cache
 ```
 
+Wichtig:
+
+- schemaändernde Updates benötigen in diesem klassischen Pfad aktuell CLI-Zugriff oder Docker
+- für Hosting ohne CLI gibt es derzeit bewusst **keinen** automatischen Web-Updater
+- wenn ein Release eine neuere Datenbankstruktur erwartet, müssen die Migrationen aktiv ausgeführt werden
+- Downgrades auf ein älteres Paket werden beim Start blockiert, sobald die Datenbank Migrationen enthält, die im aktuellen Code nicht mehr vorhanden sind
+
+Falls du also klassisches Hosting **ohne** CLI hast, ist das nur für Releases ohne notwendige Datenbankmigrationen wirklich bequem. Für schemaändernde Updates solltest du derzeit Docker oder einen Hoster mit CLI-Zugang einplanen.
+
+### Update-Pfade im Überblick
+
+#### 1. Update mit CLI-Zugriff
+
+Das ist der empfohlene Pfad für klassisches Hosting außerhalb von Docker.
+
+Ablauf:
+
+1. Neues Release-Paket hochladen oder entpacken
+2. Bestehende `.env` beibehalten
+3. `php artisan migrate --force` ausführen
+4. Laravel-Caches neu aufbauen:
+
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+Vorteile:
+
+- schemaändernde Updates funktionieren sauber
+- der Downgrade-Schutz bleibt aktiv
+- keine zusätzlichen Web-Helferskripte sind nötig
+
+#### 2. Update mit nur PHP-/Web-Zugriff, aber ohne CLI
+
+Diesen Pfad unterstützt Hournest aktuell **nicht** für allgemeine schemaändernde Updates.
+
+Das bedeutet konkret:
+
+- es gibt derzeit kein `update.php` und keinen Web-Updater
+- du kannst Dateien austauschen, aber notwendige Migrationen nicht sauber ausführen
+- bei einem älteren Paket gegen eine neuere Datenbank blockiert der Downgrade-Schutz den Start bewusst
+
+Aktuell sinnvoll ist dieser Betriebsmodus deshalb nur:
+
+- für Erstinstallationen mit vorhandenem `install.php`
+- für Releases ohne notwendige Datenbankmigrationen
+
+Wenn du dauerhaft ohne CLI arbeiten musst, ist derzeit einer dieser Wege empfehlenswert:
+
+- Docker/Compose verwenden
+- Hosting mit SSH/CLI wählen
+- Updates mit schemaändernden Releases durch den Hoster ausführen lassen
+
 ---
 
 ## Klassisches PHP-Hosting
@@ -210,6 +265,147 @@ DB_DATABASE=hournest
 DB_USERNAME=hournest_user
 DB_PASSWORD=sicheres_passwort
 ```
+
+---
+
+## Docker und Single-Container-Laufzeit
+
+Für Entwickler und spätere einfache Deployments liegt jetzt ein bewusst gemeinsamer Containerpfad im Repository:
+
+- `Dockerfile`
+- `compose.yaml`
+- `docker/entrypoint.sh`
+- `docker/demo.env.example`
+- `docker/app.env.example`
+
+Das Ziel ist ausdrücklich **kein separates Demo-Image**, sondern ein gemeinsames Image mit Laufzeitumschalter:
+
+```env
+HOURNEST_RUNTIME_MODE=demo
+```
+
+Mögliche Werte:
+
+- `demo`: startet Hournest als öffentliche oder interne Demo
+- `app`: startet denselben Container als normale Anwendung
+
+### Demo schnell starten
+
+```bash
+cp docker/demo.env.example .env.docker
+docker compose --env-file .env.docker up --build -d
+```
+
+Der Compose-Standard startet absichtlich im Demo-Modus auf `http://localhost:8080`.
+
+Was der Container dabei automatisch macht:
+
+- setzt im Demo-Modus `DEMO_ENABLED=true`
+- setzt im Demo-Modus `AUTH_OAUTH_ENABLED=false`
+- nutzt standardmäßig SQLite unter `/var/lib/hournest/database/demo.sqlite`
+- führt beim Start `php artisan hournest:demo:refresh` aus
+- startet optional den Laravel-Scheduler im Hintergrund mit
+
+Nützliche Kommandos danach:
+
+```bash
+docker compose --env-file .env.docker logs -f hournest
+docker compose --env-file .env.docker ps
+```
+
+### Auf normalen App-Modus umschalten
+
+```bash
+cp docker/app.env.example .env.docker
+docker compose --env-file .env.docker up --build -d
+```
+
+Dann bleibt dasselbe Image aktiv, aber ohne erzwungenen Demo-Modus. Damit ist der spätere Produktivpfad schon jetzt derselbe Containerpfad wie die Demo.
+
+Beim ersten Start im App-Modus gilt:
+
+- fehlt `APP_KEY`, wird er automatisch erzeugt
+- fehlt `SUPERADMIN_PASSWORD`, erzeugt der Container einmalig ein Initialpasswort und schreibt nur dessen bcrypt-Hash in die persistente Runtime-`.env`
+- das Klartext-Passwort erscheint genau dafür im Container-Log
+
+Zum Nachsehen:
+
+```bash
+docker compose --env-file .env.docker logs --tail=100 hournest
+```
+
+### Wichtige Runtime-Variablen
+
+Diese Variablen werden vom Container-Entrypoint ausgewertet:
+
+```env
+HOURNEST_RUNTIME_MODE=demo
+HOURNEST_AUTO_MIGRATE=true
+HOURNEST_ENABLE_SCHEDULER=true
+HOURNEST_DEMO_REFRESH_ON_BOOT=true
+```
+
+Hinweise:
+
+- `HOURNEST_RUNTIME_MODE=demo` und OAuth/OIDC sind absichtlich nicht kombinierbar
+- für echte Demo-Deployments sollte `DEMO_LOGIN_PASSWORD` explizit gesetzt werden
+- für regulären Betrieb kannst du weiterhin SQLite, MySQL oder PostgreSQL verwenden
+- `storage/` und `/var/lib/hournest` werden in Compose als Volumes gehalten
+- beim Start prüft die Anwendung zusätzlich, ob die Datenbank Migrationen enthält, die in diesem Image nicht mehr vorhanden sind; in diesem Fall bricht der Container mit einer klaren Downgrade-Fehlermeldung ab
+- das Container-Image besitzt einen HTTP-Healthcheck über `/up`
+
+### Was im Image liegt und was außerhalb bleibt
+
+Im Image liegen nur unveränderliche Anwendungsdateien:
+
+- Laravel-Code
+- gebaute Angular-Dateien
+- PHP-Abhängigkeiten
+
+Außerhalb des Images und damit persistent im Runtime-Volume liegen:
+
+- `/var/lib/hournest/env/.env`
+- `/var/lib/hournest/database/*.sqlite`
+- `/var/www/html/storage`
+
+Wichtig:
+
+- der Entrypoint verlinkt `/var/www/html/.env` auf `/var/lib/hournest/env/.env`
+- beim ersten Start wird diese Runtime-`.env` aus `.env.example` erzeugt, falls sie fehlt
+- wenn `APP_KEY` fehlt, wird er automatisch erzeugt und in diese Runtime-`.env` geschrieben
+- wenn `SUPERADMIN_PASSWORD` fehlt oder ungültig ist, erzeugt der Container einmalig ein starkes Initialpasswort, schreibt nur den bcrypt-Hash in die Runtime-`.env` und gibt das Klartext-Passwort in der Container-Konsole aus
+
+### Änderung später
+
+Wenn du Werte nach dem ersten Start ändern willst, gibt es zwei saubere Wege:
+
+1. per `docker exec -it <container> bash` und Bearbeiten von `/var/lib/hournest/env/.env`
+2. per Compose-/Orchestrator-Umgebungsvariablen
+
+Die Runtime-`.env` ist für persistent erzeugte Standardwerte gedacht. Explizite Container-Umgebungsvariablen überschreiben diese Werte beim Start.
+
+### Update im Docker-Betrieb
+
+Für denselben Containerpfad ist der übliche Ablauf:
+
+```bash
+docker compose --env-file .env.docker pull
+docker compose --env-file .env.docker up -d
+```
+
+Oder bei lokal gebautem Image:
+
+```bash
+docker compose --env-file .env.docker up --build -d
+```
+
+Wenn `HOURNEST_RUNTIME_MODE=app` und `HOURNEST_AUTO_MIGRATE=true` gesetzt ist, führt der Entrypoint die Migrationen beim Start automatisch aus.
+
+Wichtig:
+
+- bei einem Downgrade auf ein älteres Image bricht der Start mit klarer Fehlermeldung im Container-Log ab
+- die Datenbank bleibt dabei unverändert
+- ein bewusster Notfall-Override wäre nur über `APP_ALLOW_SCHEMA_DOWNGRADE=true` möglich
 
 ---
 
