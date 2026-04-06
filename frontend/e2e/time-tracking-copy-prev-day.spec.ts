@@ -9,8 +9,8 @@ import {
   deleteUser,
   uniqueSuffix,
 } from './helpers/admin-api';
-import { getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
-import { currentWeekIsoDates } from './helpers/ui';
+import { createLoggedInApiRequestContext, getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
+import { currentWeekIsoDates, isWeekendIsoDate, toTemplateDayLabel } from './helpers/ui';
 
 test.describe('time tracking copy previous day flow', () => {
   test.skip(!hasAdminE2ECredentials(), 'Set admin or superadmin credentials to run the time-tracking copy-previous-day flow.');
@@ -20,75 +20,105 @@ test.describe('time tracking copy previous day flow', () => {
 
     const adminCredentials = getConfiguredCredentials();
     const suffix = uniqueSuffix();
-    const weekDates = currentWeekIsoDates();
-    const sourceDate = weekDates[0];
-    const targetDate = weekDates[1];
 
     const adminContext = await browser.newContext();
     await loginInContext(adminContext, adminCredentials);
-    const employee = await createLocalEmployee(adminContext.request, suffix);
-    const costCenterA = await createCostCenter(adminContext.request, {
+    const adminApi = await createLoggedInApiRequestContext({ ...adminCredentials });
+    const employee = await createLocalEmployee(adminApi, suffix);
+    const employeeCredentials = {
+      username: employee.email,
+      password: employee.password,
+    };
+    const costCenterA = await createCostCenter(adminApi, {
       code: `E2EC-${suffix}`,
       name: `E2E Copy A ${suffix}`,
     });
-    const costCenterB = await createCostCenter(adminContext.request, {
+    const costCenterB = await createCostCenter(adminApi, {
       code: `E2ED-${suffix}`,
       name: `E2E Copy B ${suffix}`,
     });
 
-    await assignUserCostCenters(adminContext.request, employee.id, [costCenterA.id, costCenterB.id]);
+    await assignUserCostCenters(adminApi, employee.id, [costCenterA.id, costCenterB.id]);
 
     try {
       const employeeContext = await browser.newContext();
       try {
-        await loginInContext(employeeContext, {
-          username: employee.email,
-          password: employee.password,
-        });
+        const employeeApi = await createLoggedInApiRequestContext(employeeCredentials);
 
-        await createTimeEntry(employeeContext.request, {
-          date: sourceDate,
-          startTime: '08:00',
-          endTime: '16:00',
-          breakMinutes: 30,
-        });
-        await createTimeEntry(employeeContext.request, {
-          date: targetDate,
-          startTime: '08:00',
-          endTime: '16:00',
-          breakMinutes: 30,
-        });
-        await createTimeBookings(employeeContext.request, {
-          date: sourceDate,
-          bookings: [
-            { cost_center_id: costCenterA.id, percentage: 75 },
-            { cost_center_id: costCenterB.id, percentage: 25 },
-          ],
-        });
+        try {
+          await loginInContext(employeeContext, employeeCredentials);
+          const editableDates: string[] = [];
+          for (const candidateDate of currentWeekIsoDates().filter(date => !isWeekendIsoDate(date))) {
+            try {
+              await createTimeEntry(employeeApi, {
+                date: candidateDate,
+                startTime: '08:00',
+                endTime: '16:00',
+                breakMinutes: 30,
+              });
+              editableDates.push(candidateDate);
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error);
+              if (message.includes('This is not a working day for you.') || message.includes('company holiday')) {
+                continue;
+              }
+              throw error;
+            }
+
+            if (editableDates.length === 2) {
+              break;
+            }
+          }
+
+          expect(editableDates.length).toBeGreaterThanOrEqual(2);
+          const [sourceDate, targetDate] = editableDates;
+          const targetDayIndex = currentWeekIsoDates().indexOf(targetDate);
+          await createTimeBookings(employeeApi, {
+            date: sourceDate,
+            bookings: [
+              { cost_center_id: costCenterA.id, percentage: 75 },
+              { cost_center_id: costCenterB.id, percentage: 25 },
+            ],
+          });
 
         const page = await employeeContext.newPage();
         await page.goto('/time-tracking');
         await expect(page.locator('app-time-tracking')).toBeVisible();
 
-        await page.locator('mat-select').nth(0).click();
-        await page.locator(`mat-option[value="${targetDate}"]`).click();
+        const templateDaySelect = page.locator('mat-form-field').filter({ hasText: /template day/i }).locator('mat-select');
+        await templateDaySelect.click();
+        await page.getByRole('option', { name: toTemplateDayLabel(targetDate), exact: true }).click();
+        await expect(templateDaySelect).toContainText(toTemplateDayLabel(targetDate));
 
+        const copyPreviousDayResponse = page.waitForResponse(response =>
+          response.url().includes('/api/time-bookings?')
+          && response.request().method() === 'GET'
+          && response.ok(),
+        );
         await page.getByRole('button').filter({
           has: page.locator('mat-icon', { hasText: 'redo' }),
         }).click();
+        const copyPreviousDayResult = await copyPreviousDayResponse;
+        const copyPreviousDayPayload = await copyPreviousDayResult.json();
+        expect(copyPreviousDayPayload.data.some((booking: { date: string }) => booking.date === sourceDate)).toBeTruthy();
 
-        const firstRowInputs = page.locator('.grid-row').filter({ has: page.locator('.pct-input') }).nth(0).locator('.pct-input:not([disabled])');
-        const secondRowInputs = page.locator('.grid-row').filter({ has: page.locator('.pct-input') }).nth(1).locator('.pct-input:not([disabled])');
+        const bookingRows = page.locator('.grid-row').filter({ has: page.locator('.pct-input') });
+        const firstTargetInput = bookingRows.nth(0).locator('.day-col').nth(targetDayIndex).locator('.pct-input:not([disabled])');
+        const secondTargetInput = bookingRows.nth(1).locator('.day-col').nth(targetDayIndex).locator('.pct-input:not([disabled])');
 
-        await expect(firstRowInputs.nth(1)).toHaveValue('75');
-        await expect(secondRowInputs.nth(1)).toHaveValue('25');
+        await expect(firstTargetInput).toHaveValue('75');
+          await expect(secondTargetInput).toHaveValue('25');
+        } finally {
+          await employeeApi.dispose();
+        }
       } finally {
         await employeeContext.close();
       }
     } finally {
-      await archiveCostCenter(adminContext.request, costCenterA.id);
-      await archiveCostCenter(adminContext.request, costCenterB.id);
-      await deleteUser(adminContext.request, employee.id);
+      await archiveCostCenter(adminApi, costCenterA.id);
+      await archiveCostCenter(adminApi, costCenterB.id);
+      await deleteUser(adminApi, employee.id);
+      await adminApi.dispose();
       await adminContext.close();
     }
   });

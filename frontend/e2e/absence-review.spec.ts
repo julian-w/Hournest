@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { createAbsenceRequest, createLocalEmployee, deleteUser, uniqueSuffix } from './helpers/admin-api';
-import { getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
+import { createLoggedInApiRequestContext, getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
 
 function nextBusinessDayOffset(baseOffset: number): string {
   const date = new Date();
@@ -26,42 +26,50 @@ test.describe('absence approval flow', () => {
 
     const adminContext = await browser.newContext();
     await loginInContext(adminContext, adminCredentials);
-    const employee = await createLocalEmployee(adminContext.request, suffix);
+    const adminApi = await createLoggedInApiRequestContext({ ...adminCredentials });
+    const employee = await createLocalEmployee(adminApi, suffix);
+    const employeeCredentials = {
+      username: employee.email,
+      password: employee.password,
+    };
 
     try {
       const employeeContext = await browser.newContext();
       try {
-        await loginInContext(employeeContext, {
-          username: employee.email,
-          password: employee.password,
-        });
+        const employeeApi = await createLoggedInApiRequestContext(employeeCredentials);
 
-        await createAbsenceRequest(employeeContext.request, {
-          startDate,
-          endDate: startDate,
-          type: 'special_leave',
-          comment,
-        });
+        try {
+          await loginInContext(employeeContext, employeeCredentials);
+          await createAbsenceRequest(employeeApi, {
+            startDate,
+            endDate: startDate,
+            type: 'special_leave',
+            comment,
+          });
 
-        const adminPage = await adminContext.newPage();
-        await adminPage.goto('/admin/absences');
+          const adminPage = await adminContext.newPage();
+          await adminPage.goto('/admin/absences');
 
-        const pendingRow = adminPage.locator('tr.mat-mdc-row').filter({ hasText: employee.displayName }).filter({ hasText: comment }).first();
-        await expect(pendingRow).toBeVisible();
-        await pendingRow.getByRole('button').filter({ hasText: /approve|genehmigen/i }).click();
-        await expect(pendingRow).toHaveCount(0);
+          const pendingRow = adminPage.locator('tr.mat-mdc-row').filter({ hasText: employee.displayName }).filter({ hasText: comment }).first();
+          await expect(pendingRow).toBeVisible();
+          await pendingRow.getByRole('button').filter({ hasText: /approve|genehmigen/i }).click();
+          await expect(pendingRow).toHaveCount(0);
 
-        const employeePage = await employeeContext.newPage();
-        await employeePage.goto('/my-absences');
+          const employeePage = await employeeContext.newPage();
+          await employeePage.goto('/my-absences');
 
-        const row = employeePage.locator('tr.mat-mdc-row').filter({ hasText: comment }).first();
-        await expect(row).toBeVisible();
-        await expect(row).toContainText(/approved|genehmigt/i);
+          const row = employeePage.locator('tr.mat-mdc-row').filter({ hasText: comment }).first();
+          await expect(row).toBeVisible();
+          await expect(row).toContainText(/approved|genehmigt/i);
+        } finally {
+          await employeeApi.dispose();
+        }
       } finally {
         await employeeContext.close();
       }
     } finally {
-      await deleteUser(adminContext.request, employee.id);
+      await deleteUser(adminApi, employee.id);
+      await adminApi.dispose();
       await adminContext.close();
     }
   });

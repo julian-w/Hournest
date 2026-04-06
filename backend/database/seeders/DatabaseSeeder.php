@@ -8,8 +8,10 @@ use App\Enums\HolidayType;
 use App\Enums\LedgerEntryType;
 use App\Enums\UserRole;
 use App\Enums\VacationStatus;
+use App\Models\CostCenter;
 use App\Models\Holiday;
 use App\Models\Setting;
+use App\Models\TimeEntry;
 use App\Models\User;
 use App\Models\Vacation;
 use App\Models\VacationLedgerEntry;
@@ -75,8 +77,39 @@ class DatabaseSeeder extends Seeder
             'oidc_id' => 'oidc-user-003',
         ]);
 
+        $e2eEmployee = User::create([
+            'email' => 'e2e.employee@hournest.local',
+            'display_name' => 'E2E Employee',
+            'password' => 'e2e-password',
+            'must_change_password' => false,
+            'role' => UserRole::Employee,
+            'vacation_days_per_year' => 30,
+        ]);
+
+        $e2eProject = CostCenter::create([
+            'code' => 'E2E-PROJECT',
+            'name' => 'E2E Project Work',
+            'description' => 'Deterministic cost center for Playwright smoke flows',
+        ]);
+
+        $e2eInternal = CostCenter::create([
+            'code' => 'E2E-INTERNAL',
+            'name' => 'E2E Internal Work',
+            'description' => 'Second deterministic cost center for Playwright smoke flows',
+        ]);
+
+        $e2eEmployee->costCenters()->attach([$e2eProject->id, $e2eInternal->id]);
+        $e2eEmployee->costCenterFavorites()->attach($e2eProject->id, ['sort_order' => 0]);
+        TimeEntry::create([
+            'user_id' => $e2eEmployee->id,
+            'date' => '2026-04-07',
+            'start_time' => '08:00',
+            'end_time' => '16:30',
+            'break_minutes' => 30,
+        ]);
+
         // Seed ledger entries (entitlement for 2026)
-        foreach ([$admin, $max, $sarah, $tom] as $user) {
+        foreach ([$admin, $max, $sarah, $tom, $e2eEmployee] as $user) {
             VacationLedgerEntry::create([
                 'user_id' => $user->id,
                 'year' => 2026,

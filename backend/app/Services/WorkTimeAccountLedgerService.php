@@ -22,6 +22,7 @@ class WorkTimeAccountLedgerService
     {
         $from = Carbon::create($year, 1, 1)->startOfDay();
         $to = Carbon::create($year, 12, 31)->endOfDay();
+        $context = $this->buildLedgerContext($user, $from, $to);
 
         $openingBalance = $this->calculateOpeningBalance($user, $from);
         $rows = collect();
@@ -43,8 +44,8 @@ class WorkTimeAccountLedgerService
             ]);
         }
 
-        $events = $this->buildCoverageEvents($user, $from, $to)
-            ->merge($this->buildWorkedEvents($user, $from, $to))
+        $events = $this->buildCoverageEvents($user, $from, $to, $context)
+            ->merge($this->buildWorkedEvents($user, $from, $to, $context))
             ->merge($this->buildManualEvents($user, $from, $to))
             ->sort(function (array $left, array $right): int {
                 return [$left['effective_date'], $left['created_at'], $left['type'], (string) $left['id']]
@@ -64,8 +65,27 @@ class WorkTimeAccountLedgerService
 
     private function calculateOpeningBalance(User $user, Carbon $from): int
     {
-        $worked = $this->buildWorkedEvents($user, Carbon::create(2000, 1, 1), $from->copy()->subDay())
-            ->sum('minutes_delta');
+        $previousEntries = TimeEntry::query()
+            ->where('user_id', $user->id)
+            ->whereDate('date', '<', $from->toDateString())
+            ->orderBy('date')
+            ->orderBy('id')
+            ->get();
+
+        $worked = 0;
+        if ($previousEntries->isNotEmpty()) {
+            $context = $this->buildLedgerContext(
+                $user,
+                Carbon::parse($previousEntries->first()->date)->startOfDay(),
+                Carbon::parse($previousEntries->last()->date)->endOfDay(),
+            );
+
+            $worked = (int) $previousEntries->sum(function (TimeEntry $entry) use ($context): int {
+                $date = $entry->date instanceof Carbon ? $entry->date->copy() : Carbon::parse($entry->date);
+                $targetMinutes = $this->getTargetMinutesForDate($context, $date);
+                return $entry->getNetMinutes() - $targetMinutes;
+            });
+        }
 
         $manual = WorkTimeAccountEntry::query()
             ->where('user_id', $user->id)
@@ -75,7 +95,7 @@ class WorkTimeAccountLedgerService
         return (int) $worked + (int) $manual;
     }
 
-    private function buildWorkedEvents(User $user, Carbon $from, Carbon $to): Collection
+    private function buildWorkedEvents(User $user, Carbon $from, Carbon $to, array $context): Collection
     {
         return TimeEntry::query()
             ->where('user_id', $user->id)
@@ -84,15 +104,16 @@ class WorkTimeAccountLedgerService
             ->orderBy('date')
             ->orderBy('id')
             ->get()
-            ->map(function (TimeEntry $entry) use ($user): array {
-                $targetMinutes = $this->getTargetMinutesForDate($user, Carbon::parse($entry->date));
+            ->map(function (TimeEntry $entry) use ($user, $context): array {
+                $date = $entry->date instanceof Carbon ? $entry->date->copy() : Carbon::parse($entry->date);
+                $targetMinutes = $this->getTargetMinutesForDate($context, $date);
                 $netMinutes = $entry->getNetMinutes();
                 $delta = $netMinutes - $targetMinutes;
 
                 return [
                     'id' => sprintf('worked-%d', $entry->id),
                     'user_id' => $user->id,
-                    'effective_date' => $entry->date->toDateString(),
+                    'effective_date' => $date->toDateString(),
                     'type' => 'worked',
                     'minutes_delta' => $delta,
                     'comment' => sprintf('Worked %d min vs target %d min', $netMinutes, $targetMinutes),
@@ -132,55 +153,50 @@ class WorkTimeAccountLedgerService
             ]);
     }
 
-    private function buildCoverageEvents(User $user, Carbon $from, Carbon $to): Collection
+    private function buildCoverageEvents(User $user, Carbon $from, Carbon $to, array $context): Collection
     {
-        $events = collect();
-        $cursor = $from->copy()->startOfDay();
-
-        while ($cursor->lte($to)) {
-            $event = $this->getCoverageEventForDate($user, $cursor);
-            if ($event !== null) {
-                $events->push($event);
-            }
-
-            $cursor->addDay();
-        }
-
-        return $events;
+        return $this->coverageCandidateDateKeys($context)
+            ->map(function (string $dateKey) use ($context): ?array {
+                return $this->getCoverageEventForDate($context, Carbon::parse($dateKey)->startOfDay());
+            })
+            ->filter()
+            ->values();
     }
 
-    private function getTargetMinutesForDate(User $user, Carbon $date): int
+    private function getTargetMinutesForDate(array $context, Carbon $date): int
     {
-        if (!$user->isWorkDay($date) || $this->hasCompanyHoliday($date)) {
+        $day = $this->getContextDay($context, $date);
+        if ($day === null || !$day['is_work_day'] || $day['company_holiday'] !== null) {
             return 0;
         }
 
-        $dailyTarget = $user->getDailyTargetMinutes($date);
+        $dailyTarget = $day['daily_target_minutes'];
 
-        if ($this->hasFullDayEffectiveAbsence($user->id, $date) || $this->hasFullDayApprovedVacation($user->id, $date)) {
+        if ($day['full_day_absence'] !== null || $day['full_day_vacation'] !== null) {
             return 0;
         }
 
-        if ($this->hasHalfDayEffectiveAbsence($user->id, $date) || $this->hasHalfDayApprovedVacation($user->id, $date)) {
+        if ($day['half_day_absence'] !== null || $day['half_day_vacation'] !== null) {
             return (int) round($dailyTarget / 2);
         }
 
         return $dailyTarget;
     }
 
-    private function getCoverageEventForDate(User $user, Carbon $date): ?array
+    private function getCoverageEventForDate(array $context, Carbon $date): ?array
     {
-        if (!$this->isPlannedWorkDay($user, $date)) {
+        $day = $this->getContextDay($context, $date);
+        if ($day === null || !$day['is_planned_work_day']) {
             return null;
         }
 
-        $dailyTarget = $user->getDailyTargetMinutes($date);
+        $dailyTarget = $day['daily_target_minutes'];
 
-        $companyHoliday = $this->getCompanyHoliday($date);
+        $companyHoliday = $day['company_holiday'];
         if ($companyHoliday !== null) {
             return $this->makeCoverageEvent(
                 id: sprintf('company-holiday-%d-%s', $companyHoliday->id, $date->toDateString()),
-                userId: $user->id,
+                userId: $context['user_id'],
                 date: $date,
                 type: 'company_holiday_credit',
                 comment: sprintf('Company holiday fulfilled target time (%d min)', $dailyTarget),
@@ -190,11 +206,11 @@ class WorkTimeAccountLedgerService
             );
         }
 
-        $holiday = $this->getHolidayForUser($user, $date);
+        $holiday = $day['holiday'];
         if ($holiday !== null) {
             return $this->makeCoverageEvent(
                 id: sprintf('holiday-%d-%s', $holiday->id, $date->toDateString()),
-                userId: $user->id,
+                userId: $context['user_id'],
                 date: $date,
                 type: 'holiday_credit',
                 comment: sprintf('Holiday "%s" fulfilled target time (%d min)', $holiday->name, $dailyTarget),
@@ -204,11 +220,11 @@ class WorkTimeAccountLedgerService
             );
         }
 
-        $fullDayAbsence = $this->getFullDayEffectiveAbsence($user->id, $date);
+        $fullDayAbsence = $day['full_day_absence'];
         if ($fullDayAbsence !== null) {
             return $this->makeCoverageEvent(
                 id: sprintf('absence-%d-%s', $fullDayAbsence->id, $date->toDateString()),
-                userId: $user->id,
+                userId: $context['user_id'],
                 date: $date,
                 type: 'absence_credit',
                 comment: sprintf('%s fulfilled target time (%d min)', $this->formatAbsenceType($fullDayAbsence), $dailyTarget),
@@ -218,11 +234,11 @@ class WorkTimeAccountLedgerService
             );
         }
 
-        $fullDayVacation = $this->getFullDayApprovedVacation($user->id, $date);
+        $fullDayVacation = $day['full_day_vacation'];
         if ($fullDayVacation !== null) {
             return $this->makeCoverageEvent(
                 id: sprintf('vacation-%d-%s', $fullDayVacation->id, $date->toDateString()),
-                userId: $user->id,
+                userId: $context['user_id'],
                 date: $date,
                 type: 'vacation_credit',
                 comment: sprintf('Approved vacation fulfilled target time (%d min)', $dailyTarget),
@@ -232,13 +248,13 @@ class WorkTimeAccountLedgerService
             );
         }
 
-        $halfDayAbsence = $this->getHalfDayEffectiveAbsence($user->id, $date);
+        $halfDayAbsence = $day['half_day_absence'];
         if ($halfDayAbsence !== null) {
             $halfTarget = (int) round($dailyTarget / 2);
 
             return $this->makeCoverageEvent(
                 id: sprintf('half-absence-%d-%s', $halfDayAbsence->id, $date->toDateString()),
-                userId: $user->id,
+                userId: $context['user_id'],
                 date: $date,
                 type: 'half_day_absence_credit',
                 comment: sprintf('%s reduced target time to %d min', $this->formatAbsenceType($halfDayAbsence), $halfTarget),
@@ -248,13 +264,13 @@ class WorkTimeAccountLedgerService
             );
         }
 
-        $halfDayVacation = $this->getHalfDayApprovedVacation($user->id, $date);
+        $halfDayVacation = $day['half_day_vacation'];
         if ($halfDayVacation !== null) {
             $halfTarget = (int) round($dailyTarget / 2);
 
             return $this->makeCoverageEvent(
                 id: sprintf('half-vacation-%d-%s', $halfDayVacation->id, $date->toDateString()),
-                userId: $user->id,
+                userId: $context['user_id'],
                 date: $date,
                 type: 'half_day_vacation_credit',
                 comment: sprintf('Half-day vacation reduced target time to %d min', $halfTarget),
@@ -265,6 +281,201 @@ class WorkTimeAccountLedgerService
         }
 
         return null;
+    }
+
+    private function buildLedgerContext(User $user, Carbon $from, Carbon $to): array
+    {
+        $defaultWeeklyTargetMinutes = (int) Setting::get('default_weekly_target_minutes', '2400');
+        $defaultWorkDays = Setting::get('default_work_days', '[1,2,3,4,5]');
+        $defaultWorkDays = is_string($defaultWorkDays) ? json_decode($defaultWorkDays, true) : $defaultWorkDays;
+        if (!is_array($defaultWorkDays) || $defaultWorkDays === []) {
+            $defaultWorkDays = [1, 2, 3, 4, 5];
+        }
+
+        $schedules = $user->workSchedules()
+            ->where('start_date', '<=', $to->toDateString())
+            ->where(function ($query) use ($from) {
+                $query->whereNull('end_date')
+                    ->orWhere('end_date', '>=', $from->toDateString());
+            })
+            ->orderBy('start_date')
+            ->get();
+
+        $companyHolidayMap = $this->expandDateRanges(
+            BlackoutPeriod::query()
+                ->where('type', 'company_holiday')
+                ->whereDate('start_date', '<=', $to->toDateString())
+                ->whereDate('end_date', '>=', $from->toDateString())
+                ->orderBy('start_date')
+                ->get(),
+            $from,
+            $to,
+            'start_date',
+            'end_date',
+        );
+
+        $holidayMap = $user->holidays_exempt
+            ? []
+            : Holiday::query()
+                ->whereDate('date', '>=', $from->toDateString())
+                ->whereDate('date', '<=', $to->toDateString())
+                ->get()
+                ->keyBy(fn (Holiday $holiday): string => $holiday->date->toDateString())
+                ->all();
+
+        $effectiveAbsences = Absence::query()
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['acknowledged', 'approved', 'admin_created'])
+            ->whereDate('start_date', '<=', $to->toDateString())
+            ->whereDate('end_date', '>=', $from->toDateString())
+            ->orderBy('start_date')
+            ->get();
+
+        $approvedVacations = Vacation::query()
+            ->where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->whereDate('start_date', '<=', $to->toDateString())
+            ->whereDate('end_date', '>=', $from->toDateString())
+            ->orderBy('start_date')
+            ->get();
+
+        $fullDayAbsenceMap = $this->expandDateRanges(
+            $effectiveAbsences->filter(fn (Absence $absence): bool => $absence->scope === VacationScope::FullDay->value || $absence->scope->value === 'full_day'),
+            $from,
+            $to,
+            'start_date',
+            'end_date',
+        );
+        $halfDayAbsenceMap = $this->expandDateRanges(
+            $effectiveAbsences->filter(fn (Absence $absence): bool => in_array($absence->scope->value, ['morning', 'afternoon'], true)),
+            $from,
+            $to,
+            'start_date',
+            'end_date',
+        );
+        $fullDayVacationMap = $this->expandDateRanges(
+            $approvedVacations->filter(fn (Vacation $vacation): bool => $vacation->scope === VacationScope::FullDay),
+            $from,
+            $to,
+            'start_date',
+            'end_date',
+        );
+        $halfDayVacationMap = $this->expandDateRanges(
+            $approvedVacations->filter(fn (Vacation $vacation): bool => in_array($vacation->scope, [VacationScope::Morning, VacationScope::Afternoon], true)),
+            $from,
+            $to,
+            'start_date',
+            'end_date',
+        );
+
+        return [
+            'user_id' => $user->id,
+            'default_weekly_target_minutes' => $defaultWeeklyTargetMinutes,
+            'default_work_days' => $defaultWorkDays,
+            'holidays_exempt' => $user->holidays_exempt,
+            'weekend_worker' => $user->weekend_worker,
+            'schedules' => $schedules,
+            'company_holiday_map' => $companyHolidayMap,
+            'holiday_map' => $holidayMap,
+            'full_day_absence_map' => $fullDayAbsenceMap,
+            'half_day_absence_map' => $halfDayAbsenceMap,
+            'full_day_vacation_map' => $fullDayVacationMap,
+            'half_day_vacation_map' => $halfDayVacationMap,
+        ];
+    }
+
+    private function coverageCandidateDateKeys(array $context): Collection
+    {
+        return collect([
+            ...array_keys($context['company_holiday_map']),
+            ...array_keys($context['holiday_map']),
+            ...array_keys($context['full_day_absence_map']),
+            ...array_keys($context['half_day_absence_map']),
+            ...array_keys($context['full_day_vacation_map']),
+            ...array_keys($context['half_day_vacation_map']),
+        ])->unique()->sort()->values();
+    }
+
+    /**
+     * @param Collection<int, object> $items
+     * @return array<string, object>
+     */
+    private function expandDateRanges(
+        Collection $items,
+        Carbon $from,
+        Carbon $to,
+        string $startProperty,
+        string $endProperty,
+    ): array {
+        $map = [];
+
+        foreach ($items as $item) {
+            $start = Carbon::parse($item->{$startProperty})->startOfDay();
+            $end = Carbon::parse($item->{$endProperty})->startOfDay();
+
+            if ($start->lt($from)) {
+                $start = $from->copy()->startOfDay();
+            }
+            if ($end->gt($to)) {
+                $end = $to->copy()->startOfDay();
+            }
+
+            $cursor = $start->copy();
+            while ($cursor->lte($end)) {
+                $dateKey = $cursor->toDateString();
+                $map[$dateKey] ??= $item;
+                $cursor->addDay();
+            }
+        }
+
+        return $map;
+    }
+
+    private function resolveScheduleForDate(Collection $schedules, Carbon $date): ?\App\Models\WorkSchedule
+    {
+        $activeSchedule = null;
+
+        foreach ($schedules as $schedule) {
+            if ($schedule->start_date->gt($date)) {
+                continue;
+            }
+
+            if ($schedule->end_date !== null && $schedule->end_date->lt($date)) {
+                continue;
+            }
+
+            $activeSchedule = $schedule;
+        }
+
+        return $activeSchedule;
+    }
+
+    private function getContextDay(array $context, Carbon $date): ?array
+    {
+        $dateKey = $date->toDateString();
+        $schedule = $this->resolveScheduleForDate($context['schedules'], $date);
+        $configuredWorkDays = $schedule?->work_days;
+        if (!is_array($configuredWorkDays) || $configuredWorkDays === []) {
+            $configuredWorkDays = $context['default_work_days'];
+        }
+
+        $workDaysCount = count($configuredWorkDays) ?: 1;
+        $dailyTargetMinutes = (int) round(($schedule?->weekly_target_minutes ?? $context['default_weekly_target_minutes']) / $workDaysCount);
+        $dayOfWeek = (int) $date->dayOfWeekIso;
+        $isPlannedWorkDay = in_array($dayOfWeek, $configuredWorkDays, true)
+            || ($context['weekend_worker'] && in_array($dayOfWeek, [6, 7], true));
+
+        return [
+            'daily_target_minutes' => $dailyTargetMinutes,
+            'is_planned_work_day' => $isPlannedWorkDay,
+            'is_work_day' => $isPlannedWorkDay && ($context['holidays_exempt'] || !isset($context['holiday_map'][$dateKey])),
+            'company_holiday' => $context['company_holiday_map'][$dateKey] ?? null,
+            'holiday' => $context['holiday_map'][$dateKey] ?? null,
+            'full_day_absence' => $context['full_day_absence_map'][$dateKey] ?? null,
+            'half_day_absence' => $context['half_day_absence_map'][$dateKey] ?? null,
+            'full_day_vacation' => $context['full_day_vacation_map'][$dateKey] ?? null,
+            'half_day_vacation' => $context['half_day_vacation_map'][$dateKey] ?? null,
+        ];
     }
 
     private function makeCoverageEvent(
@@ -290,126 +501,6 @@ class WorkTimeAccountLedgerService
             'source_type' => $sourceType,
             'source_id' => $sourceId,
         ];
-    }
-
-    private function isPlannedWorkDay(User $user, Carbon $date): bool
-    {
-        $dayOfWeek = (int) $date->dayOfWeekIso;
-        $schedule = $user->getActiveWorkSchedule($date);
-
-        if ($schedule !== null) {
-            $workDays = $schedule->work_days;
-        } else {
-            $defaultWorkDays = Setting::get('default_work_days', '[1,2,3,4,5]');
-            $workDays = is_string($defaultWorkDays) ? json_decode($defaultWorkDays, true) : $defaultWorkDays;
-            if (!is_array($workDays)) {
-                $workDays = [1, 2, 3, 4, 5];
-            }
-        }
-
-        if (in_array($dayOfWeek, $workDays, true)) {
-            return true;
-        }
-
-        return $user->weekend_worker && in_array($dayOfWeek, [6, 7], true);
-    }
-
-    private function hasCompanyHoliday(Carbon $date): bool
-    {
-        return BlackoutPeriod::query()
-            ->where('type', 'company_holiday')
-            ->whereDate('start_date', '<=', $date->toDateString())
-            ->whereDate('end_date', '>=', $date->toDateString())
-            ->exists();
-    }
-
-    private function getCompanyHoliday(Carbon $date): ?BlackoutPeriod
-    {
-        return BlackoutPeriod::query()
-            ->where('type', 'company_holiday')
-            ->whereDate('start_date', '<=', $date->toDateString())
-            ->whereDate('end_date', '>=', $date->toDateString())
-            ->orderBy('start_date')
-            ->first();
-    }
-
-    private function getHolidayForUser(User $user, Carbon $date): ?Holiday
-    {
-        if ($user->holidays_exempt) {
-            return null;
-        }
-
-        return Holiday::query()
-            ->whereDate('date', $date->toDateString())
-            ->first();
-    }
-
-    private function hasFullDayEffectiveAbsence(int $userId, Carbon $date): bool
-    {
-        return $this->getFullDayEffectiveAbsence($userId, $date) !== null;
-    }
-
-    private function getFullDayEffectiveAbsence(int $userId, Carbon $date): ?Absence
-    {
-        return Absence::query()
-            ->where('user_id', $userId)
-            ->whereIn('status', ['acknowledged', 'approved', 'admin_created'])
-            ->where('scope', 'full_day')
-            ->whereDate('start_date', '<=', $date->toDateString())
-            ->whereDate('end_date', '>=', $date->toDateString())
-            ->orderBy('start_date')
-            ->first();
-    }
-
-    private function hasHalfDayEffectiveAbsence(int $userId, Carbon $date): bool
-    {
-        return $this->getHalfDayEffectiveAbsence($userId, $date) !== null;
-    }
-
-    private function getHalfDayEffectiveAbsence(int $userId, Carbon $date): ?Absence
-    {
-        return Absence::query()
-            ->where('user_id', $userId)
-            ->whereIn('status', ['acknowledged', 'approved', 'admin_created'])
-            ->whereIn('scope', ['morning', 'afternoon'])
-            ->whereDate('start_date', '<=', $date->toDateString())
-            ->whereDate('end_date', '>=', $date->toDateString())
-            ->orderBy('start_date')
-            ->first();
-    }
-
-    private function hasFullDayApprovedVacation(int $userId, Carbon $date): bool
-    {
-        return $this->getFullDayApprovedVacation($userId, $date) !== null;
-    }
-
-    private function getFullDayApprovedVacation(int $userId, Carbon $date): ?Vacation
-    {
-        return Vacation::query()
-            ->where('user_id', $userId)
-            ->where('status', 'approved')
-            ->where('scope', VacationScope::FullDay)
-            ->whereDate('start_date', '<=', $date->toDateString())
-            ->whereDate('end_date', '>=', $date->toDateString())
-            ->orderBy('start_date')
-            ->first();
-    }
-
-    private function hasHalfDayApprovedVacation(int $userId, Carbon $date): bool
-    {
-        return $this->getHalfDayApprovedVacation($userId, $date) !== null;
-    }
-
-    private function getHalfDayApprovedVacation(int $userId, Carbon $date): ?Vacation
-    {
-        return Vacation::query()
-            ->where('user_id', $userId)
-            ->where('status', 'approved')
-            ->whereIn('scope', [VacationScope::Morning, VacationScope::Afternoon])
-            ->whereDate('start_date', '<=', $date->toDateString())
-            ->whereDate('end_date', '>=', $date->toDateString())
-            ->orderBy('start_date')
-            ->first();
     }
 
     private function formatAbsenceType(Absence $absence): string

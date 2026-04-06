@@ -53,4 +53,11 @@ info "Verifying Angular frontend build..."
 npx ng build --configuration=production 2>&1 | tail -5
 echo ""
 
-ok "=== Backend tests, frontend unit tests, and build checks passed ==="
+# Optional E2E smoke
+if [ "${RUN_E2E_SMOKE:-false}" = "true" ]; then
+    info "Running Playwright smoke suite..."
+    npm run e2e:smoke
+    echo ""
+fi
+
+ok "=== Backend tests, frontend unit tests, build checks, and optional smoke checks passed ==="

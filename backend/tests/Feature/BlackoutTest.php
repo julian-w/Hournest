@@ -114,7 +114,8 @@ class BlackoutTest extends TestCase
             'start_date' => '2026-12-22',
             'end_date' => '2026-12-23',
         ])->assertStatus(422)
-            ->assertJsonPath('message', 'Vacation request falls within a vacation freeze.');
+            ->assertJsonPath('message', 'Vacation request falls within a vacation freeze.')
+            ->assertJsonPath('reason', 'Inventory');
     }
 
     public function test_company_holiday_blocks_overlapping_vacation_request(): void
@@ -132,7 +133,8 @@ class BlackoutTest extends TestCase
             'start_date' => '2026-12-28',
             'end_date' => '2026-12-29',
         ])->assertStatus(422)
-            ->assertJsonPath('message', 'Vacation request overlaps with a company holiday.');
+            ->assertJsonPath('message', 'Vacation request overlaps with a company holiday.')
+            ->assertJsonPath('reason', 'Christmas shutdown');
     }
 
     public function test_creating_company_holiday_creates_ledger_entry_and_vacation_system_booking(): void

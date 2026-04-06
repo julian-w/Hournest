@@ -29,7 +29,8 @@ class TimeEntryController extends Controller
 
         $entries = $request->user()
             ->timeEntries()
-            ->whereBetween('date', [$request->from, $request->to])
+            ->whereDate('date', '>=', $request->from)
+            ->whereDate('date', '<=', $request->to)
             ->orderBy('date')
             ->get();
 

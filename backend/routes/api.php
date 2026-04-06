@@ -28,18 +28,20 @@ use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+$authThrottle = app()->environment('e2e') ? 'throttle:60,1' : 'throttle:5,1';
+
 // Auth routes (no auth required)
 Route::get('/auth/config', [AuthController::class, 'config']);
 if (config('auth.oauth_enabled')) {
     Route::get('/auth/redirect', [AuthController::class, 'redirect']);
     Route::get('/auth/callback', [AuthController::class, 'callback']);
 }
-Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/auth/login', [AuthController::class, 'login'])->middleware($authThrottle);
 
 // Protected routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () use ($authThrottle) {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::post('/auth/change-password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
+    Route::post('/auth/change-password', [AuthController::class, 'changePassword'])->middleware($authThrottle);
 
     Route::get('/user', function (Request $request) {
         return new UserResource($request->user());

@@ -27,13 +27,15 @@ class TimeBookingAdminController extends Controller
         $user = User::findOrFail($request->user_id);
 
         $entries = $user->timeEntries()
-            ->whereBetween('date', [$request->from, $request->to])
+            ->whereDate('date', '>=', $request->from)
+            ->whereDate('date', '<=', $request->to)
             ->orderBy('date')
             ->get();
 
         $bookings = $user->timeBookings()
             ->with('costCenter')
-            ->whereBetween('date', [$request->from, $request->to])
+            ->whereDate('date', '>=', $request->from)
+            ->whereDate('date', '<=', $request->to)
             ->orderBy('date')
             ->get();
 

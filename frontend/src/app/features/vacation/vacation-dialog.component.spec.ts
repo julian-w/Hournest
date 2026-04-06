@@ -223,4 +223,31 @@ describe('VacationDialogComponent', () => {
 
     expect(fixture.componentInstance.error).toBe('vacation_dialog.error_blackout_company_holiday');
   });
+
+  it('should use the backend blackout reason when the dialog did not know it yet', () => {
+    vacationServiceStub.requestVacation.and.returnValue(
+      throwError(() => ({
+        error: {
+          message: 'Vacation request falls within a vacation freeze.',
+          reason: 'Quarter-end lock',
+        },
+      })),
+    );
+
+    const fixture = TestBed.createComponent(VacationDialogComponent);
+    const translate = TestBed.inject(TranslateService);
+    translate.setTranslation('en', {
+      vacation_dialog: {
+        error_blackout_freeze: 'Freeze reason: {{reason}}',
+      },
+    }, true);
+    fixture.detectChanges();
+
+    const startDate = new Date('2026-06-10T00:00:00');
+    setDates(fixture.componentInstance, startDate, startDate);
+
+    fixture.componentInstance.submit();
+
+    expect(fixture.componentInstance.error).toBe('Freeze reason: Quarter-end lock');
+  });
 });

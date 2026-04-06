@@ -124,7 +124,7 @@ if [ "${RUN_E2E_SMOKE:-false}" = "true" ]; then
     info "[6/6] Running Playwright smoke test..."
     cd "$PROJECT_ROOT/frontend"
 
-    if npx playwright test e2e/unauthenticated.spec.ts; then
+    if npm run e2e:smoke; then
         ok "Playwright smoke test passed"
     else
         err "Playwright smoke test FAILED"

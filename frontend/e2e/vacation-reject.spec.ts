@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { createLocalEmployee, createVacationRequest, deleteUser, uniqueSuffix } from './helpers/admin-api';
-import { getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
+import { createLoggedInApiRequestContext, getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
 import { nextBusinessDayOffset } from './helpers/ui';
 
 test.describe('vacation rejection flow', () => {
@@ -16,52 +16,56 @@ test.describe('vacation rejection flow', () => {
 
     const adminContext = await browser.newContext();
     await loginInContext(adminContext, adminCredentials);
-    const employee = await createLocalEmployee(adminContext.request, suffix);
+    const adminApi = await createLoggedInApiRequestContext({ ...adminCredentials });
+    const employee = await createLocalEmployee(adminApi, suffix);
+    const employeeCredentials = {
+      username: employee.email,
+      password: employee.password,
+    };
 
     try {
       const employeeContext = await browser.newContext();
       try {
-        await loginInContext(employeeContext, {
-          username: employee.email,
-          password: employee.password,
-        });
+        const employeeApi = await createLoggedInApiRequestContext(employeeCredentials);
 
-        await createVacationRequest(employeeContext.request, {
-          startDate,
-          endDate: startDate,
-          comment,
-        });
+        try {
+          await loginInContext(employeeContext, employeeCredentials);
+          await createVacationRequest(employeeApi, {
+            startDate,
+            endDate: startDate,
+            comment,
+          });
 
-        const adminPage = await adminContext.newPage();
-        await adminPage.goto('/admin/requests');
-        await expect(adminPage.locator('app-admin-requests')).toBeVisible();
+          const adminPage = await adminContext.newPage();
+          await adminPage.goto('/admin/requests');
+          await expect(adminPage.locator('app-admin-requests')).toBeVisible();
 
-        const matchingRow = adminPage.locator('tr.mat-mdc-row').filter({
-          hasText: employee.displayName,
-        }).filter({
-          hasText: comment,
-        }).first();
+          const matchingRow = adminPage.locator('tr.mat-mdc-row').filter({
+            hasText: employee.displayName,
+          }).first();
 
-        await expect(matchingRow).toBeVisible();
-        await matchingRow.locator('input[matinput]').fill('Capacity issue');
-        await matchingRow.locator('button[color="warn"]').click();
-        await expect(matchingRow).toHaveCount(0);
+          await expect(matchingRow).toBeVisible();
+          await matchingRow.locator('input[matinput]').fill('Capacity issue');
+          await matchingRow.locator('button[color="warn"]').click();
+          await expect(matchingRow).toHaveCount(0);
 
-        const employeePage = await employeeContext.newPage();
-        await employeePage.goto('/my-vacations');
-        await expect(employeePage.locator('app-my-vacations')).toBeVisible();
+          const employeePage = await employeeContext.newPage();
+          await employeePage.goto('/my-vacations');
+          await expect(employeePage.locator('app-my-vacations')).toBeVisible();
 
-        const employeeRow = employeePage.locator('tr.mat-mdc-row').filter({
-          hasText: comment,
-        }).first();
+          const employeeRow = employeePage.locator('tr.mat-mdc-row').first();
 
-        await expect(employeeRow).toBeVisible();
-        await expect(employeeRow).toContainText(/rejected|abgelehnt/i);
+          await expect(employeeRow).toBeVisible();
+          await expect(employeeRow).toContainText(/rejected|abgelehnt/i);
+        } finally {
+          await employeeApi.dispose();
+        }
       } finally {
         await employeeContext.close();
       }
     } finally {
-      await deleteUser(adminContext.request, employee.id);
+      await deleteUser(adminApi, employee.id);
+      await adminApi.dispose();
       await adminContext.close();
     }
   });

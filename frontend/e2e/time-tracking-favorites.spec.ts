@@ -8,7 +8,7 @@ import {
   deleteUser,
   uniqueSuffix,
 } from './helpers/admin-api';
-import { getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
+import { createLoggedInApiRequestContext, getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
 
 test.describe('time tracking favorites flow', () => {
   test.skip(!hasAdminE2ECredentials(), 'Set admin or superadmin credentials to run the time-tracking favorites flow.');
@@ -21,46 +21,54 @@ test.describe('time tracking favorites flow', () => {
 
     const adminContext = await browser.newContext();
     await loginInContext(adminContext, adminCredentials);
+    const adminApi = await createLoggedInApiRequestContext({ ...adminCredentials });
 
-    const employee = await createLocalEmployee(adminContext.request, suffix);
-    const standardCostCenter = await createCostCenter(adminContext.request, {
+    const employee = await createLocalEmployee(adminApi, suffix);
+    const employeeCredentials = {
+      username: employee.email,
+      password: employee.password,
+    };
+    const standardCostCenter = await createCostCenter(adminApi, {
       code: `E2E-A-${suffix}`.slice(0, 20),
       name: `E2E Standard ${suffix}`,
       description: 'Regular cost center for E2E ordering coverage',
     });
-    const favoriteCostCenter = await createCostCenter(adminContext.request, {
+    const favoriteCostCenter = await createCostCenter(adminApi, {
       code: `E2E-B-${suffix}`.slice(0, 20),
       name: `E2E Favorite ${suffix}`,
       description: 'Favorite cost center for E2E ordering coverage',
     });
 
     try {
-      await assignUserCostCenters(adminContext.request, employee.id, [standardCostCenter.id, favoriteCostCenter.id]);
+      await assignUserCostCenters(adminApi, employee.id, [standardCostCenter.id, favoriteCostCenter.id]);
 
       const employeeContext = await browser.newContext();
       try {
-        await loginInContext(employeeContext, {
-          username: employee.email,
-          password: employee.password,
-        });
+        const employeeApi = await createLoggedInApiRequestContext(employeeCredentials);
 
-        await addFavoriteCostCenter(employeeContext.request, favoriteCostCenter.id);
+        try {
+          await loginInContext(employeeContext, employeeCredentials);
+          await addFavoriteCostCenter(employeeApi, favoriteCostCenter.id);
 
-        const employeePage = await employeeContext.newPage();
-        await employeePage.goto('/time-tracking');
-        await expect(employeePage.locator('app-time-tracking')).toBeVisible();
+          const employeePage = await employeeContext.newPage();
+          await employeePage.goto('/time-tracking');
+          await expect(employeePage.locator('app-time-tracking')).toBeVisible();
 
-        const firstFavoriteName = employeePage.locator('.grid-row.favorite-row .cost-center-label .cc-name').first();
-        await expect(firstFavoriteName).toHaveText(favoriteCostCenter.name);
-        await expect(employeePage.locator('.grid-row.favorite-row .fav-icon').first()).toBeVisible();
-        await expect(employeePage.locator('.grid-row .cost-center-label .cc-name').filter({ hasText: standardCostCenter.name }).first()).toBeVisible();
+          const firstFavoriteName = employeePage.locator('.grid-row.favorite-row .cost-center-label .cc-name').first();
+          await expect(firstFavoriteName).toHaveText(favoriteCostCenter.name);
+          await expect(employeePage.locator('.grid-row.favorite-row .fav-icon').first()).toBeVisible();
+          await expect(employeePage.locator('.grid-row .cost-center-label .cc-name').filter({ hasText: standardCostCenter.name }).first()).toBeVisible();
+        } finally {
+          await employeeApi.dispose();
+        }
       } finally {
         await employeeContext.close();
       }
     } finally {
-      await archiveCostCenter(adminContext.request, favoriteCostCenter.id);
-      await archiveCostCenter(adminContext.request, standardCostCenter.id);
-      await deleteUser(adminContext.request, employee.id);
+      await archiveCostCenter(adminApi, favoriteCostCenter.id);
+      await archiveCostCenter(adminApi, standardCostCenter.id);
+      await deleteUser(adminApi, employee.id);
+      await adminApi.dispose();
       await adminContext.close();
     }
   });

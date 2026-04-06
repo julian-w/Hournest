@@ -196,9 +196,13 @@ export class VacationDialogComponent implements OnInit {
         if (err.error?.errors?.year?.[0] === 'holidays_incomplete') {
           this.error = this.translate.instant('vacation_dialog.error_holidays_incomplete');
         } else if (err.error?.message === 'Vacation request falls within a vacation freeze.') {
-          this.error = this.translate.instant('vacation_dialog.error_blackout_freeze', { reason: this.blackoutReason() });
+          this.error = this.translate.instant('vacation_dialog.error_blackout_freeze', {
+            reason: err.error?.reason || this.blackoutReason(),
+          });
         } else if (err.error?.message === 'Vacation request overlaps with a company holiday.') {
-          this.error = this.translate.instant('vacation_dialog.error_blackout_company_holiday', { reason: this.blackoutReason() });
+          this.error = this.translate.instant('vacation_dialog.error_blackout_company_holiday', {
+            reason: err.error?.reason || this.blackoutReason(),
+          });
         } else if (err.error?.message?.includes('overlap')) {
           this.error = this.translate.instant('vacation_dialog.error_overlap');
         } else {

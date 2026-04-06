@@ -9,7 +9,7 @@ import {
   setGroupMembers,
   uniqueSuffix,
 } from './helpers/admin-api';
-import { getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
+import { createLoggedInApiRequestContext, getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
 
 function nextBusinessDayOffset(baseOffset: number): string {
   const date = new Date();
@@ -52,73 +52,87 @@ test.describe('calendar visibility flow', () => {
 
     const adminContext = await browser.newContext();
     await loginInContext(adminContext, adminCredentials);
+    const adminApi = await createLoggedInApiRequestContext({ ...adminCredentials });
 
-    const viewer = await createLocalEmployee(adminContext.request, `${suffix}-viewer`);
-    const teammate = await createLocalEmployee(adminContext.request, `${suffix}-teammate`);
-    const outsider = await createLocalEmployee(adminContext.request, `${suffix}-outsider`);
-    const group = await createUserGroup(adminContext.request, {
+    const viewer = await createLocalEmployee(adminApi, `${suffix}-viewer`);
+    const teammate = await createLocalEmployee(adminApi, `${suffix}-teammate`);
+    const outsider = await createLocalEmployee(adminApi, `${suffix}-outsider`);
+    const viewerCredentials = {
+      username: viewer.email,
+      password: viewer.password,
+    };
+    const teammateCredentials = {
+      username: teammate.email,
+      password: teammate.password,
+    };
+    const outsiderCredentials = {
+      username: outsider.email,
+      password: outsider.password,
+    };
+    const group = await createUserGroup(adminApi, {
       name: `E2E Calendar Group ${suffix}`,
       description: 'Shared calendar visibility test group',
     });
 
     try {
-      await setGroupMembers(adminContext.request, group.id, [viewer.id, teammate.id]);
+      await setGroupMembers(adminApi, group.id, [viewer.id, teammate.id]);
 
       const teammateContext = await browser.newContext();
       const outsiderContext = await browser.newContext();
       const viewerContext = await browser.newContext();
 
       try {
-        await loginInContext(teammateContext, {
-          username: teammate.email,
-          password: teammate.password,
-        });
-        await loginInContext(outsiderContext, {
-          username: outsider.email,
-          password: outsider.password,
-        });
-        await loginInContext(viewerContext, {
-          username: viewer.email,
-          password: viewer.password,
-        });
+        const teammateApi = await createLoggedInApiRequestContext(teammateCredentials);
+        const outsiderApi = await createLoggedInApiRequestContext(outsiderCredentials);
+        const viewerApi = await createLoggedInApiRequestContext(viewerCredentials);
 
-        const teammateVacationId = await createVacationRequest(teammateContext.request, {
-          startDate,
-          endDate: startDate,
-          comment: sharedComment,
-        });
-        const outsiderVacationId = await createVacationRequest(outsiderContext.request, {
-          startDate,
-          endDate: startDate,
-          comment: outsiderComment,
-        });
+        try {
+          await loginInContext(teammateContext, teammateCredentials);
+          await loginInContext(outsiderContext, outsiderCredentials);
+          await loginInContext(viewerContext, viewerCredentials);
+          const teammateVacationId = await createVacationRequest(teammateApi, {
+            startDate,
+            endDate: startDate,
+            comment: sharedComment,
+          });
+          const outsiderVacationId = await createVacationRequest(outsiderApi, {
+            startDate,
+            endDate: startDate,
+            comment: outsiderComment,
+          });
 
-        await reviewVacationRequest(adminContext.request, teammateVacationId, {
-          status: 'approved',
-          comment: 'E2E approved shared vacation',
-        });
-        await reviewVacationRequest(adminContext.request, outsiderVacationId, {
-          status: 'approved',
-          comment: 'E2E approved outsider vacation',
-        });
+          await reviewVacationRequest(adminApi, teammateVacationId, {
+            status: 'approved',
+            comment: 'E2E approved shared vacation',
+          });
+          await reviewVacationRequest(adminApi, outsiderVacationId, {
+            status: 'approved',
+            comment: 'E2E approved outsider vacation',
+          });
 
-        const viewerPage = await viewerContext.newPage();
-        await viewerPage.goto('/calendar');
-        await goToMonth(viewerPage, startDate);
+          const viewerPage = await viewerContext.newPage();
+          await viewerPage.goto('/calendar');
+          await goToMonth(viewerPage, startDate);
 
-        const legend = viewerPage.locator('.legend');
-        await expect(legend).toContainText(teammate.displayName);
-        await expect(legend).not.toContainText(outsider.displayName);
+          const legend = viewerPage.locator('.legend');
+          await expect(legend).toContainText(teammate.displayName);
+          await expect(legend).not.toContainText(outsider.displayName);
+        } finally {
+          await viewerApi.dispose();
+          await outsiderApi.dispose();
+          await teammateApi.dispose();
+        }
       } finally {
         await viewerContext.close();
         await outsiderContext.close();
         await teammateContext.close();
       }
     } finally {
-      await deleteUserGroup(adminContext.request, group.id);
-      await deleteUser(adminContext.request, outsider.id);
-      await deleteUser(adminContext.request, teammate.id);
-      await deleteUser(adminContext.request, viewer.id);
+      await deleteUserGroup(adminApi, group.id);
+      await deleteUser(adminApi, outsider.id);
+      await deleteUser(adminApi, teammate.id);
+      await deleteUser(adminApi, viewer.id);
+      await adminApi.dispose();
       await adminContext.close();
     }
   });

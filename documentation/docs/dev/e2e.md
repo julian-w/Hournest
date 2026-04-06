@@ -21,6 +21,10 @@ Das Frontend bringt jetzt ein Playwright-Setup mit:
 - lokale Server:
   - Frontend ueber Angular Dev Server auf `http://127.0.0.1:4200`
   - Backend ueber `php artisan serve` auf `http://127.0.0.1:8000`
+- vor jedem Lauf wird eine separate E2E-SQLite-Datenbank frisch ueber `php artisan hournest:e2e-prepare` aufgebaut
+- lokale Anmeldung ist im E2E-Backend standardmaessig aktiviert
+- eingebauter Default-Login: `superadmin / e2e-password`
+- zusaetzlicher deterministischer Testnutzer fuer Mitarbeiter-Flows: `e2e.employee@hournest.local / e2e-password`
 
 ---
 
@@ -29,6 +33,12 @@ Das Frontend bringt jetzt ein Playwright-Setup mit:
 ```bash
 cd frontend
 npm run e2e
+```
+
+Kleines Smoke-Buendel:
+
+```bash
+npm run e2e:smoke
 ```
 
 Optionale Modi:
@@ -52,6 +62,7 @@ E2E_ROLE
 E2E_BASE_URL
 E2E_API_URL
 E2E_WORKERS
+E2E_REUSE_EXISTING_SERVER
 ```
 
 Beispiel in PowerShell:
@@ -65,8 +76,8 @@ npm run e2e
 
 Hinweis:
 
-- Authentifizierte Tests werden automatisch uebersprungen, wenn keine Credentials gesetzt sind.
-- Admin-Tests laufen nur, wenn `E2E_ROLE=admin` oder `E2E_ROLE=superadmin` gesetzt ist.
+- Ohne gesetzte Variablen nutzt die Suite standardmaessig `superadmin / e2e-password`.
+- Admin-Tests laufen standardmaessig als `superadmin`.
 
 ---
 
@@ -76,7 +87,7 @@ Hinweis:
 - Dashboard mit gueltiger Session
 - Zeiterfassung mit gueltiger Session
 - Admin-Requests mit Admin- oder Superadmin-Session
-- Urlaubs-Review-Flow mit generiertem Mitarbeiter, Admin-Review in der UI und Sichtpruefung beim Mitarbeiter
+- Urlaubs-Review-Flow mit festem lokalem Mitarbeiter, Admin-Review in der UI und Sichtpruefung beim Mitarbeiter
 - Urlaubs-Storno eines offenen Antrags in der Mitarbeiter-UI
 - Urlaubsantrag komplett ueber den Mitarbeiter-Dialog
 - Abwesenheits-Review mit generiertem Mitarbeiter und Admin-Freigabe
@@ -84,10 +95,20 @@ Hinweis:
 - Abwesenheits-Storno eines offenen Sonderurlaubsantrags in der Mitarbeiter-UI
 - Kalender-Sichtbarkeit fuer gemeinsame Gruppen bei gleichzeitiger Ausblendung fachfremder Personen
 - Favoriten-Reihenfolge in der Zeiterfassungs-UI
+- Halbtag-Urlaub ueber Antrag, Admin-Review und reduzierte 50%-Zeiterfassung
 - Speichern von Wochenbuchungen in der Zeiterfassung
 - Vorlagen speichern und auf einen anderen Tag anwenden in der Zeiterfassung
 - Vorherige Tagesbuchung in den ausgewaehlten Tag uebernehmen
 - Urlaubsablehnung mit Sichtpruefung des abgelehnten Status beim Mitarbeiter
+
+Das Smoke-Buendel `npm run e2e:smoke` konzentriert sich bewusst auf:
+
+- unauthentifizierten Redirect
+- Dashboard mit gueltiger Session
+- Admin-Requests mit Admin- oder Superadmin-Session
+- Urlaubs-Review ueber Admin- und Mitarbeiter-Kontext
+- Halbtag-Urlaub ueber Admin-Review bis in die reduzierte 50%-Zeiterfassung
+- Zeiterfassung mit vorhandener Arbeitszeit, echter Kostenstellenzuweisung und Speichern im UI
 
 ---
 

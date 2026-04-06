@@ -32,7 +32,8 @@ class TimeBookingController extends Controller
         $bookings = $request->user()
             ->timeBookings()
             ->with('costCenter')
-            ->whereBetween('date', [$request->from, $request->to])
+            ->whereDate('date', '>=', $request->from)
+            ->whereDate('date', '<=', $request->to)
             ->orderBy('date')
             ->get();
 

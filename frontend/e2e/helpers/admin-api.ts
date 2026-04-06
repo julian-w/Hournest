@@ -19,6 +19,14 @@ export interface CreatedUserGroup {
   name: string;
 }
 
+export interface CreatedBlackout {
+  id: number;
+  type: 'freeze' | 'company_holiday';
+  start_date: string;
+  end_date: string;
+  reason: string;
+}
+
 export function uniqueSuffix(): string {
   return `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 }
@@ -38,7 +46,9 @@ export async function createLocalEmployee(request: APIRequestContext, suffix = u
     },
   });
 
-  expect(response.ok()).toBeTruthy();
+  if (!response.ok()) {
+    throw new Error(`createLocalEmployee failed (${response.status()}): ${await response.text()}`);
+  }
   const body = await response.json();
 
   return {
@@ -51,6 +61,34 @@ export async function createLocalEmployee(request: APIRequestContext, suffix = u
 
 export async function deleteUser(request: APIRequestContext, userId: number): Promise<void> {
   const response = await request.delete(`${getApiBaseUrl()}/api/admin/users/${userId}`);
+  expect(response.ok()).toBeTruthy();
+}
+
+export async function getBlackouts(request: APIRequestContext): Promise<CreatedBlackout[]> {
+  const response = await request.get(`${getApiBaseUrl()}/api/admin/blackouts`);
+  expect(response.ok()).toBeTruthy();
+  const body = await response.json();
+  return body.data;
+}
+
+export async function createBlackout(
+  request: APIRequestContext,
+  data: { type: 'freeze' | 'company_holiday'; start_date: string; end_date: string; reason: string },
+): Promise<CreatedBlackout> {
+  const response = await request.post(`${getApiBaseUrl()}/api/admin/blackouts`, {
+    data,
+  });
+
+  if (!response.ok()) {
+    throw new Error(`createBlackout failed (${response.status()}): ${await response.text()}`);
+  }
+
+  const body = await response.json();
+  return body.data;
+}
+
+export async function deleteBlackout(request: APIRequestContext, blackoutId: number): Promise<void> {
+  const response = await request.delete(`${getApiBaseUrl()}/api/admin/blackouts/${blackoutId}`);
   expect(response.ok()).toBeTruthy();
 }
 
@@ -232,7 +270,9 @@ export async function createTimeEntry(
     },
   });
 
-  expect(response.ok()).toBeTruthy();
+  if (!response.ok()) {
+    throw new Error(`createTimeEntry failed (${response.status()}): ${await response.text()}`);
+  }
 }
 
 export async function createTimeBookings(
@@ -247,8 +287,12 @@ export async function createTimeBookings(
   },
 ): Promise<void> {
   const response = await request.put(`${getApiBaseUrl()}/api/time-bookings/${data.date}`, {
-    data: data.bookings,
+    data: {
+      bookings: data.bookings,
+    },
   });
 
-  expect(response.ok()).toBeTruthy();
+  if (!response.ok()) {
+    throw new Error(`createTimeBookings failed (${response.status()}): ${await response.text()}`);
+  }
 }

@@ -63,27 +63,31 @@ class VacationController extends Controller
             ], 422);
         }
 
-        $hasFreeze = BlackoutPeriod::query()
+        $freeze = BlackoutPeriod::query()
             ->where('type', 'freeze')
             ->whereDate('start_date', '<=', $request->end_date)
             ->whereDate('end_date', '>=', $request->start_date)
-            ->exists();
+            ->orderBy('start_date')
+            ->first();
 
-        if ($hasFreeze) {
+        if ($freeze !== null) {
             return response()->json([
                 'message' => 'Vacation request falls within a vacation freeze.',
+                'reason' => $freeze->reason,
             ], 422);
         }
 
-        $hasCompanyHoliday = BlackoutPeriod::query()
+        $companyHoliday = BlackoutPeriod::query()
             ->where('type', 'company_holiday')
             ->whereDate('start_date', '<=', $request->end_date)
             ->whereDate('end_date', '>=', $request->start_date)
-            ->exists();
+            ->orderBy('start_date')
+            ->first();
 
-        if ($hasCompanyHoliday) {
+        if ($companyHoliday !== null) {
             return response()->json([
                 'message' => 'Vacation request overlaps with a company holiday.',
+                'reason' => $companyHoliday->reason,
             ], 422);
         }
 

@@ -2,6 +2,10 @@
 
 > Team vacation management with growing time tracking support -- simple and clear.
 
+> Deutsche Dokumentation: https://julian-w.github.io/Hournest/
+>
+> English documentation: https://julian-w.github.io/Hournest/en/
+
 ## Current Product Status
 
 - **Stable and broadly implemented:** vacation management, vacation ledger, holidays, work schedules, user/admin management, local auth and OIDC
@@ -229,6 +233,9 @@ cd backend && php artisan test     # PHPUnit, SQLite :memory:
 # Test everything (backend + frontend unit tests + frontend build)
 ./scripts/test.sh
 
+# Test everything plus Playwright smoke bundle
+RUN_E2E_SMOKE=true ./scripts/test.sh
+
 # Full CI pipeline locally
 ./scripts/ci.sh
 
@@ -238,7 +245,7 @@ RUN_E2E_SMOKE=true ./scripts/ci.sh
 
 Current verified status:
 - Backend suite plus Angular unit tests are part of the default local test script
-- Playwright E2E tests are available separately and can be added as an optional smoke step in local CI
+- Playwright E2E tests are available separately; the smoke bundle now boots a deterministic local backend with seeded `superadmin` and `e2e.employee@hournest.local` users and covers unauthenticated, authenticated, admin, vacation-review, and time-tracking save flows when enabled via `RUN_E2E_SMOKE=true`
 
 ## API Documentation
 

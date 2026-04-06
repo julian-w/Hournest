@@ -16,6 +16,13 @@ import { WorkScheduleService } from '../../core/services/work-schedule.service';
 import { TimeTrackingComponent } from './time-tracking.component';
 
 describe('TimeTrackingComponent', () => {
+  const toLocalIsoDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   let timeServiceStub: {
     getTimeEntries: jasmine.Spy;
     getTimeBookings: jasmine.Spy;
@@ -327,8 +334,8 @@ describe('TimeTrackingComponent', () => {
     sourceDate.setDate(sourceDate.getDate() - 1);
     const olderDate = new Date(`${targetDate}T00:00:00`);
     olderDate.setDate(olderDate.getDate() - 3);
-    const sourceDateString = sourceDate.toISOString().split('T')[0];
-    const olderDateString = olderDate.toISOString().split('T')[0];
+    const sourceDateString = toLocalIsoDate(sourceDate);
+    const olderDateString = toLocalIsoDate(olderDate);
     timeServiceStub.getTimeBookings.and.returnValue(of([
       { id: 1, user_id: 3, date: sourceDateString, cost_center_id: 21, percentage: 80, comment: null },
       { id: 2, user_id: 3, date: sourceDateString, cost_center_id: 22, percentage: 20, comment: null },

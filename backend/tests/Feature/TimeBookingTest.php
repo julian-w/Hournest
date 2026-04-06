@@ -39,6 +39,26 @@ class TimeBookingTest extends TestCase
         $this->assertCount(1, $response->json('data'));
     }
 
+    public function test_employee_list_includes_bookings_on_to_date_boundary(): void
+    {
+        $employee = User::factory()->create();
+        $costCenter = CostCenter::factory()->create();
+        $employee->costCenters()->attach($costCenter->id);
+
+        TimeBooking::create([
+            'user_id' => $employee->id,
+            'date' => '2026-04-07',
+            'cost_center_id' => $costCenter->id,
+            'percentage' => 100,
+        ]);
+
+        $response = $this->actingAs($employee)->getJson('/api/time-bookings?from=2026-04-01&to=2026-04-07');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.date', '2026-04-07');
+    }
+
     public function test_employee_can_save_bookings_for_day(): void
     {
         $employee = User::factory()->create();

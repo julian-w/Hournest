@@ -43,6 +43,24 @@ class TimeEntryTest extends TestCase
         $this->assertCount(2, $response->json('data'));
     }
 
+    public function test_employee_list_includes_time_entries_on_to_date_boundary(): void
+    {
+        $employee = User::factory()->create();
+        TimeEntry::create([
+            'user_id' => $employee->id,
+            'date' => '2026-04-07',
+            'start_time' => '08:00',
+            'end_time' => '17:00',
+            'break_minutes' => 30,
+        ]);
+
+        $response = $this->actingAs($employee)->getJson('/api/time-entries?from=2026-04-01&to=2026-04-07');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.date', '2026-04-07');
+    }
+
     public function test_employee_can_create_time_entry(): void
     {
         $employee = User::factory()->create();

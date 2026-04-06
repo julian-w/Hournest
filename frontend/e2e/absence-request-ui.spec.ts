@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { createLocalEmployee, deleteUser, uniqueSuffix } from './helpers/admin-api';
-import { getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
+import { createLoggedInApiRequestContext, getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
 import { fillDateInput, nextBusinessDayOffset } from './helpers/ui';
 
 test.describe('absence request ui flow', () => {
@@ -16,15 +16,19 @@ test.describe('absence request ui flow', () => {
 
     const adminContext = await browser.newContext();
     await loginInContext(adminContext, adminCredentials);
-    const employee = await createLocalEmployee(adminContext.request, suffix);
+    const adminApi = await createLoggedInApiRequestContext({ ...adminCredentials });
+    const employee = await createLocalEmployee(adminApi, suffix);
+    const employeeCredentials = {
+      username: employee.email,
+      password: employee.password,
+    };
 
     try {
       const employeeContext = await browser.newContext();
       try {
-        await loginInContext(employeeContext, {
-          username: employee.email,
-          password: employee.password,
-        });
+        const employeeApi = await createLoggedInApiRequestContext(employeeCredentials);
+        await employeeApi.dispose();
+        await loginInContext(employeeContext, employeeCredentials);
 
         const page = await employeeContext.newPage();
         await page.goto('/my-absences');
@@ -45,7 +49,8 @@ test.describe('absence request ui flow', () => {
         await employeeContext.close();
       }
     } finally {
-      await deleteUser(adminContext.request, employee.id);
+      await deleteUser(adminApi, employee.id);
+      await adminApi.dispose();
       await adminContext.close();
     }
   });

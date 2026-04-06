@@ -391,12 +391,14 @@ interface BookingRow {
     }
     .time-inputs {
       display: flex;
-      align-items: center;
-      gap: 2px;
-      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+      align-items: stretch;
     }
     .time-input {
-      width: 60px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
       text-align: center;
       border: 1px solid #ddd;
       border-radius: 4px;
@@ -404,21 +406,23 @@ interface BookingRow {
       font-size: 12px;
     }
     .time-sep {
-      color: rgba(0, 0, 0, 0.38);
+      display: none;
     }
     .break-input {
-      width: 36px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
       text-align: center;
       border: 1px solid #ddd;
       border-radius: 4px;
       padding: 4px;
       font-size: 11px;
-      margin-left: 4px;
+      margin-left: 0;
     }
     .net-hours {
       font-size: 11px;
       color: rgba(0, 0, 0, 0.54);
-      margin-top: 2px;
+      margin-top: 6px;
     }
     .pct-input {
       width: 50px;
@@ -528,6 +532,56 @@ interface BookingRow {
     .empty-state {
       padding: 16px 0 4px;
       color: rgba(0, 0, 0, 0.54);
+    }
+    @media (max-width: 1200px) {
+      .day-col {
+        min-width: 112px;
+      }
+    }
+    @media (max-width: 700px) {
+      .page-header {
+        align-items: stretch;
+      }
+      .week-nav {
+        justify-content: space-between;
+        width: 100%;
+      }
+      .week-label {
+        min-width: 0;
+        flex: 1;
+        font-size: 13px;
+      }
+      .grid-container {
+        min-width: 700px;
+      }
+      .label-col {
+        width: 140px;
+        min-width: 140px;
+        padding: 8px;
+      }
+      .day-col {
+        min-width: 80px;
+        padding: 6px;
+      }
+      .time-input {
+        padding: 3px;
+        font-size: 11px;
+      }
+      .break-input {
+        padding: 3px;
+        font-size: 10px;
+      }
+      .pct-input {
+        width: 42px;
+        padding: 5px 3px;
+        font-size: 12px;
+      }
+      .actions {
+        padding: 12px 8px 8px;
+      }
+      .template-field {
+        width: 100%;
+      }
     }
   `],
 })
@@ -736,15 +790,15 @@ export class TimeTrackingComponent implements OnInit {
     prevTo.setDate(prevTo.getDate() - 7);
 
     this.timeService.getTimeBookings(
-      prevFrom.toISOString().split('T')[0],
-      prevTo.toISOString().split('T')[0],
+      this.toLocalIsoDate(prevFrom),
+      this.toLocalIsoDate(prevTo),
     ).subscribe(previousBookings => {
       this.bookingRows.update(rows => rows.map(row => {
         const percentages = { ...row.percentages };
         for (let index = 0; index < 7; index++) {
           const previousDate = new Date(prevFrom);
           previousDate.setDate(prevFrom.getDate() + index);
-          const previousDateString = previousDate.toISOString().split('T')[0];
+          const previousDateString = this.toLocalIsoDate(previousDate);
           const currentDate = currentDays[index].date;
           const previousBooking = previousBookings.find(booking =>
             booking.date === previousDateString && booking.cost_center_id === row.costCenter.id
@@ -779,8 +833,8 @@ export class TimeTrackingComponent implements OnInit {
     searchTo.setDate(target.getDate() - 1);
 
     this.timeService.getTimeBookings(
-      searchFrom.toISOString().split('T')[0],
-      searchTo.toISOString().split('T')[0],
+      this.toLocalIsoDate(searchFrom),
+      this.toLocalIsoDate(searchTo),
     ).subscribe(previousBookings => {
       const previousDates = [...new Set(previousBookings.map(booking => booking.date))]
         .filter(date => date < targetDate)
@@ -1022,8 +1076,8 @@ export class TimeTrackingComponent implements OnInit {
     for (let index = 0; index < 7; index++) {
       const date = new Date(monday);
       date.setDate(monday.getDate() + index);
-      const dateString = date.toISOString().split('T')[0];
-      const todayString = today.toISOString().split('T')[0];
+      const dateString = this.toLocalIsoDate(date);
+      const todayString = this.toLocalIsoDate(today);
 
       days.push({
         date: dateString,
@@ -1042,6 +1096,13 @@ export class TimeTrackingComponent implements OnInit {
     }
 
     return { from: days[0].date, to: days[6].date, days };
+  }
+
+  private toLocalIsoDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   private applyTimeEntries(entries: TimeEntry[]): void {

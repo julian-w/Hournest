@@ -7,7 +7,9 @@ namespace Tests\Feature;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class SecurityTest extends TestCase
@@ -148,6 +150,17 @@ class SecurityTest extends TestCase
         ]);
 
         $response->assertStatus(429);
+    }
+
+    public function test_auth_routes_keep_standard_throttle_outside_e2e_environment(): void
+    {
+        $loginRoute = Route::getRoutes()->match(Request::create('/api/auth/login', 'POST'));
+        $changePasswordRoute = Route::getRoutes()->match(Request::create('/api/auth/change-password', 'POST'));
+
+        $this->assertContains('throttle:5,1', $loginRoute->gatherMiddleware());
+        $this->assertNotContains('throttle:60,1', $loginRoute->gatherMiddleware());
+        $this->assertContains('throttle:5,1', $changePasswordRoute->gatherMiddleware());
+        $this->assertNotContains('throttle:60,1', $changePasswordRoute->gatherMiddleware());
     }
 
     // ─── Security Headers ─────────────────────────────────────────────

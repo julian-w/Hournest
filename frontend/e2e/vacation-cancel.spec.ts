@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { createLocalEmployee, createVacationRequest, deleteUser, uniqueSuffix } from './helpers/admin-api';
-import { getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
+import { createLoggedInApiRequestContext, getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
 
 function nextBusinessDayOffset(baseOffset: number): string {
   const date = new Date();
@@ -26,34 +26,42 @@ test.describe('vacation cancellation flow', () => {
 
     const adminContext = await browser.newContext();
     await loginInContext(adminContext, adminCredentials);
-    const employee = await createLocalEmployee(adminContext.request, suffix);
+    const adminApi = await createLoggedInApiRequestContext({ ...adminCredentials });
+    const employee = await createLocalEmployee(adminApi, suffix);
+    const employeeCredentials = {
+      username: employee.email,
+      password: employee.password,
+    };
 
     try {
       const employeeContext = await browser.newContext();
       try {
-        await loginInContext(employeeContext, {
-          username: employee.email,
-          password: employee.password,
-        });
+        const employeeApi = await createLoggedInApiRequestContext(employeeCredentials);
 
-        await createVacationRequest(employeeContext.request, {
-          startDate,
-          endDate: startDate,
-          comment,
-        });
+        try {
+          await loginInContext(employeeContext, employeeCredentials);
+          await createVacationRequest(employeeApi, {
+            startDate,
+            endDate: startDate,
+            comment,
+          });
 
-        const employeePage = await employeeContext.newPage();
-        await employeePage.goto('/my-vacations');
+          const employeePage = await employeeContext.newPage();
+          await employeePage.goto('/my-vacations');
 
-        const row = employeePage.locator('tr.mat-mdc-row').filter({ hasText: comment }).first();
-        await expect(row).toBeVisible();
-        await row.locator('button[color="warn"]').click();
-        await expect(row).toHaveCount(0);
+          const row = employeePage.locator('tr.mat-mdc-row').filter({ hasText: comment }).first();
+          await expect(row).toBeVisible();
+          await row.locator('button[color="warn"]').click();
+          await expect(row).toHaveCount(0);
+        } finally {
+          await employeeApi.dispose();
+        }
       } finally {
         await employeeContext.close();
       }
     } finally {
-      await deleteUser(adminContext.request, employee.id);
+      await deleteUser(adminApi, employee.id);
+      await adminApi.dispose();
       await adminContext.close();
     }
   });
