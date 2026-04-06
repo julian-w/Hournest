@@ -1,6 +1,6 @@
 # Konfiguration
 
-Alle Einstellungen von Hournest werden über die `.env`-Datei im `backend/`-Verzeichnis gesteuert. Diese Seite dokumentiert jede Variable im Detail.
+Alle Einstellungen von Hournest werden über die `.env`-Datei gesteuert. Im Repository liegt sie bei lokaler Entwicklung in `backend/.env`, im Release-Paket direkt als `.env` im Paket-Root. Diese Seite dokumentiert jede Variable im Detail.
 
 !!! warning "Sicherheit"
     Die `.env`-Datei enthält sensible Daten und darf **niemals** ins Git-Repository committed werden. Eine Vorlage mit Platzhaltern liegt als `.env.example` im Wurzelverzeichnis.
@@ -116,6 +116,9 @@ Der Superadmin-Zugang funktioniert ohne SSO und wird direkt über Benutzername u
 !!! danger "Passwort ändern"
     Für `SUPERADMIN_PASSWORD` muss vor dem Produktiveinsatz ein eigener bcrypt-Hash gesetzt werden. Ein Klartext-Passwort oder Platzhalterwert ist nicht ausreichend.
 
+!!! note "Installer-Verhalten"
+    Wenn `SUPERADMIN_PASSWORD` leer ist oder kein gültiger bcrypt-Hash gesetzt wurde, bricht `php install.php` absichtlich ab und gibt ein temporäres Passwort sowie einen kopierbaren Hash für die `.env` aus.
+
 ---
 
 ## Admin-Emails
@@ -208,7 +211,7 @@ DEFAULT_VACATION_DAYS_PER_YEAR=30
 
 # --- Superadmin (Emergency Access) ---
 SUPERADMIN_USERNAME=superadmin
-SUPERADMIN_PASSWORD=$2y$12$replace-with-bcrypt-hash
+SUPERADMIN_PASSWORD=
 
 # --- Admin Emails (comma-separated) ---
 ADMIN_EMAILS=admin@hournest.local

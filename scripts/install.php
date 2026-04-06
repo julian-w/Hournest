@@ -118,7 +118,7 @@ function createEnvIfMissing(string $packageRoot): bool
     }
 
     ok('Created .env from .env.example');
-    warn('Please edit .env now and run php install.php again.');
+    warn('Please edit .env now, especially SUPERADMIN_PASSWORD, and run php install.php again.');
 
     return true;
 }
@@ -166,6 +166,59 @@ function loadEnvConfig(string $packageRoot): ?array
     return is_array($config) ? $config : null;
 }
 
+function generateTemporaryPassword(int $length = 20): string
+{
+    $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@$%^*-_+=';
+    $maxIndex = strlen($alphabet) - 1;
+    $password = '';
+
+    for ($i = 0; $i < $length; $i++) {
+        $password .= $alphabet[random_int(0, $maxIndex)];
+    }
+
+    return $password;
+}
+
+function isBcryptHash(string $value): bool
+{
+    $info = password_get_info($value);
+
+    return ($info['algoName'] ?? '') === 'bcrypt';
+}
+
+function ensureSuperadminConfig(array $config): void
+{
+    $username = trim((string) ($config['SUPERADMIN_USERNAME'] ?? ''));
+    $passwordHash = trim((string) ($config['SUPERADMIN_PASSWORD'] ?? ''));
+    $placeholderHashes = [
+        '$2y$12$replace-with-bcrypt-hash',
+        '$2y$12$...',
+    ];
+
+    if ($username !== '' && $passwordHash !== '' && !in_array($passwordHash, $placeholderHashes, true) && isBcryptHash($passwordHash)) {
+        return;
+    }
+
+    $suggestedUsername = $username !== '' ? $username : 'superadmin';
+    $temporaryPassword = generateTemporaryPassword();
+    $temporaryHash = password_hash($temporaryPassword, PASSWORD_BCRYPT);
+
+    out('');
+    warn('SUPERADMIN_PASSWORD is missing, still set to a placeholder, or not a valid bcrypt hash.');
+    warn('Installation stops here until a secure superadmin password is configured.');
+    out('');
+    info('Copy the following lines into your .env and run php install.php again:');
+    out('SUPERADMIN_USERNAME=' . $suggestedUsername);
+    out('SUPERADMIN_PASSWORD=' . $temporaryHash);
+    out('');
+    info('Temporary superadmin password (store it securely before continuing):');
+    out($temporaryPassword);
+    out('');
+    info('After the first successful setup, test the login and then delete public/superadmin-password-helper.php if you used it.');
+
+    fail('Missing secure superadmin configuration in .env.');
+}
+
 $arguments = $_SERVER['argv'] ?? [];
 $seed = in_array('--seed', $arguments, true);
 $appRoot = detectAppRoot();
@@ -207,6 +260,8 @@ $missingExtensions = array_values(array_filter(
 if ($missingExtensions !== []) {
     fail('Missing PHP extensions: ' . implode(', ', $missingExtensions));
 }
+
+ensureSuperadminConfig($config ?? []);
 
 if (!is_dir($appRoot . '/vendor')) {
     if (!commandExists('composer')) {

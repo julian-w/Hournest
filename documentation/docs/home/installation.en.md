@@ -16,12 +16,14 @@ The standard flow is:
 2. Extract it and copy the full folder to the server
 3. Point the document root to `public/`
 4. Copy `.env.example` to `.env` and adjust it
-5. Run `php install.php`
+5. Optionally run `php test.php`
+6. Run `php install.php`
 
 The release package already contains:
 
 - the frontend in `public/`
 - the PHP dependencies in `vendor/`
+- the diagnostic check `test.php`
 - the installer `install.php`
 
 Release page:
@@ -116,16 +118,23 @@ AUTH_OAUTH_ENABLED=true
 SANCTUM_STATEFUL_DOMAINS=example.com
 
 SUPERADMIN_USERNAME=superadmin
-SUPERADMIN_PASSWORD=$2y$12$replace-with-bcrypt-hash
+SUPERADMIN_PASSWORD=
 ```
 
 If MySQL or PostgreSQL is used, set the respective database credentials instead.
 
 ---
 
-## 4. Optional: Generate a bcrypt Hash for the Superadmin
+## 4. Set the Superadmin Password
 
-If you still need a hash for `SUPERADMIN_PASSWORD`, you can temporarily open:
+A valid `SUPERADMIN_PASSWORD` hash is **required**.
+
+If `SUPERADMIN_PASSWORD` in `.env` is empty or not a valid bcrypt hash, `php install.php` will intentionally stop and print:
+
+- a temporary strong password
+- a copyable bcrypt hash for your `.env`
+
+Alternatively, you can generate the hash yourself. For that, you can temporarily open:
 
 ```text
 public/superadmin-password-helper.php
@@ -136,6 +145,21 @@ in the browser, generate the hash, and then delete the file again.
 ---
 
 ## 5. Run the Installer
+
+Optionally before that:
+
+```bash
+php test.php
+```
+
+`test.php` checks without modifying anything:
+
+- PHP version
+- required extensions
+- `.env`
+- `SUPERADMIN_PASSWORD`
+- writable directories
+- database connectivity when `.env` is already configured
 
 Inside the package directory:
 
@@ -152,10 +176,14 @@ php install.php --seed
 The installer:
 
 - checks the PHP version and extensions
+- checks whether `SUPERADMIN_PASSWORD` is configured securely
+- intentionally stops if the superadmin hash is missing or invalid and prints a copyable replacement value
 - only installs dependencies via Composer if `vendor/` is missing
 - creates the SQLite database file when needed
 - runs migrations
 - builds Laravel caches
+
+`test.php` can also remain on the server after installation and be run again later for diagnostics.
 
 ---
 

@@ -122,6 +122,7 @@ jobs:
 
           # PHP installer
           cp scripts/install.php "$PACKAGE_DIR/install.php"
+          cp scripts/test.php "$PACKAGE_DIR/test.php"
 
           # Documentation
           cp -r documentation/site "$PACKAGE_DIR/docs"
@@ -134,9 +135,10 @@ jobs:
           2. Upload the entire extracted directory.
           3. Point your web root to `public/`.
           4. Copy `.env.example` to `.env`.
-          5. Optionally open `public/superadmin-password-helper.php` once to generate a bcrypt hash.
-          6. Run `php install.php`.
-          7. Delete `public/superadmin-password-helper.php` after setup.
+          5. Optionally run `php test.php`.
+          6. Set a valid bcrypt hash for `SUPERADMIN_PASSWORD`.
+          7. Run `php install.php`.
+          8. Delete `public/superadmin-password-helper.php` after setup.
           EOF
 
           # Create archives

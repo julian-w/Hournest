@@ -61,6 +61,7 @@ cp -r "$PROJECT_ROOT/frontend/dist/frontend/browser/"* "$PACKAGE_DIR/public/"
 # Copy PHP installer
 info "Copying installer..."
 cp "$PROJECT_ROOT/scripts/install.php" "$PACKAGE_DIR/install.php"
+cp "$PROJECT_ROOT/scripts/test.php" "$PACKAGE_DIR/test.php"
 
 # Copy documentation build (if exists)
 if [ -d "$PROJECT_ROOT/documentation/site" ]; then
@@ -78,8 +79,9 @@ cat > "$PACKAGE_DIR/DEPLOY.md" << 'DEPLOYEOF'
 2. Point your document root to `public/`.
 3. The frontend is already bundled into `public/`.
 4. Copy `.env.example` to `.env` and configure it.
-5. Optionally open `public/superadmin-password-helper.php` once to generate a bcrypt hash.
-6. Run `php install.php`.
+5. Optionally run `php test.php` to check PHP, extensions, .env, and database connectivity.
+6. Set a valid bcrypt hash for `SUPERADMIN_PASSWORD`.
+7. Run `php install.php`.
 
 ## Detailed Instructions
 

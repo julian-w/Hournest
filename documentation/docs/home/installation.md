@@ -16,12 +16,14 @@ Der Standard-Flow ist:
 2. Den kompletten entpackten Ordner auf den Server kopieren
 3. `public/` als Document Root setzen
 4. `.env.example` nach `.env` kopieren und anpassen
-5. `php install.php` ausführen
+5. Optional `php test.php` ausführen
+6. `php install.php` ausführen
 
 Das Release-Paket enthält bereits:
 
 - das Frontend in `public/`
 - die PHP-Abhängigkeiten in `vendor/`
+- den Diagnosetest `test.php`
 - den Installer `install.php`
 
 Release-Seite:
@@ -116,16 +118,23 @@ AUTH_OAUTH_ENABLED=true
 SANCTUM_STATEFUL_DOMAINS=example.com
 
 SUPERADMIN_USERNAME=superadmin
-SUPERADMIN_PASSWORD=$2y$12$replace-with-bcrypt-hash
+SUPERADMIN_PASSWORD=
 ```
 
 Wenn MySQL oder PostgreSQL verwendet wird, müssen stattdessen die jeweiligen DB-Zugangsdaten gesetzt werden.
 
 ---
 
-## 4. Optional: bcrypt-Hash für den Superadmin erzeugen
+## 4. Superadmin-Passwort festlegen
 
-Wenn du für `SUPERADMIN_PASSWORD` noch einen Hash brauchst, kannst du temporär:
+Ein gesetzter `SUPERADMIN_PASSWORD`-Hash ist **Pflicht**.
+
+Wenn `SUPERADMIN_PASSWORD` in `.env` leer ist oder kein gültiger bcrypt-Hash gesetzt wurde, bricht `php install.php` bewusst ab und gibt dir:
+
+- ein temporäres starkes Passwort
+- einen kopierbaren bcrypt-Hash für die `.env`
+
+Alternativ kannst du den Hash selbst erzeugen. Dafür kannst du temporär:
 
 ```text
 public/superadmin-password-helper.php
@@ -136,6 +145,21 @@ im Browser öffnen, den Hash erzeugen und danach die Datei wieder löschen.
 ---
 
 ## 5. Installer ausführen
+
+Optional vorher:
+
+```bash
+php test.php
+```
+
+`test.php` prüft ohne Änderungen:
+
+- PHP-Version
+- benötigte Extensions
+- `.env`
+- `SUPERADMIN_PASSWORD`
+- Schreibrechte
+- Datenbankverbindung, wenn `.env` bereits vollständig gesetzt ist
 
 Im Paketordner:
 
@@ -152,10 +176,14 @@ php install.php --seed
 Der Installer:
 
 - prüft PHP-Version und Extensions
+- prüft, ob `SUPERADMIN_PASSWORD` sicher gesetzt ist
+- stoppt bewusst, wenn der Superadmin-Hash fehlt oder ungültig ist, und gibt einen kopierbaren Ersatzwert aus
 - installiert nur dann per Composer nach, wenn `vendor/` fehlen sollte
 - erzeugt bei SQLite die Datenbankdatei
 - führt Migrationen aus
 - baut Laravel-Caches
+
+`test.php` kann auch nach der Installation auf dem Server bleiben und später für Diagnosen erneut ausgeführt werden.
 
 ---
 

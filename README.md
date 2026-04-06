@@ -210,9 +210,10 @@ All scripts are in `scripts/` and work on Windows (Git Bash) and Linux.
 |--------|-------------|
 | `php install.php` | Installer for the release package on the target server |
 | `php install.php --seed` | Same as above, with test data |
+| `php test.php` | Optional environment check for PHP, extensions, `.env`, superadmin hash, and database connectivity |
 | `./scripts/install.sh` | Shell-based installer for repo-based/manual setups |
 
-The release package includes a root-level `install.php` so deployment does not depend on Bash being available on the target server.
+The release package includes root-level `install.php` and `test.php` so deployment and diagnostics do not depend on Bash being available on the target server.
 The release package already includes the built frontend in `public/`, the PHP dependencies in `vendor/`, and `public/superadmin-password-helper.php` as a temporary setup helper for generating a bcrypt hash for `SUPERADMIN_PASSWORD`.
 
 ## Mock Mode (Frontend without Backend)
@@ -356,6 +357,9 @@ act push --tag v0.1.0
 ### With Installation Script (recommended)
 
 ```bash
+# Optional preflight check:
+php test.php
+
 # Unpack release archive on server, then:
 php install.php
 
@@ -366,10 +370,13 @@ php install.php --seed
 The script automatically:
 - Checks PHP version and extensions
 - Creates `.env` from `.env.example` if it is missing, then asks you to edit it and rerun the installer
-- Points you to `superadmin-password-helper.php` if you need a bcrypt hash for the emergency account
+- Refuses to continue until `SUPERADMIN_PASSWORD` is set to a valid bcrypt hash
+- Prints a temporary password plus a copyable bcrypt hash if the superadmin password is missing or invalid
 - Runs migrations
 - Builds caches
 - Leaves the extracted folder ready so you can point the web root to `public/`
+
+`php test.php` is optional, but useful before and after installation. It checks PHP, required extensions, `.env`, the superadmin bcrypt hash, writable directories, and database connectivity when configured.
 
 ### First Steps After Installation
 
@@ -378,7 +385,7 @@ Recommended initial setup after the first successful install:
 1. Log in with the superadmin via **Admin Login**
 2. Verify the application is reachable
 3. Complete OIDC and `ADMIN_EMAILS` settings in `.env` if needed
-4. Replace `SUPERADMIN_PASSWORD` in `.env` with your own bcrypt hash if you used a temporary value
+4. Replace `SUPERADMIN_PASSWORD` in `.env` with your own bcrypt hash if you used the installer-generated temporary value
 5. Delete `public/superadmin-password-helper.php` afterwards
 6. Verify that `APP_DEBUG=false`
 
@@ -389,7 +396,7 @@ The superadmin password is managed through `.env`, not through the normal user a
 1. Unpack release archive or build locally with `./scripts/package.sh`
 2. Upload the full extracted release directory to the server
 3. Set `public/` as document root
-4. Configure `.env`, optionally generate a bcrypt hash via `public/superadmin-password-helper.php`, then run `php install.php`
+4. Configure `.env`, optionally run `php test.php`, set a valid bcrypt hash for `SUPERADMIN_PASSWORD`, then run `php install.php`
 5. Delete `public/superadmin-password-helper.php` after setup
 6. If using OAuth: configure OIDC provider, register app, set redirect URL
 
