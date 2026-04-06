@@ -12,7 +12,7 @@ Wenn du stattdessen am Projekt entwickeln möchtest, nutze die Seite [Lokale Ent
 
 Der Standard-Flow ist:
 
-1. Release-Paket herunterladen oder bereitgestelltes ZIP entpacken
+1. Release-Paket von der GitHub-Releases-Seite herunterladen
 2. Den kompletten entpackten Ordner auf den Server kopieren
 3. `public/` als Document Root setzen
 4. `.env.example` nach `.env` kopieren und anpassen
@@ -23,6 +23,12 @@ Das Release-Paket enthält bereits:
 - das Frontend in `public/`
 - die PHP-Abhängigkeiten in `vendor/`
 - den Installer `install.php`
+
+Release-Seite:
+
+```text
+https://github.com/julian-w/Hournest/releases
+```
 
 ---
 
@@ -52,7 +58,7 @@ Nicht erforderlich auf dem Zielsystem:
 
 ## 1. Release-Paket entpacken und hochladen
 
-1. Lade das Release-Archiv herunter oder nimm das bereitgestellte Paket
+1. Lade das Release-Archiv von der GitHub-Releases-Seite herunter
 2. Entpacke es lokal
 3. Kopiere den gesamten entpackten Ordner auf den Zielserver
 

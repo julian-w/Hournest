@@ -12,7 +12,7 @@ If you want to work on the project itself, use [Local Development](../dev/local-
 
 The standard flow is:
 
-1. Download the release package or take the provided ZIP
+1. Download the release package from the GitHub Releases page
 2. Extract it and copy the full folder to the server
 3. Point the document root to `public/`
 4. Copy `.env.example` to `.env` and adjust it
@@ -23,6 +23,12 @@ The release package already contains:
 - the frontend in `public/`
 - the PHP dependencies in `vendor/`
 - the installer `install.php`
+
+Release page:
+
+```text
+https://github.com/julian-w/Hournest/releases
+```
 
 ---
 
@@ -52,7 +58,7 @@ Not required on the target system:
 
 ## 1. Extract and Upload the Release Package
 
-1. Download the release archive or use the provided package
+1. Download the release archive from the GitHub Releases page
 2. Extract it locally
 3. Copy the entire extracted folder to the target server
 

@@ -110,6 +110,10 @@ If you want to **run** Hournest from the finished release package on a server, N
 You do **not** need Node.js, npm, Angular CLI, or MkDocs on the target system.
 You also do **not** need Composer there as long as the release package already contains `vendor/`.
 
+Download the finished package from the GitHub Releases page:
+
+`https://github.com/julian-w/Hournest/releases`
+
 ### Local Development Prerequisites
 
 - PHP 8.5+ with extensions: `mbstring`, `openssl`, `tokenizer`, `xml`, `curl`, `fileinfo`, `pdo_sqlite`
