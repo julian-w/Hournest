@@ -1,6 +1,9 @@
-# Installation
+# Installation for Development
 
-This guide describes how to set up Hournest for local development.
+This page describes how to set up Hournest for **local development**.
+
+!!! info "Only deploying?"
+    If you only want to copy Hournest to a server or NAS and run it there, use [Deployment](../dev/deployment.md) instead. The release package already contains the frontend in `public/` and the PHP dependencies in `vendor/`.
 
 ---
 
@@ -31,7 +34,7 @@ cp ../.env.example .env
 ```
 
 !!! warning "Important"
-    The `.env` file contains sensitive data (OIDC credentials, superadmin password) and must **never** be committed to the Git repository.
+    The `.env` file contains sensitive data and must **never** be committed to the Git repository.
 
 The most important settings for local development:
 
@@ -52,9 +55,9 @@ All variables are described in detail on the [Configuration](configuration.md) p
 php artisan key:generate
 ```
 
-### 4. Create and Migrate Database
+### 4. Create and Migrate the Database
 
-For SQLite, the database file must be created first:
+For SQLite, create the database file first:
 
 ```bash
 touch database/database.sqlite
@@ -63,7 +66,7 @@ php artisan migrate
 
 ### 5. Optional Seeder
 
-If test data is needed:
+If you need test data:
 
 ```bash
 php artisan db:seed
@@ -78,7 +81,7 @@ php artisan serve
 The backend is now available at `http://localhost:8000`.
 
 !!! tip "API Documentation"
-    After starting, the auto-generated API documentation is available at `http://localhost:8000/docs/api`.
+    After startup, the auto-generated API documentation is available at `http://localhost:8000/docs/api`.
 
 ---
 
@@ -91,10 +94,12 @@ cd frontend
 npm install
 ```
 
-### 2. Start Development Server
+### 2. Start the Development Server
+
+A global Angular CLI is not required. Use the local project CLI:
 
 ```bash
-ng serve
+npx ng serve --proxy-config proxy.conf.json
 ```
 
 The frontend is now available at `http://localhost:4200`.
@@ -103,25 +108,25 @@ The frontend is now available at `http://localhost:4200`.
 
 ## Mock Mode (without Backend)
 
-Mock mode enables frontend development entirely without a running backend. All API calls are replaced by realistic test data.
+Mock mode allows frontend development without a running backend. All API calls are replaced with realistic test data.
 
 ### Start via Build Configuration
 
 ```bash
 cd frontend
-ng serve --configuration=mock
+npx ng serve --configuration=mock
 ```
 
 ### Start via URL Parameter
 
-Alternatively, mock mode can be activated with a normal `ng serve` via URL parameter:
+Alternatively, mock mode can be activated with a URL parameter during a normal start:
 
 ```
 http://localhost:4200?mock=true
 ```
 
 !!! info "Mock Mode Details"
-    In mock mode, a toolbar appears at the bottom of the screen that allows switching between the Employee, Admin, and Superadmin roles. More details at [Mock Mode](../dev/mock-mode.md).
+    In mock mode, a toolbar appears at the bottom of the screen. More details are available in [Mock Mode](../dev/mock-mode.md).
 
 ---
 
@@ -129,61 +134,60 @@ http://localhost:4200?mock=true
 
 ### With SSO (OIDC)
 
-1. OIDC must be correctly configured in `.env` (see [Configuration](configuration.md))
+1. OIDC must be configured correctly in `.env`
 2. Open `http://localhost:4200` in the browser
 3. Click "Sign in with SSO"
-4. After successful authentication, the user is automatically created
+4. After successful authentication, the user is created automatically
 
 ### With Superadmin (without SSO)
 
 1. Set superadmin credentials in `.env` (`SUPERADMIN_USERNAME`, `SUPERADMIN_PASSWORD`)
 2. `SUPERADMIN_PASSWORD` must be a bcrypt hash, not plaintext
-3. Optionally open `public/superadmin-password-helper.php` once in the browser, copy the generated hash, and delete the file afterwards
+3. Optionally open `backend/public/superadmin-password-helper.php` once in the browser, generate a hash, and delete the file afterwards
 4. Open `http://localhost:4200` in the browser
 5. Click "Admin Login" below the SSO button
-6. Enter username and the plaintext password you generated
+6. Enter username and the plaintext password
 
 !!! note "Role Assignment"
     - New users automatically receive the **Employee** role
-    - Users whose email is in `ADMIN_EMAILS` automatically receive the **Admin** role
-    - The superadmin account is automatically created on first login
+    - Users whose email is listed in `ADMIN_EMAILS` automatically receive the **Admin** role
+    - The superadmin account is created automatically on first login
 
 ---
 
 ## Using Scripts
 
-Pre-built scripts are available in the `scripts/` folder. They work on Windows (Git Bash) and Linux.
+The `scripts/` directory contains prepared scripts for local development, testing, and builds.
 
 ### Development
 
 | Script | Description |
 |--------|-------------|
 | `./scripts/dev.sh` | Starts backend + frontend in parallel |
-| `./scripts/dev-mock.sh` | Starts frontend in mock mode (no backend needed) |
-| `./scripts/dev-docs.sh` | Starts MkDocs dev server on port 8001 |
+| `./scripts/dev-mock.sh` | Starts the frontend in mock mode |
+| `./scripts/dev-docs.sh` | Starts the MkDocs dev server on port 8001 |
 
 ### Build
 
 | Script | Description |
 |--------|-------------|
 | `./scripts/build-all.sh` | Builds frontend + backend + documentation |
-| `./scripts/build-frontend.sh` | Builds Angular only (production) |
-| `./scripts/build-backend.sh` | Builds Laravel only (production, cached) |
-| `./scripts/build-docs.sh` | Builds MkDocs documentation only |
+| `./scripts/build-frontend.sh` | Builds only the Angular frontend |
+| `./scripts/build-backend.sh` | Builds only the Laravel backend |
+| `./scripts/build-docs.sh` | Builds only the MkDocs documentation |
 
 ### Test & CI
 
 | Script | Description |
 |--------|-------------|
 | `./scripts/test.sh` | Backend tests + frontend unit tests + frontend build check |
-| `./scripts/ci.sh` | Full CI pipeline locally (tests + all builds + artifact check) |
-| `./scripts/package.sh [version]` | Builds everything and creates a release archive (ZIP/TAR) |
+| `./scripts/ci.sh` | Full local CI pipeline |
+| `./scripts/package.sh [version]` | Builds everything and creates a release archive |
 
 !!! tip "Quick start with scripts"
-    Instead of setting up backend and frontend manually:
+    For local development, this is usually enough:
     ```bash
     cd backend && cp ../.env.example .env && composer install && php artisan key:generate && touch database/database.sqlite && php artisan migrate --seed && cd ..
-    cd frontend && npm install && cd ..
     ./scripts/dev.sh
     ```
 
@@ -206,14 +210,14 @@ php artisan test
 RUN_E2E_SMOKE=true ./scripts/ci.sh
 ```
 
-The tests use an SQLite `:memory:` database and do not require separate configuration.
+The tests use an SQLite in-memory database and do not require a separate database installation.
 
 ---
 
 ## Building Documentation
 
 ```bash
-# Build documentation (output to documentation/site/)
+# Build documentation (output in documentation/site/)
 ./scripts/build-docs.sh
 
 # Dev server with live reload
@@ -221,4 +225,4 @@ The tests use an SQLite `:memory:` database and do not require separate configur
 ```
 
 !!! note "Documentation prerequisites"
-    Python 3 and pip must be installed. Dependencies (`mkdocs-material`, `mkdocs-static-i18n`) are installed automatically.
+    Python 3 and pip must be installed. Dependencies are installed from `documentation/requirements.txt`.

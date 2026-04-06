@@ -1,6 +1,24 @@
 # Deployment
 
-Diese Seite beschreibt das Deployment von Hournest auf einer Synology NAS (primärer Anwendungsfall) sowie auf klassischem PHP-Hosting.
+Diese Seite beschreibt das Deployment des **Release-Pakets** auf einer Synology NAS oder auf klassischem PHP-Hosting.
+
+Wichtig: Auf dem Zielsystem werden für das Release-Paket **kein** Node.js, **kein** Angular, **keine** Angular CLI und **kein** MkDocs benötigt. Das Frontend ist bereits in `public/` enthalten.
+
+---
+
+## Zielsystem: Was wirklich benötigt wird
+
+Für den Standardfall reichen auf dem Zielsystem:
+
+- PHP 8.5+
+- Ein Webserver mit **Document Root** auf `public/`
+- Die erforderlichen PHP-Extensions
+- Eine Datenbank:
+  - standardmäßig SQLite über `pdo_sqlite`
+  - alternativ MySQL/MariaDB über `pdo_mysql`
+  - alternativ PostgreSQL über `pdo_pgsql`
+
+Für ein Release-Paket mit bereits enthaltenem `vendor/` ist **kein Composer** auf dem Zielsystem erforderlich.
 
 ---
 
@@ -8,36 +26,56 @@ Diese Seite beschreibt das Deployment von Hournest auf einer Synology NAS (prim�
 
 ### Voraussetzungen
 
-- NAS mit Webserver-Unterstützung (z.B. Synology DSM 7.x)
-- **Web Station** (aus dem Package Center installieren)
-- **PHP 8.5** (über Web Station installierbar)
-- **SSO Server** (aus dem Package Center, für OIDC)
-- SSH-Zugang zur NAS (empfohlen)
+- NAS mit Webserver-Unterstützung, z.B. Synology DSM 7.x
+- **Web Station**
+- **PHP 8.5**
+- Optional ein OIDC-Provider, z.B. Synology SSO Server
+- SSH-Zugang zur NAS ist hilfreich, aber nicht zwingend
 
 ---
 
 ### Schritt 1: PHP konfigurieren
 
-1. Öffne **Web Station** im DSM
+1. Öffne **Web Station**
 2. Gehe zu **Skriptsprache-Einstellungen** > **PHP**
-3. Erstelle ein neues PHP-Profil oder bearbeite das bestehende:
-    - PHP-Version: **8.5**
-    - Extensions aktivieren: `sqlite3`, `mbstring`, `openssl`, `tokenizer`, `xml`, `curl`, `fileinfo`, `zip`, `pdo_sqlite`
-4. Speichere das Profil
+3. Erstelle ein neues PHP-Profil oder bearbeite ein bestehendes
+4. Aktiviere mindestens diese Extensions:
+   - `mbstring`
+   - `openssl`
+   - `tokenizer`
+   - `xml`
+   - `curl`
+   - `fileinfo`
+   - plus den Datenbanktreiber deiner Wahl:
+     - `pdo_sqlite` für SQLite
+     - `pdo_mysql` für MySQL/MariaDB
+     - `pdo_pgsql` für PostgreSQL
+5. Speichere das Profil
 
 ---
 
-### Schritt 2: Backend deployen
+### Schritt 2: Release-Paket hochladen
 
-1. Kopiere den gesamten entpackten Release-Ordner auf die NAS (z.B. nach `/volume1/web/hournest/`)
-2. Erstelle die `.env`-Datei:
+1. Entpacke das Release-Archiv lokal
+2. Kopiere den gesamten entpackten Ordner auf die NAS, z.B. nach `/volume1/web/hournest/`
+3. Setze in Web Station den **Document Root** auf `/volume1/web/hournest/public`
+
+Das Release-Paket enthält bereits:
+
+- das gebaute Frontend in `public/`
+- die PHP-Abhängigkeiten in `vendor/`
+- `install.php` für die Initialisierung
+
+---
+
+### Schritt 3: `.env` anlegen
 
 ```bash
 cd /volume1/web/hournest
 cp .env.example .env
 ```
 
-3. Konfiguriere die `.env` für Produktion:
+Beispiel für ein SQLite-Setup:
 
 ```ini
 APP_ENV=production
@@ -48,8 +86,9 @@ FRONTEND_URL=https://your-nas-domain.com
 DB_CONNECTION=sqlite
 DB_DATABASE=/volume1/web/hournest/database/database.sqlite
 
-OIDC_CLIENT_ID=your-actual-client-id
-OIDC_CLIENT_SECRET=your-actual-client-secret
+AUTH_OAUTH_ENABLED=true
+OIDC_CLIENT_ID=your-client-id
+OIDC_CLIENT_SECRET=your-client-secret
 OIDC_WELLKNOWN_URL=https://your-nas-address:5001/webman/sso/.well-known/openid-configuration
 OIDC_REDIRECT_URI=${APP_URL}/api/auth/callback
 
@@ -62,107 +101,95 @@ ADMIN_EMAILS=admin1@firma.de,admin2@firma.de
 ```
 
 !!! danger "Sicherheit"
-    Setze `APP_DEBUG=false` und ändere das Superadmin-Passwort!
+    Setze `APP_DEBUG=false` und ändere das Superadmin-Passwort vor dem Produktiveinsatz.
 
-4. Initialisiere die Anwendung:
+---
+
+### Schritt 4: Anwendung initialisieren
 
 ```bash
 cd /volume1/web/hournest
 php install.php
 ```
 
-5. Konfiguriere Web Station:
-    - Erstelle einen neuen virtuellen Host oder Dienst
-    - **Document Root:** `/volume1/web/hournest/public`
-    - **PHP-Profil:** Das in Schritt 1 erstellte Profil
-    - Stelle sicher, dass URL-Rewriting funktioniert (`.htaccess` oder nginx-Konfiguration)
-
----
-
-### Schritt 3: SSO Server / OIDC einrichten
-
-1. Öffne den **SSO Server** im DSM
-2. Aktiviere den OIDC-Dienst falls noch nicht geschehen
-3. Registriere eine neue Anwendung:
-    - **Name:** Hournest
-    - **Redirect URI:** `https://your-nas-domain.com/api/auth/callback`
-4. Kopiere **Client-ID** und **Client-Secret** in die `.env`-Datei
-5. Prüfe die **Well-Known URL**: `https://your-nas-address:5001/webman/sso/.well-known/openid-configuration`
-
-!!! note "HTTPS"
-    Der SSO Server erfordert HTTPS. Stelle sicher, dass deine NAS ein gültiges SSL-Zertifikat hat (z.B. über Let's Encrypt in der DSM-Systemsteuerung).
-
----
-
-### Schritt 4: Frontend bereitstellen
-
-Im Release-Paket ist das Frontend bereits in `public/` eingebunden.
-
-Wenn du lokal selbst paketierst oder getrennt deployen willst:
-
-1. Baue das Frontend auf deinem Entwicklungsrechner:
+Optional mit Testdaten:
 
 ```bash
-cd frontend
-npm install
-ng build --configuration production
+php install.php --seed
 ```
 
-2. Der Build-Output liegt in `frontend/dist/frontend/browser/` (oder ähnlich)
-3. Kopiere den Inhalt des Build-Output-Ordners auf die NAS
-
-**Option A: Gleicher Host wie das Backend**
-
-Kopiere die Frontend-Dateien in den `public/`-Ordner der Paketwurzel oder richte einen separaten Document Root ein.
-
-**Option B: Separater virtueller Host**
-
-Erstelle in Web Station einen separaten virtuellen Host für das Frontend mit dem Build-Output als Document Root. Stelle sicher, dass alle Routen auf `index.html` umgeleitet werden (SPA-Routing).
+Falls du für `SUPERADMIN_PASSWORD` erst einen bcrypt-Hash erzeugen musst, kannst du temporär `public/superadmin-password-helper.php` im Browser öffnen und die Datei danach wieder löschen.
 
 ---
 
-### Schritt 5: Datenbank-Migration
+### Schritt 5: OIDC einrichten (optional)
 
-Nach jedem Update:
+Nur erforderlich, wenn du SSO verwenden möchtest:
+
+1. OIDC-Dienst oder SSO Server konfigurieren
+2. Neue Anwendung registrieren
+3. Redirect URI setzen: `https://your-nas-domain.com/api/auth/callback`
+4. Client-ID und Client-Secret in `.env` eintragen
+5. Well-Known-URL des Providers übernehmen
+
+!!! note "HTTPS"
+    Für OIDC ist in der Praxis fast immer HTTPS erforderlich.
+
+---
+
+### Schritt 6: Updates einspielen
+
+Nach einem Update des Release-Pakets:
 
 ```bash
 cd /volume1/web/hournest
 php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
+php artisan view:cache
 ```
 
 ---
 
 ## Klassisches PHP-Hosting
 
-Hournest kann auch auf klassischem PHP-Hosting (Shared Hosting, VPS, etc.) betrieben werden.
+Hournest kann auch auf Shared Hosting, VPS oder anderem klassischem PHP-Hosting betrieben werden.
 
 ### Voraussetzungen
 
-- PHP 8.5+ mit den erforderlichen Extensions
-- Composer
-- SSH-Zugang (empfohlen)
-- MySQL oder PostgreSQL (alternativ SQLite)
-- Subdomain oder separater Pfad für das Frontend
+- PHP 8.5+
+- Webserver mit **Document Root** auf `public/`
+- Erforderliche PHP-Extensions inklusive passendem Datenbanktreiber
+- Optional SSH/SFTP-Zugang
+- Optional OIDC-Provider für SSO
 
-### Backend-Deployment
+Für das Release-Paket auf dem Zielsystem gilt auch hier:
 
-1. Lade den gesamten entpackten Release-Ordner per SSH/SFTP hoch
-2. Setze den **Document Root** auf `public/`
-3. Erstelle und konfiguriere die `.env`-Datei
-4. Führe `php install.php` aus
-5. Lösche danach bei Bedarf `public/superadmin-password-helper.php`
+- kein Node.js
+- kein Angular
+- keine Angular CLI
+- kein MkDocs
+- kein Composer, solange `vendor/` bereits enthalten ist
 
-### Frontend-Deployment
+### Standard-Deployment mit Release-Paket
 
-1. Baue das Frontend lokal: `ng build --configuration production`
-2. Lade den Build-Output auf den Server
-3. Konfiguriere URL-Rewriting für SPA-Routing (alle Routen -> `index.html`)
+1. Release-Archiv entpacken
+2. Gesamten entpackten Ordner hochladen
+3. **Document Root** auf `public/` setzen
+4. `.env.example` nach `.env` kopieren und konfigurieren
+5. `php install.php` ausführen
+6. Falls verwendet, `public/superadmin-password-helper.php` wieder löschen
 
-### Datenbank
+### Datenbankbeispiele
 
-Für Produktions-Hosting wird MySQL oder PostgreSQL empfohlen:
+SQLite:
+
+```ini
+DB_CONNECTION=sqlite
+DB_DATABASE=/absoluter/pfad/zur/database.sqlite
+```
+
+MySQL/MariaDB:
 
 ```ini
 DB_CONNECTION=mysql
@@ -173,114 +200,75 @@ DB_USERNAME=hournest_user
 DB_PASSWORD=sicheres_passwort
 ```
 
+PostgreSQL:
+
+```ini
+DB_CONNECTION=pgsql
+DB_HOST=localhost
+DB_PORT=5432
+DB_DATABASE=hournest
+DB_USERNAME=hournest_user
+DB_PASSWORD=sicheres_passwort
+```
+
+---
+
+## Eigenes Paket bauen oder Frontend getrennt deployen
+
+Dieser Abschnitt ist **nur für Entwickler** relevant.
+
+Wenn du nicht das fertige Release-Paket verwendest, sondern selbst paketierst oder Frontend und Backend getrennt auslieferst, brauchst du auf dem Build-Rechner zusätzlich Node.js, npm und die restlichen Entwicklungswerkzeuge.
+
+Typischer Frontend-Build:
+
+```bash
+cd frontend
+npm install
+npx ng build --configuration=production
+```
+
+Der Build-Output liegt danach in `frontend/dist/frontend/browser/`.
+
 ---
 
 ## CI/CD & Releases
 
 ### Build-Skripte
 
-Alle Skripte liegen in `scripts/` und funktionieren unter Windows (Git Bash) und Linux:
+Alle Skripte liegen in `scripts/`:
 
 | Skript | Beschreibung |
-|--------|-------------|
+|--------|--------------|
 | `./scripts/build-all.sh` | Baut Frontend + Backend + Dokumentation |
-| `./scripts/build-frontend.sh` | Baut nur Angular (Production) |
-| `./scripts/build-backend.sh` | Baut nur Laravel (Production, cached) |
-| `./scripts/build-docs.sh` | Baut nur MkDocs-Dokumentation |
+| `./scripts/build-frontend.sh` | Baut nur das Angular-Frontend |
+| `./scripts/build-backend.sh` | Baut nur das Laravel-Backend |
+| `./scripts/build-docs.sh` | Baut nur die MkDocs-Dokumentation |
 | `./scripts/test.sh` | Backend-Tests + Frontend-Unit-Tests + Frontend-Build-Check |
 | `./scripts/ci.sh` | Vollständige CI-Pipeline lokal |
-| `./scripts/package.sh [version]` | Baut alles und erstellt Release-Archiv |
-
-### CI lokal ausführen
-
-Vor dem Taggen eines Releases sollte die Pipeline lokal geprüft werden:
-
-```bash
-# Vollständige Pipeline (Tests + alle Builds + Artefakt-Check)
-./scripts/ci.sh
-
-# Release-Archiv erstellen
-./scripts/package.sh v0.1.0
-# -> Erstellt dist/hournest-v0.1.0.zip und .tar.gz
-```
+| `./scripts/package.sh [version]` | Baut alles und erstellt das Release-Archiv |
 
 ### GitHub Actions
 
-Die GitHub Action `.github/workflows/release.yml` wird **nur bei Tags** ausgelöst:
+Die GitHub Action `.github/workflows/release.yml` wird bei Tags ausgelöst und erstellt automatisch ein Release-Paket mit:
 
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
+1. Backend-Tests
+2. Frontend-Tests und Frontend-Build
+3. MkDocs-Build
+4. Release-Archiv mit gebündeltem Frontend in `public/`
+5. GitHub-Release-Artefakten
 
-Die Action führt automatisch aus:
-
-1. Backend-Tests (PHPUnit)
-2. Frontend-Unit-Tests und Production Build (Angular)
-3. Dokumentation Build (MkDocs)
-4. Release-Archiv erstellen (ZIP + TAR.GZ) mit gebündeltem Frontend in `public/`
-5. Workflow-Artefakte hochladen
-6. GitHub Release erstellen
-
-Zusätzlich deployt `.github/workflows/docs.yml` die Dokumentation bei Pushes auf `main` nach GitHub Pages.
-
-Repository-Einstellung:
-- GitHub Pages muss auf `GitHub Actions` als Quelle gestellt sein
-
-### GitHub-Runner-Checkliste
-
-Vor dem produktiven Einsatz der Workflows:
-
-- GitHub-hosted Runner müssen für das Repository aktiviert sein
-- GitHub Pages muss auf `GitHub Actions` als Quelle gestellt sein
-- Releases müssen im Repository erlaubt sein
-- Zusätzliche Secrets sind für den aktuellen Stand nicht nötig
-
-Ergebnis bei `git push origin v0.1.0`:
-
-- Backend, Frontend und Dokumentation werden gebaut
-- ZIP und TAR.GZ werden als Workflow-Artefakte abgelegt
-- dieselben Archive werden an den GitHub Release gehängt
-- das Release-Paket kann direkt auf klassischen PHP-Webspace oder eine NAS hochgeladen werden
-
-Ergebnis bei Push auf `main`:
-
-- die MkDocs-Dokumentation wird nach GitHub Pages veröffentlicht
-
-Tags mit `-rc`, `-beta` oder `-alpha` werden als Pre-Release markiert.
-
-### GitHub Action lokal testen
-
-Mit [act](https://github.com/nektos/act) kann die Action lokal ausgeführt werden (benötigt Docker):
-
-```bash
-# act installieren
-winget install nektos.act         # Windows
-brew install act                  # macOS/Linux
-
-# Release-Workflow simulieren
-act push --tag v0.1.0
-```
-
-!!! tip "Empfehlung"
-    Für den Alltag reicht `./scripts/ci.sh`. `act` ist nur nötig, wenn man die GitHub Action selbst debuggen will.
+Zusätzlich veröffentlicht `.github/workflows/docs.yml` die Dokumentation bei Pushes auf `main`.
 
 ---
 
 ## Checkliste für Produktion
 
-!!! warning "Vor dem Go-Live"
-    Prüfe folgende Punkte vor dem Produktiveinsatz:
-
-- [ ] `APP_DEBUG=false` gesetzt
 - [ ] `APP_ENV=production` gesetzt
-- [ ] Superadmin-Passwort geändert (nicht `changeme`)
-- [ ] OIDC-Credentials konfiguriert
-- [ ] `SANCTUM_STATEFUL_DOMAINS` auf die korrekte Frontend-Domain gesetzt
-- [ ] `ADMIN_EMAILS` mit den richtigen Admin-Email-Adressen befüllt
-- [ ] SSL/HTTPS aktiviert
-- [ ] Datenbank-Migrationen ausgeführt
-- [ ] `config:cache` und `route:cache` ausgeführt
-- [ ] Feiertage für das aktuelle Jahr eingetragen
-- [ ] Datenbankdatei-Berechtigungen (bei SQLite) korrekt gesetzt
-- [ ] Log-Verzeichnis (`storage/logs/`) beschreibbar
+- [ ] `APP_DEBUG=false` gesetzt
+- [ ] Superadmin-Passwort geändert
+- [ ] Passender Datenbanktreiber als PHP-Extension aktiviert
+- [ ] `SANCTUM_STATEFUL_DOMAINS` korrekt gesetzt
+- [ ] OIDC korrekt konfiguriert, falls verwendet
+- [ ] `public/` ist der echte Document Root
+- [ ] Migrationen wurden ausgeführt
+- [ ] `storage/` und `bootstrap/cache/` sind beschreibbar

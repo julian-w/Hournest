@@ -125,8 +125,7 @@ function createEnvIfMissing(string $packageRoot): bool
 
 function createSqliteDatabaseIfNeeded(string $appRoot, string $packageRoot): void
 {
-    $envFile = $packageRoot . '/.env';
-    $config = parse_ini_file($envFile, false, INI_SCANNER_RAW);
+    $config = loadEnvConfig($packageRoot);
 
     if (!is_array($config)) {
         warn('Could not parse .env, skipping SQLite auto-create.');
@@ -159,6 +158,14 @@ function createSqliteDatabaseIfNeeded(string $appRoot, string $packageRoot): voi
     ok('SQLite database ready: ' . $dbPath);
 }
 
+function loadEnvConfig(string $packageRoot): ?array
+{
+    $envFile = $packageRoot . '/.env';
+    $config = parse_ini_file($envFile, false, INI_SCANNER_RAW);
+
+    return is_array($config) ? $config : null;
+}
+
 $arguments = $_SERVER['argv'] ?? [];
 $seed = in_array('--seed', $arguments, true);
 $appRoot = detectAppRoot();
@@ -170,11 +177,28 @@ info('  Hournest -- PHP Installer');
 info('============================================');
 out('');
 
+ensureDirectories($appRoot);
+
+if (createEnvIfMissing($packageRoot)) {
+    exit(0);
+}
+
 if (PHP_VERSION_ID < 80500) {
     fail('PHP 8.5+ is required. Current version: ' . PHP_VERSION);
 }
 
-$requiredExtensions = ['pdo_sqlite', 'mbstring', 'openssl', 'tokenizer', 'xml', 'curl', 'fileinfo'];
+$config = loadEnvConfig($packageRoot);
+$databaseConnection = $config['DB_CONNECTION'] ?? 'sqlite';
+$requiredExtensions = ['mbstring', 'openssl', 'tokenizer', 'xml', 'curl', 'fileinfo'];
+
+if ($databaseConnection === 'mysql') {
+    $requiredExtensions[] = 'pdo_mysql';
+} elseif ($databaseConnection === 'pgsql') {
+    $requiredExtensions[] = 'pdo_pgsql';
+} else {
+    $requiredExtensions[] = 'pdo_sqlite';
+}
+
 $missingExtensions = array_values(array_filter(
     $requiredExtensions,
     static fn (string $extension): bool => !extension_loaded($extension)
@@ -184,17 +208,11 @@ if ($missingExtensions !== []) {
     fail('Missing PHP extensions: ' . implode(', ', $missingExtensions));
 }
 
-if (!commandExists('composer')) {
-    fail('Composer is required in PATH to run install.php');
-}
-
-ensureDirectories($appRoot);
-
-if (createEnvIfMissing($packageRoot)) {
-    exit(0);
-}
-
 if (!is_dir($appRoot . '/vendor')) {
+    if (!commandExists('composer')) {
+        fail('Composer is only required when vendor/ is missing. The release package should already include vendor/.');
+    }
+
     runCommand('composer install --no-dev --optimize-autoloader --no-interaction', $appRoot);
 }
 

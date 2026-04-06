@@ -72,7 +72,7 @@
 | Area      | Technology                           |
 |-----------|--------------------------------------|
 | Frontend  | Angular 18, Angular Material, SCSS   |
-| Backend   | Laravel 11, PHP 8.5+                 |
+| Backend   | Laravel 13, PHP 8.5+                 |
 | Database  | SQLite (dev), MySQL/PostgreSQL (prod) |
 | Auth      | OIDC (any provider) or local email+password, Sanctum |
 | Docs      | MkDocs Material (DE + EN)            |
@@ -95,12 +95,22 @@ hournest/
 
 ## Quick Start
 
-### Prerequisites
+### Local Development Prerequisites
 
-- PHP 8.5+ with extensions: sqlite3, mbstring, openssl, tokenizer, xml, curl, fileinfo
+- PHP 8.5+ with extensions: `mbstring`, `openssl`, `tokenizer`, `xml`, `curl`, `fileinfo`, `pdo_sqlite`
 - Composer
 - Node.js 18+ & npm
-- Python 3 + pip (for documentation)
+- Python 3 + pip (only if you want to build the MkDocs documentation locally)
+
+### Target Server / Release Package
+
+For the extracted release package on the target server you only need:
+
+- PHP 8.5+
+- A web server with `public/` as document root
+- Matching database driver extension: `pdo_sqlite`, `pdo_mysql`, or `pdo_pgsql`
+
+You do **not** need Node.js, Angular CLI, MkDocs, or Composer on the target server as long as the bundled release package already contains `vendor/`.
 
 ### Start Everything (Backend + Frontend)
 
@@ -118,13 +128,14 @@ cd backend
 cp ../.env.example .env
 composer install
 php artisan key:generate
+touch database/database.sqlite
 php artisan migrate --seed
 php artisan serve                # http://localhost:8000
 
 # Frontend
 cd frontend
 npm install
-ng serve                         # http://localhost:4200
+npx ng serve --proxy-config proxy.conf.json   # http://localhost:4200
 ```
 
 ### Authentication Setup
@@ -183,7 +194,7 @@ All scripts are in `scripts/` and work on Windows (Git Bash) and Linux.
 | `./scripts/install.sh` | Shell-based installer for repo-based/manual setups |
 
 The release package includes a root-level `install.php` so deployment does not depend on Bash being available on the target server.
-The release package also includes `public/superadmin-password-helper.php` as a temporary setup helper for generating a bcrypt hash for `SUPERADMIN_PASSWORD`.
+The release package already includes the built frontend in `public/`, the PHP dependencies in `vendor/`, and `public/superadmin-password-helper.php` as a temporary setup helper for generating a bcrypt hash for `SUPERADMIN_PASSWORD`.
 
 ## Mock Mode (Frontend without Backend)
 
@@ -194,10 +205,10 @@ For testing the frontend without a running backend:
 ./scripts/dev-mock.sh
 
 # Option 2: Manually
-cd frontend && ng serve --configuration=mock
+cd frontend && npx ng serve --configuration=mock
 
 # Option 3: URL parameter with normal start
-ng serve    # then http://localhost:4200?mock=true
+npx ng serve --proxy-config proxy.conf.json    # then http://localhost:4200?mock=true
 ```
 
 In mock mode:
@@ -303,7 +314,7 @@ Before relying on the GitHub runners, check:
 What you get after pushing a tag like `v0.1.0`:
 - a successful Actions run with downloadable workflow artifacts
 - a GitHub Release containing the ZIP and TAR.GZ package
-- a deployment package that can be unpacked on a PHP webspace with `public/` as document root
+- a deployment package that can be unpacked on a PHP webspace with `public/` as document root and the frontend already bundled
 
 What you get after pushing to `main`:
 - updated MkDocs documentation on GitHub Pages
@@ -335,7 +346,7 @@ php install.php --seed
 
 The script automatically:
 - Checks PHP version and extensions
-- Creates `.env` (interactive)
+- Creates `.env` from `.env.example` if it is missing, then asks you to edit it and rerun the installer
 - Points you to `superadmin-password-helper.php` if you need a bcrypt hash for the emergency account
 - Runs migrations
 - Builds caches
@@ -349,6 +360,8 @@ The script automatically:
 4. Configure `.env`, optionally generate a bcrypt hash via `public/superadmin-password-helper.php`, then run `php install.php`
 5. Delete `public/superadmin-password-helper.php` after setup
 6. If using OAuth: configure OIDC provider, register app, set redirect URL
+
+On the target server, the release package does not require Node.js, Angular CLI, MkDocs, or Composer as long as `vendor/` is present.
 
 ### Web Server
 

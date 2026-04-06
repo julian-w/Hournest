@@ -3,10 +3,11 @@
 ## Overview
 Hournest is an internal team management app for vacation tracking, time tracking, and shift planning.
 Small company (<20 employees). Hosted on any PHP-capable server (NAS, shared hosting, VPS).
+The release package targets simple PHP hosting with `public/` as document root; end users on the target system do not need Node.js, Angular CLI, or MkDocs.
 
 ## Tech Stack
 - **Frontend:** Angular 18+ with Angular Material, TypeScript, SCSS
-- **Backend:** Laravel 11+ (PHP 8.2+), SQLite, Laravel Sanctum (SPA auth)
+- **Backend:** Laravel 13+ (PHP 8.5+), SQLite by default, Laravel Sanctum (SPA auth)
 - **Auth:** Two modes controlled by `AUTH_OAUTH_ENABLED` env variable:
   - **OAuth mode (default):** OpenID Connect (OIDC) via any OIDC provider (e.g. Keycloak, Azure AD, Synology SSO), using Laravel Socialite
   - **Local mode:** Email + password authentication, users managed by admins in the admin panel

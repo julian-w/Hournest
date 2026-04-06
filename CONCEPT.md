@@ -193,10 +193,15 @@ Per employee and year, a complete list of all bookings:
 
 ### Tech Stack
 - **Frontend:** Angular 18+, Angular Material, SCSS, ngx-translate
-- **Backend:** Laravel 11+, PHP 8.2+, Laravel Sanctum (SPA auth)
+- **Backend:** Laravel 13+, PHP 8.5+, Laravel Sanctum (SPA auth)
 - **Database:** SQLite (dev/test), MySQL/PostgreSQL (production) -- configurable via `.env`
 - **Auth:** Two modes: OpenID Connect (any OIDC provider) or local email+password authentication, controlled via `AUTH_OAUTH_ENABLED`
 - **API docs:** Scramble (auto-generated OpenAPI spec at `/docs/api`)
+
+### Deployment Assumption
+- The release package is built in advance and already contains the compiled frontend in `public/` and the PHP dependencies in `vendor/`
+- On the target system, end users only need PHP 8.5+, a web server with `public/` as document root, and the matching PDO database extension
+- Node.js, Angular CLI, MkDocs, and normally Composer are development/build-time tools, not target-system requirements
 
 ### Responsive
 - Desktop + tablet + mobile (responsive, no PWA)

@@ -8,7 +8,7 @@ This page describes the technical architecture of Hournest for developers contri
 
 Hournest is structured as a **monorepo** with two main components:
 
-- **Backend** (`/backend`) -- Laravel 11 REST API
+- **Backend** (`/backend`) -- Laravel 13 REST API
 - **Frontend** (`/frontend`) -- Angular 18 Single Page Application (SPA)
 
 The frontend communicates exclusively via HTTP API calls with the backend. There is no server-side view rendering.
@@ -171,7 +171,7 @@ The admin check is handled in the backend via the `EnsureAdmin` middleware, whic
 
 | Component         | Technology             | Version  |
 |-------------------|------------------------|----------|
-| Backend framework | Laravel                | 11+      |
+| Backend framework | Laravel                | 13+      |
 | PHP               | PHP                    | 8.5+     |
 | Frontend framework| Angular                | 18+      |
 | UI library        | Angular Material       | 18+      |

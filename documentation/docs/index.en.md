@@ -66,7 +66,7 @@ Hournest is an internal web application for **vacation management** with an alre
 | Area       | Technology                                   |
 |------------|----------------------------------------------|
 | Frontend   | Angular 18+, Angular Material, SCSS, ngx-translate |
-| Backend    | Laravel 11+, PHP 8.5+                        |
+| Backend    | Laravel 13+, PHP 8.5+                        |
 | Database   | SQLite (development), MySQL/PostgreSQL (production) |
 | Auth       | OIDC (any provider) or local login, Laravel Sanctum |
 | API Docs   | Scramble (auto-generated OpenAPI spec)        |
@@ -82,7 +82,7 @@ hournest/
 │   │   ├── core/          # Services, Guards, Interceptors, Models, Mock
 │   │   ├── features/      # Feature modules (Dashboard, Calendar, Vacation, Admin)
 │   └── ...
-├── backend/               # Laravel 11 API
+├── backend/               # Laravel 13 API
 │   ├── app/
 │   │   ├── Enums/         # UserRole, VacationStatus, HolidayType, LedgerEntryType
 │   │   ├── Http/          # Controllers, Middleware, Requests, Resources
@@ -100,7 +100,7 @@ hournest/
 ## Further Reading
 
 - **[Prerequisites](home/prerequisites.md)** -- What is needed?
-- **[Installation](home/installation.md)** -- Step-by-step guide
+- **[Installation](home/installation.md)** -- Set up local development
 - **[Configuration](home/configuration.md)** -- All environment variables explained
 - **[End User Guide](user/index.md)** -- Guide for users and admins
 - **[Developer Documentation](dev/index.md)** -- Architecture, API, tests, deployment

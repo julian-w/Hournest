@@ -1,25 +1,39 @@
 # Prerequisites
 
-This page lists all software requirements needed for developing and running Hournest.
+This page clearly separates local development requirements from target-system requirements.
+
+If you only want to run Hournest from a release package, the target server does not need Node.js, Angular CLI, Python, or MkDocs.
 
 ---
 
-## Backend Requirements
+## Target System / End Users
 
-### PHP 8.5+
+For normal operation of the release package, the server only needs the runtime components:
 
-PHP 8.5 or higher is required. The following PHP extensions must be enabled:
+- PHP 8.5+
+- A web server or PHP hosting setup with the **document root** pointing to `public/`
+- The matching PHP extensions for the selected database driver
 
-| Extension    | Purpose                            |
-|--------------|------------------------------------|
-| `sqlite3`    | SQLite database access             |
-| `mbstring`   | Multibyte string handling          |
-| `openssl`    | HTTPS and encryption               |
-| `tokenizer`  | PHP code analysis (Laravel)        |
-| `xml`        | XML processing                     |
-| `curl`       | HTTP requests (OIDC, Socialite)    |
-| `fileinfo`   | File type detection                |
-| `zip`        | Composer dependencies              |
+### Required PHP Extensions
+
+These extensions are always required:
+
+| Extension    | Purpose                         |
+|--------------|---------------------------------|
+| `mbstring`   | Multibyte string handling       |
+| `openssl`    | HTTPS and encryption            |
+| `tokenizer`  | Laravel runtime                 |
+| `xml`        | XML processing                  |
+| `curl`       | HTTP requests, for example OIDC |
+| `fileinfo`   | File type detection             |
+
+In addition, exactly **one** database driver is required:
+
+| Extension      | Required when                       |
+|----------------|-------------------------------------|
+| `pdo_sqlite`   | Default setup with SQLite           |
+| `pdo_mysql`    | When using MySQL/MariaDB            |
+| `pdo_pgsql`    | When using PostgreSQL               |
 
 !!! tip "Check PHP extensions"
     You can check installed extensions with:
@@ -27,84 +41,73 @@ PHP 8.5 or higher is required. The following PHP extensions must be enabled:
     php -m
     ```
 
-### Composer
+### Optional for Operation
 
-[Composer](https://getcomposer.org/) is the PHP package manager used to install Laravel dependencies.
+- An OIDC provider if SSO should be used
+- SSH/SFTP access for more convenient deployment
 
-```bash
-composer --version
-```
+### Not Required on the Target System
+
+- Node.js
+- npm
+- Angular CLI
+- Python
+- MkDocs
 
 ---
 
-## Frontend Requirements
+## Development Environment
 
-### Node.js 18+ and npm
+For local development, additional tools for backend, frontend, and optionally the documentation are needed.
 
-Node.js 18 or higher is required for the Angular frontend. npm is included with Node.js.
+### Backend
+
+| Component | Minimum Version | Purpose |
+|-----------|-----------------|---------|
+| PHP       | 8.5+            | Laravel backend |
+| Composer  | 2.x             | Install PHP dependencies |
+
+For the default local SQLite setup, `pdo_sqlite` is also required.
+
+### Frontend
+
+| Component | Minimum Version | Purpose |
+|-----------|-----------------|---------|
+| Node.js   | 18+             | Angular tooling |
+| npm       | 9+              | Frontend package manager |
+
+A **global** Angular CLI is not required. This project uses the local CLI via `npx ng` or `npm run ...`.
 
 ```bash
 node --version
 npm --version
 ```
 
-### Angular CLI
+### Documentation (optional)
 
-The Angular CLI is installed globally and used to start the development server and build the production version.
+Only needed if you want to build the MkDocs documentation locally or run it with live reload:
 
-```bash
-npm install -g @angular/cli
-ng version
-```
-
----
-
-## Database
-
-### Development: SQLite
-
-SQLite is used for local development. No separate installation is required -- the SQLite file is created automatically.
-
-### Production: MySQL or PostgreSQL
-
-For production, MySQL or PostgreSQL can be used as alternatives. Configuration is done via the `.env` file (see [Configuration](configuration.md)).
-
----
-
-## Documentation (optional)
-
-The following tools are needed to build this documentation:
-
-### Python 3 and pip
-
-```bash
-python --version
-pip --version
-```
-
-### MkDocs Material and Plugins
+| Component | Minimum Version | Purpose |
+|-----------|-----------------|---------|
+| Python    | 3.x             | Run MkDocs |
+| pip       | 21+             | Python package manager |
 
 ```bash
 cd documentation
 pip install -r requirements.txt
 ```
 
-The `requirements.txt` contains:
+The current `requirements.txt` contains:
 
-- `mkdocs-material` -- MkDocs theme with Material Design
-- `mkdocs-static-i18n` -- Internationalization plugin for multilingual documentation
+- `mkdocs-material`
+- `mkdocs-static-i18n`
 
 ---
 
 ## Summary
 
-| Component       | Minimum Version | Purpose                      |
-|-----------------|-----------------|------------------------------|
-| PHP             | 8.2+            | Laravel backend              |
-| Composer        | 2.x             | PHP package manager          |
-| Node.js         | 18+             | Angular frontend             |
-| npm             | 9+              | JavaScript package manager   |
-| Angular CLI     | 18+             | Frontend development tools   |
-| SQLite          | 3.x             | Development database         |
-| Python          | 3.x             | Documentation (optional)     |
-| pip             | 21+             | Python package manager (optional) |
+| Use Case | Required |
+|----------|----------|
+| Target system / release package | PHP 8.5+, web server, matching PDO extension |
+| Local development | additionally Composer, Node.js, and npm |
+| Building docs locally | additionally Python and pip |

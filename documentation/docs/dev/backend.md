@@ -1,6 +1,6 @@
 # Backend
 
-Das Backend ist eine Laravel 11 REST-API, die alle Geschäftslogik und Datenverwaltung bereitstellt.
+Das Backend ist eine Laravel 13 REST-API, die alle Geschäftslogik und Datenverwaltung bereitstellt.
 
 ---
 
