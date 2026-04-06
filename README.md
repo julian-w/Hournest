@@ -95,6 +95,21 @@ hournest/
 
 ## Quick Start
 
+### End User / Admin Installation Requirements
+
+If you want to **run** Hournest from the finished release package on a server, NAS, or PHP webspace, the target system needs:
+
+- PHP 8.5+
+- a web server with `public/` as document root
+- a database:
+  - SQLite with `pdo_sqlite`, or
+  - MySQL/MariaDB with `pdo_mysql`, or
+  - PostgreSQL with `pdo_pgsql`
+- the general PHP extensions `mbstring`, `openssl`, `tokenizer`, `xml`, `curl`, and `fileinfo`
+
+You do **not** need Node.js, npm, Angular CLI, or MkDocs on the target system.
+You also do **not** need Composer there as long as the release package already contains `vendor/`.
+
 ### Local Development Prerequisites
 
 - PHP 8.5+ with extensions: `mbstring`, `openssl`, `tokenizer`, `xml`, `curl`, `fileinfo`, `pdo_sqlite`
@@ -108,7 +123,7 @@ For the extracted release package on the target server you only need:
 
 - PHP 8.5+
 - A web server with `public/` as document root
-- Matching database driver extension: `pdo_sqlite`, `pdo_mysql`, or `pdo_pgsql`
+- A database plus matching driver extension: `pdo_sqlite`, `pdo_mysql`, or `pdo_pgsql`
 
 You do **not** need Node.js, Angular CLI, MkDocs, or Composer on the target server as long as the bundled release package already contains `vendor/`.
 
