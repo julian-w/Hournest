@@ -75,17 +75,24 @@ cat > "$PACKAGE_DIR/DEPLOY.md" << 'DEPLOYEOF'
 
 ## Quick Start
 
-1. Upload the whole extracted folder to your web server.
-2. Point your document root to `public/`.
-3. The frontend is already bundled into `public/`.
-4. Copy `.env.example` to `.env` and configure it.
-5. Optionally run `php test.php` to check PHP, extensions, .env, and database connectivity.
-6. Set a valid bcrypt hash for `SUPERADMIN_PASSWORD`.
-7. Run `php install.php`.
+1. Download the finished release package from GitHub Releases.
+2. Upload the whole extracted folder to your web server.
+3. Point your document root to `public/`.
+4. The frontend is already bundled into `public/`.
+5. Copy `.env.example` to `.env` and configure it.
+6. Optionally run `php test.php` to check PHP, extensions, `.env`, superadmin config, and database connectivity.
+7. Ensure `SUPERADMIN_PASSWORD` contains a valid bcrypt hash.
+8. Run `php install.php`.
+
+## Notes
+
+- `test.php` can remain on the server for diagnostics.
+- `public/superadmin-password-helper.php` can be deleted after setup. This is recommended, but not strictly required.
 
 ## Detailed Instructions
 
-See the documentation in `docs/` or at the project repository.
+See the documentation in `docs/` or at:
+https://github.com/julian-w/Hournest/releases
 DEPLOYEOF
 
 # Create archive

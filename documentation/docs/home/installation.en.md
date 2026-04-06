@@ -140,7 +140,7 @@ Alternatively, you can generate the hash yourself. For that, you can temporarily
 public/superadmin-password-helper.php
 ```
 
-in the browser, generate the hash, and then delete the file again.
+in the browser and generate the hash. Afterwards, the file **can** be deleted again. This is recommended, but not strictly required.
 
 ---
 
@@ -201,7 +201,7 @@ Recommended flow right after the first successful installation:
 2. Verify that the application is reachable and working
 3. If needed, complete `ADMIN_EMAILS` and the OIDC settings in `.env`
 4. If the superadmin hash was only set provisionally, replace `SUPERADMIN_PASSWORD` in `.env` with a new bcrypt hash
-5. Delete `public/superadmin-password-helper.php` if it was used
+5. Delete `public/superadmin-password-helper.php` if desired and if it was used
 6. Verify `APP_DEBUG=false`
 
 ### Change the Superadmin Password
@@ -213,7 +213,7 @@ Procedure:
 1. Temporarily open `public/superadmin-password-helper.php` in the browser
 2. Generate a bcrypt hash for the desired new password
 3. Replace the value of `SUPERADMIN_PASSWORD=` in `.env`
-4. Delete `public/superadmin-password-helper.php` afterwards
+4. Delete `public/superadmin-password-helper.php` afterwards if desired
 5. Test the login again with the new password
 
 Example:

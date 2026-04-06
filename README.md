@@ -386,7 +386,7 @@ Recommended initial setup after the first successful install:
 2. Verify the application is reachable
 3. Complete OIDC and `ADMIN_EMAILS` settings in `.env` if needed
 4. Replace `SUPERADMIN_PASSWORD` in `.env` with your own bcrypt hash if you used the installer-generated temporary value
-5. Delete `public/superadmin-password-helper.php` afterwards
+5. Delete `public/superadmin-password-helper.php` afterwards if you want to remove the helper
 6. Verify that `APP_DEBUG=false`
 
 The superadmin password is managed through `.env`, not through the normal user administration.
@@ -397,7 +397,7 @@ The superadmin password is managed through `.env`, not through the normal user a
 2. Upload the full extracted release directory to the server
 3. Set `public/` as document root
 4. Configure `.env`, optionally run `php test.php`, set a valid bcrypt hash for `SUPERADMIN_PASSWORD`, then run `php install.php`
-5. Delete `public/superadmin-password-helper.php` after setup
+5. Delete `public/superadmin-password-helper.php` after setup if you want to remove the helper
 6. If using OAuth: configure OIDC provider, register app, set redirect URL
 
 On the target server, the release package does not require Node.js, Angular CLI, MkDocs, or Composer as long as `vendor/` is present.

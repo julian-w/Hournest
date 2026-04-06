@@ -131,14 +131,18 @@ jobs:
           cat > "$PACKAGE_DIR/DEPLOY.md" <<'EOF'
           # Hournest Deployment
 
-          1. Unpack the ZIP on your server.
-          2. Upload the entire extracted directory.
-          3. Point your web root to `public/`.
-          4. Copy `.env.example` to `.env`.
-          5. Optionally run `php test.php`.
-          6. Set a valid bcrypt hash for `SUPERADMIN_PASSWORD`.
-          7. Run `php install.php`.
-          8. Delete `public/superadmin-password-helper.php` after setup.
+          1. Download the finished release package from GitHub Releases.
+          2. Unpack the ZIP on your server.
+          3. Upload the entire extracted directory.
+          4. Point your web root to `public/`.
+          5. Copy `.env.example` to `.env`.
+          6. Optionally run `php test.php`.
+          7. Ensure `SUPERADMIN_PASSWORD` contains a valid bcrypt hash.
+          8. Run `php install.php`.
+
+          Notes:
+          - `test.php` can remain on the server for diagnostics.
+          - `public/superadmin-password-helper.php` can be deleted after setup. This is recommended, but not strictly required.
           EOF
 
           # Create archives
