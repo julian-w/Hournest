@@ -185,13 +185,22 @@ export class AdminAbsencesComponent implements OnInit {
   }
 
   reviewAbsence(absence: Absence, status: string): void {
-    this.adminService.reviewAbsence(absence.id, status).subscribe(() => {
-      this.snackBar.open(
-        this.translate.instant('admin_absences.reviewed'),
-        this.translate.instant('common.ok'),
-        { duration: 3000 },
-      );
-      this.loadPending();
+    this.adminService.reviewAbsence(absence.id, status).subscribe({
+      next: () => {
+        this.snackBar.open(
+          this.translate.instant('admin_absences.reviewed'),
+          this.translate.instant('common.ok'),
+          { duration: 3000 },
+        );
+        this.loadPending();
+      },
+      error: (err) => {
+        this.snackBar.open(
+          err.error?.message || this.translate.instant('login.error_generic'),
+          this.translate.instant('common.ok'),
+          { duration: 3000 },
+        );
+      },
     });
   }
 

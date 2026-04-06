@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { createTimeEntry, getHolidays } from './helpers/admin-api';
+import { createBlackout, createTimeEntry, deleteBlackout, getHolidays } from './helpers/admin-api';
 import { createLoggedInApiRequestContext, getConfiguredCredentials, hasAdminE2ECredentials, isLocalLoginEnabled, loginInContext } from './helpers/auth';
 import { currentWeekIsoDates } from './helpers/ui';
 
@@ -8,19 +8,20 @@ function isWeekend(isoDate: string): boolean {
   return day === 0 || day === 6;
 }
 
-test.describe('time tracking save error flow', () => {
-  test.skip(!hasAdminE2ECredentials(), 'Set admin or superadmin credentials to run the time-tracking save error flow.');
+test.describe('time tracking company holiday race flow', () => {
+  test.skip(!hasAdminE2ECredentials(), 'Set admin or superadmin credentials to run the company-holiday race flow.');
 
-  test('employee gets visible feedback and no persistence when booking save fails', async ({ browser, request }) => {
+  test('employee sees the backend conflict when a company holiday is added after the week was already open', async ({ browser, request }) => {
     expect(await isLocalLoginEnabled(request)).toBeTruthy();
 
     const employeeCredentials = {
       username: 'e2e.employee@hournest.local',
       password: 'e2e-password',
     };
+    const adminCredentials = getConfiguredCredentials();
 
     const employeeApi = await createLoggedInApiRequestContext({ ...employeeCredentials });
-    const adminApi = await createLoggedInApiRequestContext({ ...getConfiguredCredentials() });
+    const adminApi = await createLoggedInApiRequestContext({ ...adminCredentials });
 
     try {
       const currentYear = new Date().getFullYear();
@@ -29,6 +30,7 @@ test.describe('time tracking save error flow', () => {
       const nextWeekDates = currentWeekIsoDates(1);
       const targetDate = nextWeekDates.find(date => !isWeekend(date) && !holidayDates.has(date)) ?? nextWeekDates[1];
       const targetIndex = nextWeekDates.indexOf(targetDate);
+      const holidayReason = `Race holiday ${Date.now()}`;
 
       await createTimeEntry(employeeApi, {
         date: targetDate,
@@ -57,40 +59,31 @@ test.describe('time tracking save error flow', () => {
         });
         const firstRowInput = bookingRows.nth(0).locator('.day-col').nth(targetIndex).locator('input.pct-input');
         const secondRowInput = bookingRows.nth(1).locator('.day-col').nth(targetIndex).locator('input.pct-input');
-        const totalCell = page.locator('app-time-tracking .grid-row.total-row .day-col').nth(targetIndex);
-        const originalFirstValue = await firstRowInput.inputValue();
-        const originalSecondValue = await secondRowInput.inputValue();
 
-        await page.route('**/api/time-bookings/**', async (route) => {
-          if (route.request().method() === 'PUT') {
-            await route.fulfill({
-              status: 500,
-              contentType: 'application/json',
-              body: JSON.stringify({ message: 'Synthetic save failure' }),
-            });
-            return;
-          }
+        await expect(firstRowInput).toBeVisible();
+        await expect(secondRowInput).toBeVisible();
 
-          await route.continue();
+        const blackout = await createBlackout(adminApi, {
+          type: 'company_holiday',
+          start_date: targetDate,
+          end_date: targetDate,
+          reason: holidayReason,
         });
 
-        await firstRowInput.fill('55');
-        await secondRowInput.fill('45');
-        await expect(totalCell).toContainText('100%');
-        await page.getByRole('button', { name: /save all/i }).click();
-        await expect(snackBar).toContainText('Synthetic save failure');
+        try {
+          await firstRowInput.fill('60');
+          await secondRowInput.fill('40');
+          await page.getByRole('button', { name: /save all/i }).click();
 
-        await page.unroute('**/api/time-bookings/**');
-        await page.reload();
-        await expect(page.locator('app-time-tracking')).toBeVisible();
-        await nextWeekButton.click();
-        await expect(page.locator('.week-label')).toContainText(nextWeekDates[0]);
-        await expect(page.locator('app-time-tracking .grid-row').filter({
-          has: page.locator('.cost-center-label'),
-        }).nth(0).locator('.day-col').nth(targetIndex).locator('input.pct-input')).toHaveValue(originalFirstValue);
-        await expect(page.locator('app-time-tracking .grid-row').filter({
-          has: page.locator('.cost-center-label'),
-        }).nth(1).locator('.day-col').nth(targetIndex).locator('input.pct-input')).toHaveValue(originalSecondValue);
+          await expect(snackBar).toContainText('Cannot book time on a company holiday.');
+          await page.reload();
+          await expect(page.locator('app-time-tracking')).toBeVisible();
+          await nextWeekButton.click();
+          await expect(page.locator('.week-label')).toContainText(nextWeekDates[0]);
+          await expect(page.locator('app-time-tracking .grid-row.time-row .day-col').nth(targetIndex).locator('.absence-chip')).toContainText('Company Holiday');
+        } finally {
+          await deleteBlackout(adminApi, blackout.id);
+        }
       } finally {
         await employeeContext.close();
       }

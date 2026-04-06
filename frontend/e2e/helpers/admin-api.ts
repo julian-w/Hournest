@@ -8,15 +8,38 @@ export interface CreatedUser {
   displayName: string;
 }
 
+export interface ListedUser {
+  id: number;
+  email: string;
+  display_name: string;
+  role: string;
+  vacation_days_per_year: number;
+}
+
 export interface CreatedCostCenter {
   id: number;
   code: string;
   name: string;
 }
 
+export interface ListedCostCenter {
+  id: number;
+  code: string;
+  name: string;
+  description?: string | null;
+  is_active: boolean;
+  is_system: boolean;
+}
+
 export interface CreatedUserGroup {
   id: number;
   name: string;
+}
+
+export interface ListedUserGroup {
+  id: number;
+  name: string;
+  description?: string | null;
 }
 
 export interface CreatedBlackout {
@@ -25,6 +48,26 @@ export interface CreatedBlackout {
   start_date: string;
   end_date: string;
   reason: string;
+}
+
+export interface ListedHoliday {
+  id: number;
+  name: string;
+  date: string;
+}
+
+export interface ListedTimeBooking {
+  id: number;
+  date: string;
+  cost_center_id: number;
+  percentage: number;
+  comment?: string | null;
+}
+
+export interface ListedTimeLock {
+  id: number;
+  year: number;
+  month: number;
 }
 
 export function uniqueSuffix(): string {
@@ -64,8 +107,37 @@ export async function deleteUser(request: APIRequestContext, userId: number): Pr
   expect(response.ok()).toBeTruthy();
 }
 
+export async function getUsers(request: APIRequestContext): Promise<ListedUser[]> {
+  const response = await request.get(`${getApiBaseUrl()}/api/admin/users`);
+  expect(response.ok()).toBeTruthy();
+  const body = await response.json();
+  return body.data;
+}
+
+export async function findUserByEmail(request: APIRequestContext, email: string): Promise<ListedUser | undefined> {
+  const users = await getUsers(request);
+  return users.find(user => user.email === email);
+}
+
 export async function getBlackouts(request: APIRequestContext): Promise<CreatedBlackout[]> {
   const response = await request.get(`${getApiBaseUrl()}/api/admin/blackouts`);
+  expect(response.ok()).toBeTruthy();
+  const body = await response.json();
+  return body.data;
+}
+
+export async function getHolidays(request: APIRequestContext, year: number): Promise<ListedHoliday[]> {
+  const response = await request.get(`${getApiBaseUrl()}/api/holidays?year=${year}`);
+  expect(response.ok()).toBeTruthy();
+  const body = await response.json();
+  return body.data;
+}
+
+export async function getTimeBookings(
+  request: APIRequestContext,
+  data: { from: string; to: string },
+): Promise<ListedTimeBooking[]> {
+  const response = await request.get(`${getApiBaseUrl()}/api/time-bookings?from=${data.from}&to=${data.to}`);
   expect(response.ok()).toBeTruthy();
   const body = await response.json();
   return body.data;
@@ -108,6 +180,21 @@ export async function createCostCenter(
     code: body.data.code,
     name: body.data.name,
   };
+}
+
+export async function getCostCenters(request: APIRequestContext): Promise<ListedCostCenter[]> {
+  const response = await request.get(`${getApiBaseUrl()}/api/admin/cost-centers`);
+  expect(response.ok()).toBeTruthy();
+  const body = await response.json();
+  return body.data;
+}
+
+export async function findCostCenterByCode(
+  request: APIRequestContext,
+  code: string,
+): Promise<ListedCostCenter | undefined> {
+  const costCenters = await getCostCenters(request);
+  return costCenters.find(costCenter => costCenter.code === code);
 }
 
 export async function archiveCostCenter(request: APIRequestContext, costCenterId: number): Promise<void> {
@@ -159,6 +246,21 @@ export async function createUserGroup(
 export async function deleteUserGroup(request: APIRequestContext, groupId: number): Promise<void> {
   const response = await request.delete(`${getApiBaseUrl()}/api/admin/user-groups/${groupId}`);
   expect(response.ok()).toBeTruthy();
+}
+
+export async function getUserGroups(request: APIRequestContext): Promise<ListedUserGroup[]> {
+  const response = await request.get(`${getApiBaseUrl()}/api/admin/user-groups`);
+  expect(response.ok()).toBeTruthy();
+  const body = await response.json();
+  return body.data;
+}
+
+export async function findUserGroupByName(
+  request: APIRequestContext,
+  name: string,
+): Promise<ListedUserGroup | undefined> {
+  const groups = await getUserGroups(request);
+  return groups.find(group => group.name === name);
 }
 
 export async function setGroupMembers(
@@ -238,6 +340,43 @@ export async function createAbsenceRequest(
   return body.data.id;
 }
 
+export async function createAdminAbsence(
+  request: APIRequestContext,
+  data: {
+    userId: number;
+    startDate: string;
+    endDate: string;
+    type: 'illness' | 'special_leave';
+    scope?: 'full_day' | 'morning' | 'afternoon';
+    comment?: string;
+    adminComment?: string;
+  },
+): Promise<number> {
+  const response = await request.post(`${getApiBaseUrl()}/api/admin/absences`, {
+    data: {
+      user_id: data.userId,
+      start_date: data.startDate,
+      end_date: data.endDate,
+      type: data.type,
+      scope: data.scope ?? 'full_day',
+      comment: data.comment,
+      admin_comment: data.adminComment,
+    },
+  });
+
+  if (!response.ok()) {
+    throw new Error(`createAdminAbsence failed (${response.status()}): ${await response.text()}`);
+  }
+
+  const body = await response.json();
+  return body.data.id;
+}
+
+export async function deleteAdminAbsence(request: APIRequestContext, absenceId: number): Promise<void> {
+  const response = await request.delete(`${getApiBaseUrl()}/api/admin/absences/${absenceId}`);
+  expect(response.ok()).toBeTruthy();
+}
+
 export async function reviewAbsenceRequest(
   request: APIRequestContext,
   absenceId: number,
@@ -295,4 +434,32 @@ export async function createTimeBookings(
   if (!response.ok()) {
     throw new Error(`createTimeBookings failed (${response.status()}): ${await response.text()}`);
   }
+}
+
+export async function getTimeLocks(request: APIRequestContext): Promise<ListedTimeLock[]> {
+  const response = await request.get(`${getApiBaseUrl()}/api/admin/time-locks`);
+  expect(response.ok()).toBeTruthy();
+  const body = await response.json();
+  return body.data;
+}
+
+export async function setTimeLock(
+  request: APIRequestContext,
+  data: { year: number; month: number; locked: boolean },
+): Promise<void> {
+  const locks = await getTimeLocks(request);
+  const alreadyLocked = locks.some(lock => lock.year === data.year && lock.month === data.month);
+
+  if (alreadyLocked === data.locked) {
+    return;
+  }
+
+  const response = await request.post(`${getApiBaseUrl()}/api/admin/time-locks`, {
+    data: {
+      year: data.year,
+      month: data.month,
+    },
+  });
+
+  expect(response.ok()).toBeTruthy();
 }

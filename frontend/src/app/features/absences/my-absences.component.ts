@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
@@ -22,7 +23,7 @@ import { Absence, AbsenceType, AbsenceScope } from '../../core/models/absence.mo
   standalone: true,
   imports: [
     MatButtonModule, MatIconModule, MatTableModule, MatCardModule, MatChipsModule,
-    MatDialogModule, MatTooltipModule, DatePipe, TranslateModule,
+    MatDialogModule, MatSnackBarModule, MatTooltipModule, DatePipe, TranslateModule,
   ],
   template: `
     <div class="page-header">
@@ -105,6 +106,8 @@ import { Absence, AbsenceType, AbsenceScope } from '../../core/models/absence.mo
 export class MyAbsencesComponent implements OnInit {
   private absenceService = inject(AbsenceService);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+  private translate = inject(TranslateService);
 
   absences = signal<Absence[]>([]);
   columns = ['type', 'dates', 'scope', 'status', 'comment', 'actions'];
@@ -126,7 +129,17 @@ export class MyAbsencesComponent implements OnInit {
   }
 
   cancelAbsence(absence: Absence): void {
-    this.absenceService.cancelAbsence(absence.id).subscribe(() => this.load());
+    this.absenceService.cancelAbsence(absence.id).subscribe({
+      next: () => this.load(),
+      error: (err) => {
+        this.snackBar.open(
+          err.error?.message || 'Error',
+          this.translate.instant('common.ok'),
+          { duration: 3000 },
+        );
+        this.load();
+      },
+    });
   }
 }
 

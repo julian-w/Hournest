@@ -712,11 +712,21 @@ export class TimeTrackingComponent implements OnInit {
       start_time: day.startTime,
       end_time: day.endTime,
       break_minutes: day.breakMinutes || 0,
-    }).subscribe(entry => {
-      this.days.update(days => days.map(item =>
-        item.date === day.date ? { ...item, timeEntry: entry } : item
-      ));
-      this.loadWorkTimeLedger();
+    }).subscribe({
+      next: (entry) => {
+        this.days.update(days => days.map(item =>
+          item.date === day.date ? { ...item, timeEntry: entry } : item
+        ));
+        this.loadWorkTimeLedger();
+      },
+      error: (err) => {
+        this.snackBar.open(
+          err.error?.message || this.translate.instant('time_tracking.save_error'),
+          this.translate.instant('common.ok'),
+          { duration: 3000 },
+        );
+        this.loadWeek();
+      },
     });
   }
 
@@ -759,12 +769,13 @@ export class TimeTrackingComponent implements OnInit {
             );
           }
         },
-        error: () => {
+        error: (err) => {
           this.snackBar.open(
-            this.translate.instant('time_tracking.save_error'),
+            err.error?.message || this.translate.instant('time_tracking.save_error'),
             this.translate.instant('common.ok'),
             { duration: 3000 },
           );
+          this.loadWeek();
         },
       });
     }

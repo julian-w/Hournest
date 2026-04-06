@@ -25,8 +25,17 @@ export function toUsDateInputValue(isoDate: string): string {
 
 export async function fillDateInput(locator: Locator, isoDate: string): Promise<void> {
   await locator.fill(toUsDateInputValue(isoDate));
-  await locator.dispatchEvent('input');
-  await locator.dispatchEvent('change');
+  await locator.dispatchEvent('input', { bubbles: true });
+  await locator.dispatchEvent('change', { bubbles: true });
+}
+
+export async function fillNativeDateInput(locator: Locator, isoDate: string): Promise<void> {
+  await locator.evaluate((element, value) => {
+    const input = element as HTMLInputElement;
+    input.value = value;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  }, isoDate);
 }
 
 export function currentWeekIsoDates(weekOffset = 0): string[] {

@@ -4,7 +4,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateLoader, TranslateModule, TranslateNoOpLoader, TranslateService } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AdminService } from '../../../core/services/admin.service';
 import { Absence } from '../../../core/models/absence.model';
 import { AdminAbsencesComponent } from './admin-absences.component';
@@ -140,6 +140,22 @@ describe('AdminAbsencesComponent', () => {
     expect(adminServiceStub.deleteAbsence).toHaveBeenCalledWith(3);
     expect(snackBarOpenSpy).toHaveBeenCalledWith('admin_absences.deleted', 'common.ok', { duration: 3000 });
     expect(adminServiceStub.getAbsences).toHaveBeenCalled();
+  });
+
+  it('should show backend feedback when reviewing an absence fails', () => {
+    adminServiceStub.reviewAbsence.and.returnValue(throwError(() => ({
+      error: {
+        message: 'Invalid status transition.',
+      },
+    })));
+
+    const fixture = TestBed.createComponent(AdminAbsencesComponent);
+    fixture.detectChanges();
+    const snackBarOpenSpy = spyOn((fixture.componentInstance as never as { snackBar: MatSnackBar }).snackBar, 'open');
+
+    fixture.componentInstance.reviewAbsence(absences[1], 'approved');
+
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('Invalid status transition.', 'common.ok', { duration: 3000 });
   });
 
   it('should open the create dialog and reload both lists after a successful close', () => {

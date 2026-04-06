@@ -3,7 +3,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateLoader, TranslateModule, TranslateNoOpLoader, TranslateService } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AbsenceService } from '../../core/services/absence.service';
 import { BlackoutService } from '../../core/services/blackout.service';
 import { CostCenterService } from '../../core/services/cost-center.service';
@@ -254,14 +254,60 @@ describe('TimeTrackingComponent', () => {
 
     component.onPercentageChange(component.bookingRows()[0], date, 60);
     component.onPercentageChange(component.bookingRows()[1], date, 40);
-    timeServiceStub.saveTimeBookings.and.returnValue({
-      subscribe: ({ error }: { error: () => void }) => error(),
-    } as never);
+    timeServiceStub.saveTimeBookings.and.returnValue(throwError(() => ({ error: {} })));
 
     component.saveAll();
 
     expect(timeServiceStub.saveTimeBookings).toHaveBeenCalled();
     expect(snackBarOpenSpy).toHaveBeenCalledWith('time_tracking.save_error', 'common.ok', { duration: 3000 });
+  });
+
+  it('should show the backend conflict message and reload the week when saving bookings fails with a race condition', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const loadWeekSpy = spyOn(component as never as { loadWeek: () => void }, 'loadWeek').and.callThrough();
+    const snackBarOpenSpy = spyOn((component as never as { snackBar: MatSnackBar }).snackBar, 'open');
+    const date = component.selectedTemplateDate();
+
+    component.onPercentageChange(component.bookingRows()[0], date, 60);
+    component.onPercentageChange(component.bookingRows()[1], date, 40);
+    timeServiceStub.saveTimeBookings.and.returnValue(throwError(() => ({
+      error: { message: 'Cannot book time on a company holiday.' },
+    })));
+
+    component.saveAll();
+
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('Cannot book time on a company holiday.', 'common.ok', { duration: 3000 });
+    expect(loadWeekSpy).toHaveBeenCalled();
+  });
+
+  it('should show the backend conflict message and reload the week when saving a time entry fails', () => {
+    const fixture = TestBed.createComponent(TimeTrackingComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    const loadWeekSpy = spyOn(component as never as { loadWeek: () => void }, 'loadWeek').and.callThrough();
+    const snackBarOpenSpy = spyOn((component as never as { snackBar: MatSnackBar }).snackBar, 'open');
+    const editableDay = component.days().find(day => !day.isWeekend && !day.companyHoliday && !day.absence && !day.vacation);
+
+    expect(editableDay).toBeDefined();
+    if (!editableDay) {
+      return;
+    }
+
+    timeServiceStub.saveTimeEntry.and.returnValue(throwError(() => ({
+      error: { message: 'Cannot create time entry on a company holiday.' },
+    })));
+
+    editableDay.startTime = '08:00';
+    editableDay.endTime = '16:30';
+    editableDay.breakMinutes = 30;
+    component.saveTimeEntry(editableDay);
+
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('Cannot create time entry on a company holiday.', 'common.ok', { duration: 3000 });
+    expect(loadWeekSpy).toHaveBeenCalled();
   });
 
   it('should update the selected template with the selected day bookings', () => {

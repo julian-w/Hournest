@@ -2,8 +2,9 @@ import { Signal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateLoader, TranslateModule, TranslateNoOpLoader, TranslateService } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { MyVacationsComponent } from './my-vacations.component';
 import { BlackoutService } from '../../core/services/blackout.service';
 import { VacationService } from '../../core/services/vacation.service';
@@ -24,6 +25,9 @@ describe('MyVacationsComponent', () => {
   let authServiceStub: {
     user: Signal<unknown>;
     loadUser: jasmine.Spy;
+  };
+  let snackBarStub: {
+    open: jasmine.Spy;
   };
   const vacations: Vacation[] = [
     {
@@ -78,6 +82,10 @@ describe('MyVacationsComponent', () => {
       loadUser: jasmine.createSpy('loadUser'),
     };
 
+    snackBarStub = {
+      open: jasmine.createSpy('open'),
+    };
+
     await TestBed.configureTestingModule({
       imports: [
         MyVacationsComponent,
@@ -95,6 +103,7 @@ describe('MyVacationsComponent', () => {
         { provide: HolidayService, useValue: { getHolidays: () => of([]) } },
         { provide: BlackoutService, useValue: { checkDate: () => of(null) } },
         { provide: AuthService, useValue: authServiceStub },
+        { provide: MatSnackBar, useValue: snackBarStub },
       ],
     }).compileComponents();
 
@@ -181,5 +190,26 @@ describe('MyVacationsComponent', () => {
 
     expect(fixture.componentInstance.selectedYear()).toBe(2030);
     expect(ledgerServiceStub.getMyLedger).toHaveBeenCalledWith(2030);
+  });
+
+  it('should show a snackbar and refresh when cancelling a stale vacation fails', () => {
+    vacationServiceStub.cancelVacation.and.returnValue(throwError(() => ({
+      error: { message: 'Only pending requests can be cancelled.' },
+    })));
+
+    const fixture = TestBed.createComponent(MyVacationsComponent);
+    fixture.detectChanges();
+    const snackBarOpenSpy = spyOn((fixture.componentInstance as never as { snackBar: MatSnackBar }).snackBar, 'open');
+
+    vacationServiceStub.getMyVacations.calls.reset();
+    ledgerServiceStub.getMyLedger.calls.reset();
+    authServiceStub.loadUser.calls.reset();
+
+    fixture.componentInstance.cancelVacation(vacations[0]);
+
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('Only pending requests can be cancelled.', 'common.ok', { duration: 3000 });
+    expect(vacationServiceStub.getMyVacations).toHaveBeenCalled();
+    expect(ledgerServiceStub.getMyLedger).toHaveBeenCalled();
+    expect(authServiceStub.loadUser).toHaveBeenCalled();
   });
 });

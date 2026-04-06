@@ -65,6 +65,20 @@ npm run e2e:report
 - `unauthenticated.spec.ts`: Redirect auf Login ohne Session
 - `authenticated.spec.ts`: Dashboard und Zeiterfassung mit gueltiger Session
 - `admin.spec.ts`: Admin-Requests mit Admin- oder Superadmin-Session
+- `admin-request-conflict.spec.ts`: Ein Admin arbeitet auf einer veralteten Pending-Liste, waehrend derselbe Antrag bereits anderweitig geprueft wurde
+- `admin-absence-conflict.spec.ts`: Ein Admin arbeitet auf einer veralteten Pending-Liste fuer Abwesenheiten, waehrend derselbe Antrag bereits anderswo bearbeitet wurde
+- `admin-absence-manage-ui.spec.ts`: Admin erstellt eine Abwesenheit direkt in der UI und entfernt sie wieder im All-Tab
+- `admin-users-manage-ui.spec.ts`: Admin legt einen Benutzer direkt in der UI an, aendert Rolle und Urlaubstage und loescht ihn wieder
+- `admin-cost-centers-manage-ui.spec.ts`: Admin legt eine Kostenstelle direkt in der UI an, bearbeitet sie und archiviert sie wieder
+- `admin-user-groups-manage-ui.spec.ts`: Admin erstellt eine User Group in der UI, weist Mitglieder und Kostenstellen zu und loescht sie wieder
+- `admin-reports-ui.spec.ts`: Admin filtert Berichte fuer gezielt erzeugte Daten und prueft den CSV-Export-Endpunkt ueber die UI
+- `blackout-manage-ui.spec.ts`: Admin bearbeitet und loescht einen bestehenden Blackout komplett ueber die UI
+- `vacation-cancel-conflict.spec.ts`: Mitarbeiter arbeitet auf einer veralteten Pending-Ansicht, waehrend ein Admin den Urlaubsantrag im Hintergrund genehmigt
+- `absence-cancel-conflict.spec.ts`: Mitarbeiter arbeitet auf einer veralteten Pending-Ansicht, waehrend ein Admin den Sonderurlaub im Hintergrund genehmigt
+- `time-tracking-company-holiday-race.spec.ts`: Mitarbeiter hat die Woche bereits offen, dann setzt ein Admin nachtraeglich einen Company Holiday und der Save laeuft sauber in den Backend-Konflikt
+- `time-tracking-admin-absence-race.spec.ts`: Mitarbeiter hat die Woche bereits offen, dann erstellt ein Admin nachtraeglich eine volltaegige Abwesenheit fuer denselben Tag
+- `time-tracking-lock-race.spec.ts`: Mitarbeiter hat die Woche bereits offen, dann sperrt ein Admin den Monat und der Save laeuft in den Lock-Konflikt
+- `time-tracking-cost-center-race.spec.ts`: Mitarbeiter arbeitet noch mit einer offenen Wochenansicht, waehrend ein Admin die einzig verfuegbare Kostenstelle entzieht
 - `vacation-review.spec.ts`: lokaler Mitarbeiter beantragt Urlaub direkt in der UI, Admin prueft in der UI, Mitarbeiter sieht den genehmigten Status
 - `vacation-cancel.spec.ts`: lokaler Mitarbeiter storniert einen offenen Urlaubsantrag in der UI
 - `vacation-request-ui.spec.ts`: lokaler Mitarbeiter beantragt Urlaub direkt ueber den UI-Dialog

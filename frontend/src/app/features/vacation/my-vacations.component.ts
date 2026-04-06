@@ -5,6 +5,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSelectModule } from '@angular/material/select';
@@ -26,7 +27,7 @@ interface VacationLedgerDisplayRow extends VacationLedgerEntry {
   standalone: true,
   imports: [
     MatButtonModule, MatIconModule, MatTableModule, MatChipsModule, MatDialogModule,
-    MatCardModule, MatTooltipModule, MatExpansionModule, MatSelectModule, DatePipe, TranslateModule,
+    MatCardModule, MatSnackBarModule, MatTooltipModule, MatExpansionModule, MatSelectModule, DatePipe, TranslateModule,
   ],
   template: `
     <div class="page-header">
@@ -216,6 +217,7 @@ export class MyVacationsComponent implements OnInit {
   private vacationService = inject(VacationService);
   private ledgerService = inject(VacationLedgerService);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
   auth = inject(AuthService);
 
@@ -254,10 +256,22 @@ export class MyVacationsComponent implements OnInit {
   }
 
   cancelVacation(vacation: Vacation): void {
-    this.vacationService.cancelVacation(vacation.id).subscribe(() => {
-      this.loadVacations();
-      this.loadLedger();
-      this.auth.loadUser();
+    this.vacationService.cancelVacation(vacation.id).subscribe({
+      next: () => {
+        this.loadVacations();
+        this.loadLedger();
+        this.auth.loadUser();
+      },
+      error: (err) => {
+        this.snackBar.open(
+          err.error?.message || 'Error',
+          this.translate.instant('common.ok'),
+          { duration: 3000 },
+        );
+        this.loadVacations();
+        this.loadLedger();
+        this.auth.loadUser();
+      },
     });
   }
 

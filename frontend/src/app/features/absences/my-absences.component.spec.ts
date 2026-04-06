@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateLoader, TranslateModule, TranslateNoOpLoader, TranslateService } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AbsenceService } from '../../core/services/absence.service';
 import { MyAbsencesComponent } from './my-absences.component';
 
@@ -10,6 +11,9 @@ describe('MyAbsencesComponent', () => {
   let absenceServiceStub: {
     getMyAbsences: jasmine.Spy;
     cancelAbsence: jasmine.Spy;
+  };
+  let snackBarStub: {
+    open: jasmine.Spy;
   };
 
   const absences = [
@@ -51,6 +55,10 @@ describe('MyAbsencesComponent', () => {
       cancelAbsence: jasmine.createSpy('cancelAbsence').and.returnValue(of(void 0)),
     };
 
+    snackBarStub = {
+      open: jasmine.createSpy('open'),
+    };
+
     await TestBed.configureTestingModule({
       imports: [
         MyAbsencesComponent,
@@ -64,6 +72,7 @@ describe('MyAbsencesComponent', () => {
       ],
       providers: [
         { provide: AbsenceService, useValue: absenceServiceStub },
+        { provide: MatSnackBar, useValue: snackBarStub },
       ],
     }).compileComponents();
 
@@ -118,6 +127,22 @@ describe('MyAbsencesComponent', () => {
     fixture.componentInstance.cancelAbsence(absences[0]);
 
     expect(absenceServiceStub.cancelAbsence).toHaveBeenCalledWith(4);
+    expect(loadSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should show a snackbar and reload the list when cancelling a stale absence fails', () => {
+    absenceServiceStub.cancelAbsence.and.returnValue(throwError(() => ({
+      error: { message: 'Only pending or reported absences can be cancelled.' },
+    })));
+
+    const fixture = TestBed.createComponent(MyAbsencesComponent);
+    fixture.detectChanges();
+    const loadSpy = spyOn(fixture.componentInstance, 'load').and.callThrough();
+    const snackBarOpenSpy = spyOn((fixture.componentInstance as never as { snackBar: MatSnackBar }).snackBar, 'open');
+
+    fixture.componentInstance.cancelAbsence(absences[0]);
+
+    expect(snackBarOpenSpy).toHaveBeenCalledWith('Only pending or reported absences can be cancelled.', 'common.ok', { duration: 3000 });
     expect(loadSpy).toHaveBeenCalledTimes(1);
   });
 });
